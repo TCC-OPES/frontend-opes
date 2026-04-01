@@ -26,8 +26,8 @@ a,
     display: flex;
     display: flex-start;
     place-items: center;
-   background-color: white;
-    
+    background-color: rgb(239, 233, 233);
+
   }
 
   #app {
