@@ -1,30 +1,49 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed} from 'vue'
 import { useRouter } from 'vue-router'
 
-const cpf = ref('')
-const senha = ref('')
-const lembrar = ref(false)
+const form = ref({
+  cpf: '',
+  senha: ''
+});
+
+const cpfFormatado = computed({
+  get() {
+    return form.value.cpf;
+  },
+  set(valor) {
+    let v = valor.replace(/\D/g, '');
+
+    if (v.length > 11) v = v.slice(0, 11);
+
+    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+    v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+
+    form.value.cpf = v;
+  }
+});
 
 const router = useRouter()
 
 function login() {
-  if (!cpf.value || !senha.value) {
+  if (!form.value.cpf || !form.value.senha) {
     alert('Preencha todos os campos!')
     return
   }
 
   console.log({
-    cpf:cpf.value,
-    senha: senha.value,
-    lembrar: lembrar.value
+    cpf: form.value.cpf,
+    senha: form.value.senha
   })
+
   router.push('/dashboard')
 }
 </script>
 
 <template>
-  <section class="container">
+  <div class="page">
+     <section class="container">
     <div class="welcome">
       <h1>Bem vindo de volta!</h1>
       <p class="financas">Acesse sua conta e gerencie suas finanças.</p>
@@ -37,7 +56,7 @@ function login() {
          <i class="fa-solid fa-address-card"></i>
           <input
             type="text"
-            v-model="cpf"
+            v-model="cpfFormatado"
             placeholder="000.000.000-00"
           >
         </div>
@@ -46,7 +65,7 @@ function login() {
       <div class="campo">
         <label>Senha</label>
         <div class="input-icon">
-        <i class="fa-solid fa-lock"></i>
+       <i class="fa-solid fa-eye"></i>
           <input
             type="password"
             v-model="senha"
@@ -73,62 +92,81 @@ function login() {
       <p>Não tem uma conta? <a href="#">Criar conta</a></p>
     </div>
   </section>
+  </div>
+
 </template>
 
 <style scoped>
-/* Reset básico */
-html, body {
+/* Reset */
+* {
   margin: 0;
   padding: 0;
-  height: 100%;
-  font-family: Arial, sans-serif;
-}
-
-/* Container ocupando toda a tela e alinhando à esquerda */
-section.container {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;   /* tudo à esquerda */
-  padding: 50px 20px;
   box-sizing: border-box;
-  background-color: #f0f4f8;
-  margin: 7vw 19vw 10vw 2vw;
+  font-family: 'Inter', Arial, sans-serif;
+}
+.page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding-left: 60px;
+}
+/* Fundo da página */
+body {
+  height: 100vh;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  background: #eef5f3;
 }
 
-/* Limitar o formulário para não ocupar a tela inteira */
-form, .welcome, .criar {
-  width: 400px;  /* largura fixa do conteúdo */
+section.container {
+  width: 100%;
+  max-width: 700px; /* 🔥 bem mais largo */
+  padding: 80px 60px; /* 🔥 bem mais alto (cima/baixo) */
+  border-radius: 24px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.1);
 }
-
-/* Texto de boas-vindas */
+/* Título */
 .welcome h1 {
-  margin: 0 0 10px 0;
+  font-size: 40px;
+  margin-bottom: 8px;
+  color: #1f2937;
 }
 
+/* Subtítulo */
 .financas {
-  margin-bottom: 30px;
+  color: #6b7280;
+  font-size: 18px;
+  margin-bottom: 50px;
 }
 
-/* Campos do formulário */
+/* Campos */
 .campo {
   display: flex;
   flex-direction: column;
-  margin-bottom: 15px;
+  margin-bottom: 28px;
 }
 
+.campo label {
+  font-size: 18px;
+  margin-bottom: 6px;
+  color: #374151;
+}
+
+/* Input com ícone */
 .input-icon {
   display: flex;
   align-items: center;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  padding: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 18px;
   gap: 10px;
-  background-color: #fff;
+  background-color: #f9fafb;
 }
 
 .input-icon i {
-  color: #999;
-  font-size: 18px;
+  color: #9ca3af;
 }
 
 .input-icon input {
@@ -136,47 +174,53 @@ form, .welcome, .criar {
   outline: none;
   background: transparent;
   flex: 1;
-  font-size: 16px;
-  padding: 0;
+  font-size: 17px;
 }
 
-/* Checkbox e link de senha */
+/* Linha lembrar */
 .lembrar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
-  margin: 15px 0;
+  margin: 25px 0 35px;
+  font-size: 16px;
 }
 
 .lembrar a {
-  color: #42b883;
+  color: #10b981;
   text-decoration: none;
+  font-weight: 500;
 }
 
-/* Botão de entrar */
+/* Botão */
 .entrar button {
   width: 100%;
-  padding: 10px;
+  padding: 20px;
   border: none;
-  border-radius: 10px;
-  background-color: #42b883;
+  border-radius: 16px;
+  background: #059669;
   color: white;
-  font-weight: bold;
+  font-size: 20px;
+  font-weight: 600;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
+  transition: 0.2s;
 }
 
 .entrar button:hover {
-  opacity: 0.9;
+  background: #047857;
 }
 
-/* Link para criar conta */
+/* Criar conta */
 .criar {
-  margin-top: 20px;
-  text-align: left; /* alinhado à esquerda */
+  margin-top: 35px;
+  text-align: center;
+  font-size: 18px;
+  color: #6b7280;
+}
+
+.criar a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
 }
 </style>
