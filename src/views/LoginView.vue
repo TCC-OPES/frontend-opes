@@ -2,20 +2,20 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-const email = ref('')
+const cpf = ref('')
 const senha = ref('')
 const lembrar = ref(false)
 
 const router = useRouter()
 
 function login() {
-  if (!email.value || !senha.value) {
+  if (!cpf.value || !senha.value) {
     alert('Preencha todos os campos!')
     return
   }
 
   console.log({
-    email: email.value,
+    cpf:cpf.value,
     senha: senha.value,
     lembrar: lembrar.value
   })
@@ -32,13 +32,13 @@ function login() {
 
     <form @submit.prevent="login">
       <div class="campo">
-        <label>E-mail</label>
+        <label>CPF</label>
         <div class="input-icon">
-          <i class="fa-solid fa-user"></i>
+         <i class="fa-solid fa-address-card"></i>
           <input
-            type="email"
-            v-model="email"
-            placeholder="seu@email.com"
+            type="text"
+            v-model="cpf"
+            placeholder="000.000.000-00"
           >
         </div>
       </div>
@@ -76,16 +76,40 @@ function login() {
 </template>
 
 <style scoped>
-.container {
-  max-width: 400px;
-  margin: auto;
-  padding: 20px;
+/* Reset básico */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: Arial, sans-serif;
+}
+
+/* Container ocupando toda a tela e alinhando à esquerda */
+section.container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;   /* tudo à esquerda */
+  padding: 50px 20px;
+  box-sizing: border-box;
+  background-color: #f0f4f8;
+  margin: 7vw 19vw 10vw 2vw;
+}
+
+/* Limitar o formulário para não ocupar a tela inteira */
+form, .welcome, .criar {
+  width: 400px;  /* largura fixa do conteúdo */
+}
+
+/* Texto de boas-vindas */
+.welcome h1 {
+  margin: 0 0 10px 0;
 }
 
 .financas {
   margin-bottom: 30px;
 }
 
+/* Campos do formulário */
 .campo {
   display: flex;
   flex-direction: column;
@@ -99,7 +123,7 @@ function login() {
   border-radius: 10px;
   padding: 10px;
   gap: 10px;
-  background-color: #f9f9f9;
+  background-color: #fff;
 }
 
 .input-icon i {
@@ -116,18 +140,21 @@ function login() {
   padding: 0;
 }
 
+/* Checkbox e link de senha */
 .lembrar {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
   margin: 15px 0;
 }
 
 .lembrar a {
-  color: red;
+  color: #42b883;
   text-decoration: none;
 }
 
+/* Botão de entrar */
 .entrar button {
   width: 100%;
   padding: 10px;
@@ -137,23 +164,19 @@ function login() {
   color: white;
   font-weight: bold;
   cursor: pointer;
-
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
 }
 
-.entrar button i {
-  font-size: 16px;
-}
-
 .entrar button:hover {
   opacity: 0.9;
 }
 
+/* Link para criar conta */
 .criar {
   margin-top: 20px;
-  text-align: center;
+  text-align: left; /* alinhado à esquerda */
 }
 </style>
