@@ -1,8 +1,35 @@
 <script setup>
+import { ref, watch } from 'vue';
+
+
+const form = ref({
+  cpf: '',
+  nome: '',
+  telefone: '',
+  email: '',
+  senha: ''
+});
+
+watch(() => form.value.cpf, (novoValor) => {
+
+  let v = novoValor.replace(/\D/g, '');
+
+
+  if (v.length > 11) v = v.slice(0, 11);
+
+
+  v = v.replace(/(\d{3})(\d)/, '$1.$2');
+  v = v.replace(/(\d{3})(\d)/, '$1.$2');
+  v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+
+
+  form.value.cpf = v;
+});
 </script>
 
 
 <template>
+  <div class="page">
   <div class="card">
     <h1>Criar Conta</h1>
     <p class="subtitulo">Preencha seus dados para começar</p>
@@ -13,7 +40,7 @@
           <label>CPF</label>
           <div class="input-wrapper">
             <span class="fa-solid fa-address-card"></span>
-            <input type="text" placeholder="000.000.000-00" required>
+            <input v-model="form.cpf" type="text" placeholder="000.000.000-00" required>
           </div>
         </div>
 
@@ -64,10 +91,17 @@
     </router-link>
   </div>
 
+  <div class="lado-direito">
+    <img src="/public/icons/icon-512x512.png" alt="" class="">
+  </div>
+  </div>
 </template>
 
 <style scoped>
+.page {
+  display: flex;
 
+}
 .card {
   background-color: white;
   border-radius: 16px;
@@ -140,7 +174,7 @@ input {
 }
 
 .input-group:nth-child(5) {
-  grid-column: span 2; 
+  grid-column: span 2;
   justify-self: center;
   max-width: calc(50% - 8px);
 }
