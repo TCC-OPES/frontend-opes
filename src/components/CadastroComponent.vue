@@ -9,7 +9,7 @@ const form = ref({
   senha: ''
 });
 
-// CPF formatado
+
 const cpfFormatado = computed({
   get() {
     return form.value.cpf;
@@ -27,19 +27,60 @@ const cpfFormatado = computed({
   }
 });
 
-// Mostrar senha
+
 const mostrarSenha = ref(false);
 
-// Submit
-const submitForm = () => {
-  console.log(form.value);
+
+const carregando = ref(false);
+
+
+const submitForm = async () => {
+  carregando.value = true;
+
+  try {
+    const response = await fetch('http://127.0.0.1:8000/api/cadastro/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        cpf: form.value.cpf.replace(/\D/g, ''),
+        nome_completo: form.value.nome,
+        telefone: form.value.telefone,
+        email: form.value.email,
+        senha: form.value.senha
+      })
+    });
+
+        const data = await response.json();
+        alert(JSON.stringify(data));
+
+    if (response.ok) {
+      alert('Conta criada com sucesso!');
+
+      form.value = {
+        cpf: '',
+        nome_completo: '',
+        telefone: '',
+        email: '',
+        senha: ''
+      };
+    } else {
+      alert(data.erro || 'Erro ao cadastrar.');
+    }
+
+  } catch (error) {
+    console.error(error);
+    alert('Erro ao conectar com o servidor.');
+  } finally {
+    carregando.value = false;
+  }
 };
 </script>
 
 <template>
   <div class="page">
 
-    <!-- FORM -->
     <div class="card">
       <h1>Criar Conta</h1>
       <p class="subtitulo">Preencha seus dados para começar</p>
@@ -47,39 +88,55 @@ const submitForm = () => {
       <form class="formulario" @submit.prevent="submitForm">
         <div class="all">
 
-          <!-- CPF -->
+
           <div class="input-group">
             <label>CPF</label>
             <div class="input-wrapper">
               <span class="fa-solid fa-address-card"></span>
-              <input v-model="cpfFormatado" inputmode="numeric" placeholder="000.000.000-00">
+              <input
+                v-model="cpfFormatado"
+                inputmode="numeric"
+                placeholder="000.000.000-00"
+              >
             </div>
           </div>
 
-          <!-- Nome -->
+
           <div class="input-group">
             <label>Nome Completo</label>
             <div class="input-wrapper">
               <span class="fa-solid fa-user"></span>
-              <input v-model="form.nome" type="text" autocomplete="name">
+              <input
+                v-model="form.nome"
+                type="text"
+                autocomplete="name"
+              >
             </div>
           </div>
 
-          <!-- Telefone -->
+
           <div class="input-group">
             <label>Telefone</label>
             <div class="input-wrapper">
               <span class="fa-regular fa-address-book"></span>
-              <input v-model="form.telefone" type="tel" inputmode="numeric" placeholder="(00) 00000-0000">
+              <input
+                v-model="form.telefone"
+                type="tel"
+                placeholder="(00) 00000-0000"
+              >
             </div>
           </div>
 
-          <!-- Email -->
+
           <div class="input-group">
             <label>Email</label>
             <div class="input-wrapper">
               <span class="fa-solid fa-envelope"></span>
-              <input v-model="form.email" type="email" autocomplete="email">
+              <input
+                v-model="form.email"
+                type="email"
+                autocomplete="email"
+              >
             </div>
           </div>
 
@@ -104,8 +161,8 @@ const submitForm = () => {
 
         </div>
 
-        <button type="submit" class="enviar">
-          Criar Conta
+        <button type="submit" class="enviar" :disabled="carregando">
+          {{ carregando ? 'Criando conta...' : 'Criar Conta' }}
         </button>
       </form>
 
@@ -122,24 +179,21 @@ const submitForm = () => {
 </template>
 
 <style scoped>
-/* FUNDO */
 :global(body) {
   background-color: #f3f4f6;
   margin: 0;
   font-family: Arial, sans-serif;
 }
 
-/* LAYOUT */
 .page {
   display: flex;
   min-height: 100vh;
 }
 
-/* CARD */
 .card {
   background-color: white;
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
   text-align: center;
   width: 100%;
   max-width: 500px;
@@ -147,22 +201,6 @@ const submitForm = () => {
   padding: 24px;
 }
 
-/* LADO DIREITO */
-.lado-direito {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #4a90d9, #2563eb);
-}
-
-.lado-direito img {
-  width: 250px;
-  max-width: 80%;
-  opacity: 0.9;
-}
-
-/* TEXTOS */
 h1 {
   font-size: 24px;
   font-weight: bold;
@@ -175,7 +213,6 @@ h1 {
   margin-bottom: 24px;
 }
 
-/* FORM */
 .formulario {
   display: flex;
   flex-direction: column;
@@ -183,14 +220,12 @@ h1 {
   text-align: left;
 }
 
-/* GRID */
 .all {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
 }
 
-/* INPUT GROUP */
 .input-group {
   display: flex;
   flex-direction: column;
@@ -203,7 +238,6 @@ label {
   color: #374151;
 }
 
-/* INPUT */
 .input-wrapper {
   position: relative;
   display: flex;
@@ -235,12 +269,10 @@ input:focus {
   background-color: #fff;
 }
 
-/* SENHA ocupa 2 colunas */
 .senha {
   grid-column: span 2;
 }
 
-/* BOTÕES */
 .enviar {
   background-color: #006400;
   color: white;
@@ -256,6 +288,11 @@ input:focus {
 
 .enviar:hover {
   background-color: #228B22;
+}
+
+.enviar:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .btn-login {
@@ -283,7 +320,8 @@ input:focus {
   font-size: 14px;
 }
 
-.divisor::before, .divisor::after {
+.divisor::before,
+.divisor::after {
   content: '';
   flex: 1;
   border-bottom: 1px solid #e5e7eb;
@@ -293,13 +331,10 @@ input:focus {
   padding: 0 10px;
 }
 
-/* 📱 MOBILE */
 @media (max-width: 768px) {
   .page {
-    flex-direction: column;
     padding: 16px;
   }
-
 
   .all {
     grid-template-columns: 1fr;
