@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed } from 'vue'
+import axios from 'axios'
 
 const form = ref({
   cpf: '',
@@ -7,75 +8,56 @@ const form = ref({
   telefone: '',
   email: '',
   senha: ''
-});
+})
 
+const carregando = ref(false)
 
 const cpfFormatado = computed({
   get() {
-    return form.value.cpf;
+    return form.value.cpf
   },
   set(valor) {
-    let v = valor.replace(/\D/g, '');
+    let v = valor.replace(/\D/g, '')
 
-    if (v.length > 11) v = v.slice(0, 11);
+    if (v.length > 11) v = v.slice(0, 11)
 
-    v = v.replace(/(\d{3})(\d)/, '$1.$2');
-    v = v.replace(/(\d{3})(\d)/, '$1.$2');
-    v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    v = v.replace(/(\d{3})(\d)/, '$1.$2')
+    v = v.replace(/(\d{3})(\d)/, '$1.$2')
+    v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2')
 
-    form.value.cpf = v;
+    form.value.cpf = v
   }
-});
+})
 
-
-const mostrarSenha = ref(false);
-
-
-const carregando = ref(false);
-
-
-const submitForm = async () => {
-  carregando.value = true;
+async function submitForm() {
+  carregando.value = true
 
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/cadastro/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        cpf: form.value.cpf.replace(/\D/g, ''),
-        nome_completo: form.value.nome,
-        telefone: form.value.telefone,
-        email: form.value.email,
-        senha: form.value.senha
-      })
-    });
+    await axios.post('http://127.0.0.1:8000/api/cadastro/', {
+      cpf: form.value.cpf.replace(/\D/g, ''),
+      nome: form.value.nome,        // 🔥 nome correto
+      telefone: form.value.telefone,
+      email: form.value.email,
+      password: form.value.senha    // 🔥 password correto
+    })
 
-        const data = await response.json();
-        alert(JSON.stringify(data));
+    alert('Conta criada com sucesso!')
 
-    if (response.ok) {
-      alert('Conta criada com sucesso!');
-
-      form.value = {
-        cpf: '',
-        nome_completo: '',
-        telefone: '',
-        email: '',
-        senha: ''
-      };
-    } else {
-      alert(data.erro || 'Erro ao cadastrar.');
+    form.value = {
+      cpf: '',
+      nome: '',
+      telefone: '',
+      email: '',
+      senha: ''
     }
 
   } catch (error) {
-    console.error(error);
-    alert('Erro ao conectar com o servidor.');
+    console.log(error)
+    alert('Erro ao cadastrar')
   } finally {
-    carregando.value = false;
+    carregando.value = false
   }
-};
+}
 </script>
 
 <template>
