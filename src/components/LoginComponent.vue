@@ -47,12 +47,12 @@ async function login() {
   try {
     const response = await axios.post('http://127.0.0.1:8000/api/login/', {
       cpf: form.value.cpf.replace(/\D/g, ''),
-      senha: form.value.senha
+      password: form.value.senha // 🔥 CORRETO
     })
 
-    const token = response.data.token
-
-    localStorage.setItem('token', token)
+    // 🔥 JWT correto
+    localStorage.setItem('access', response.data.access)
+    localStorage.setItem('refresh', response.data.refresh)
 
     sucesso.value = 'Login realizado com sucesso!'
 
@@ -61,10 +61,7 @@ async function login() {
     }, 800)
 
   } catch (error) {
-    console.log(error)
-
     const msg =
-      error.response?.data?.erro ||
       error.response?.data?.detail ||
       'CPF ou senha inválidos'
 
