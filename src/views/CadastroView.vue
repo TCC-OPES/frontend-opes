@@ -239,7 +239,11 @@ h1 {
   min-height: 100vh;
   padding: 0 60px;
   gap: 10px;
-  background: #f3f4f6;
+   background: linear-gradient(
+    135deg,
+    rgba(224, 242, 241, 1) 0%,
+    rgba(178, 223, 219, 1) 100%
+  );
 }
 
 .lado-imagem {
