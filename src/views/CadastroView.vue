@@ -233,30 +233,35 @@ h1 {
   }
 }
 .page {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1.3fr 0.9fr;
+  align-items: center;
   min-height: 100vh;
-  align-items: center; /* alinha vertical os dois lados */
+  padding: 0 60px;
+  gap: 10px;
+  background: #f3f4f6;
 }
 
 .lado-imagem {
-  flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  justify-content: flex-start; /* joga pra esquerda */
+  align-items: center;         /* centraliza no meio */
+  padding-left: 40px;
 }
 
 .lado-imagem img {
-  width: 75%;
-  max-width: 800px;
+  width: 135%;
+  max-width: 1300px;
   height: auto;
-  margin:  0 9px 5px 1px/* 👈 MOVE PRA DIREITA DE VERDADE */
+  transform: translate(-310px, -60px); /* move mais pra esquerda */
 }
 
-/* Lado direito */
-.card {
-  flex: 1;
+/* card */
+.page > *:last-child {
+  justify-self: start; /* puxa pra esquerda */
+  width: 100%;
+  max-width: 500px;
 }
-
 /* Responsivo */
 @media (max-width: 768px) {
   .lado-imagem {
