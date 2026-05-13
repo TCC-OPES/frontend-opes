@@ -1,25 +1,17 @@
-const API_URL = "http://127.0.0.1:8000/api/";
+import axios from "axios";
 
-export async function login(dados) {
-  const response = await fetch(`${API_URL}/login/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(dados),
-  });
+const api = axios.create({
+  baseURL: "http://127.0.0.1:8000/api/",
+});
 
-  return await response.json();
-}
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("access");
 
-export async function cadastro(dados) {
-  const response = await fetch(`${API_URL}/cadastro/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(dados),
-  });
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
 
-  return await response.json();
-}
+  return config;
+});
+
+export default api;
