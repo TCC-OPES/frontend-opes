@@ -1,10 +1,12 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 import HeaderLogin from './HeaderLogin.vue'
 import BaseInput from './BaseInput.vue'
 
 const router = useRouter()
+const carregando = ref(false)
 
 const form = ref({
   cpf: '',
@@ -18,6 +20,7 @@ const cpfFormatado = computed({
   },
   set(valor) {
     let v = valor.replace(/\D/g, '')
+
     if (v.length > 11) v = v.slice(0, 11)
 
     v = v.replace(/(\d{3})(\d)/, '$1.$2')
@@ -28,13 +31,34 @@ const cpfFormatado = computed({
   }
 })
 
-function login() {
+async function login() {
   if (!form.value.cpf || !form.value.senha) {
     alert('Preencha todos os campos!')
     return
   }
 
-  router.push('/dashboard')
+  carregando.value = true
+
+  try {
+    const response = await axios.post('http://127.0.0.1:8000/api/login/', {
+      cpf: form.value.cpf.replace(/\D/g, ''),
+      password: form.value.senha
+    })
+
+    console.log('Login realizado com sucesso:', response.data)
+
+    router.push('/dashboard')
+
+  } catch (error) {
+    console.error('Erro no login:', error)
+    if (error.response) {
+      alert(error.response.data.error || 'CPF ou senha incorretos')
+    } else {
+      alert('Não foi possível conectar ao servidor')
+    }
+  } finally {
+    carregando.value = false
+  }
 }
 </script>
 
