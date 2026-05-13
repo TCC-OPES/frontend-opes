@@ -9,6 +9,7 @@
 .welcome h1 {
   font-size: 32px;
   margin-bottom: 10px;
+  color: black;
 }
 
 .welcome p {
