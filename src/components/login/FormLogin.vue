@@ -72,7 +72,7 @@ function login() {
 
     <div class="criar">
       Não tem uma conta?
-      <a href="#">Criar conta</a>
+      <a href="/cadastro">Criar conta</a>
     </div>
   </div>
 </template>
@@ -98,11 +98,16 @@ button {
   padding: 18px;
   border: none;
   border-radius: 14px;
-  background: #059669;
+  background: #006400;
   color: white;
   font-weight: bold;
   cursor: pointer;
 }
+
+button:hover {
+  background: #228B22;
+}
+
 
 .criar {
   margin-top: 25px;

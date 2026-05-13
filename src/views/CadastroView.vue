@@ -248,8 +248,8 @@ h1 {
 
 .lado-imagem {
   display: flex;
-  justify-content: flex-start; /* joga pra esquerda */
-  align-items: center;         /* centraliza no meio */
+  justify-content: flex-start;
+  align-items: center;
   padding-left: 40px;
 }
 
@@ -257,16 +257,16 @@ h1 {
   width: 135%;
   max-width: 1300px;
   height: auto;
-  transform: translate(-310px, -60px); /* move mais pra esquerda */
+  transform: translate(-310px, -60px);
 }
 
-/* card */
+
 .page > *:last-child {
-  justify-self: start; /* puxa pra esquerda */
+  justify-self: start;
   width: 100%;
   max-width: 500px;
 }
-/* Responsivo */
+
 @media (max-width: 768px) {
   .lado-imagem {
     display: none;
