@@ -11,70 +11,68 @@ const mostrarSenha = ref(false)
 </script>
 
 <template>
-  <div class="input-group senha">
+  <div class="input-group senha full-width">
     <label>{{ label }}</label>
 
     <div class="input-wrapper">
       <span
-        class="fa-solid"
+        class="fa-solid eye-toggle"
         :class="mostrarSenha ? 'fa-eye-slash' : 'fa-eye'"
         @click="mostrarSenha = !mostrarSenha"
-        style="cursor: pointer;"
       ></span>
 
       <input
         :type="mostrarSenha ? 'text' : 'password'"
         :value="modelValue"
         @input="emit('update:modelValue', $event.target.value)"
+        placeholder="••••••••"
       >
     </div>
   </div>
 </template>
+
 <style scoped>
+/* FAZ O CAMPO OCUPAR TODAS AS COLUNAS */
+.full-width {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
 .input-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-}
-
-.senha {
-  grid-column: span 2;
-}
-
-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #374151;
+  gap: 6px;
 }
 
 .input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
-.input-wrapper span {
+.eye-toggle {
   position: absolute;
   left: 14px;
   color: #9ca3af;
+  cursor: pointer;
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+  height: 100%;
 }
 
 input {
   width: 100%;
-  padding: 12px 10px 12px 40px;
+  padding: 14px 10px 14px 45px;
+
   border-radius: 12px;
   border: 1px solid #e5e7eb;
+
   background-color: #f9fafb;
   font-size: 16px;
-}
 
-.input-wrapper:focus-within span {
-  color: #2563EB;
-}
-
-input:focus {
-  outline: none;
-  border-color: #2563EB;
-  background-color: #fff;
+  box-sizing: border-box;
 }
 </style>
