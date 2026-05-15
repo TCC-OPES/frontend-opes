@@ -1,11 +1,14 @@
 <script setup>
-defineProps({
+import { computed } from 'vue'
+
+const props = defineProps({
   label: String,
   modelValue: String,
   type: {
     type: String,
     default: 'text'
   },
+  name: String,
   icon: String,
   placeholder: String,
   maxlength: [String, Number]
@@ -13,20 +16,19 @@ defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
+const isNumericField = computed(() => {
+  const target = (props.name || props.label || '').toLowerCase()
+  return target.includes('cpf') ||
+         target.includes('tel') ||
+         target.includes('fone') ||
+         props.type === 'tel'
+})
 
 function blockNonNumbers(event) {
-  const allowedKeys = [
-    'Backspace',
-    'Delete',
-    'ArrowLeft',
-    'ArrowRight',
-    'Tab',
-    'Enter'
-  ]
+  if (!isNumericField.value) return
 
-
+  const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter']
   if (allowedKeys.includes(event.key)) return
-
 
   if (!/[0-9]/.test(event.key)) {
     event.preventDefault()
@@ -34,7 +36,11 @@ function blockNonNumbers(event) {
 }
 
 function handleInput(event) {
-  let value = event.target.value.replace(/\D/g, '')
+  let value = event.target.value
+
+  if (isNumericField.value) {
+    value = value.replace(/\D/g, '')
+  }
 
   emit('update:modelValue', value)
 }
@@ -42,17 +48,17 @@ function handleInput(event) {
 
 <template>
   <div class="input-group">
-    <label>{{ label }}</label>
+    <label v-if="label">{{ label }}</label>
 
     <div class="input-wrapper">
-      <span :class="icon"></span>
+      <span v-if="icon" :class="icon"></span>
 
       <input
         :type="type"
         :placeholder="placeholder"
         :value="modelValue"
         :maxlength="maxlength"
-        inputmode="numeric"
+        :inputmode="isNumericField ? 'numeric' : 'text'"
         @keydown="blockNonNumbers"
         @input="handleInput"
       />
