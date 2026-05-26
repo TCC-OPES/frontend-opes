@@ -1,8 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import axios from 'axios'
 
 const dadosUsuario = ref(null)
 const observador = ref(null)
+const fileInput = ref(null) // Referência para o input escondido
 
 const carregarPerfil = async () => {
   await new Promise(resolve => setTimeout(resolve, 600))
@@ -12,7 +14,80 @@ const carregarPerfil = async () => {
     telefone: '(47) 98926-5959',
     cpf: '123.456.789-00',
     nascimento: '18/08/2009',
-    localizacao: 'Itinga, SC'
+    localizacao: 'Itinga, SC',
+    fotoUrl: null // Inicialmente nulo (vai mostrar as iniciais)
+  }
+}
+
+// Função para abrir a janela de seleção de arquivo do computador
+const abrirSeletorArquivo = () => {
+  fileInput.value.click()
+}
+
+const aoSelecionarFoto = async (event) => {
+  const arquivo = event.target.files[0]
+  if (!arquivo) return
+
+  const formData = new FormData()
+  formData.append('foto', arquivo)
+
+  // 1. SUPER VARREDURA: Procura em absolutamente todas as chaves do navegador
+  let token = null;
+
+  // Vasculha o localStorage
+  for (let i = 0; i < localStorage.length; i++) {
+    const chave = localStorage.key(i);
+    const valor = localStorage.getItem(chave);
+    // Se o valor começar com o padrão de Token JWT (eyJh...), nós encontramos!
+    if (valor && valor.includes('eyJh')) {
+      token = valor;
+      break;
+    }
+  }
+
+  // Se não achou no localStorage, vasculha o sessionStorage
+  if (!token) {
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const chave = sessionStorage.key(i);
+      const valor = sessionStorage.getItem(chave);
+      if (valor && valor.includes('eyJh')) {
+        token = valor;
+        break;
+      }
+    }
+  }
+
+  // Se o token foi encontrado em formato JSON complexo, limpa as aspas
+  if (token) {
+    token = token.replace(/^"+|"+$/g, '');
+    // Caso o token esteja envelopado em um objeto string (ex: {"access":"ey..."})
+    if (token.startsWith('{')) {
+      try {
+        const obj = JSON.parse(token);
+        token = obj.access || obj.token || obj.accessToken || Object.values(obj)[0];
+      } catch(e) {}
+    }
+  }
+
+  console.log("TOKEN CAPTURADO NA VARREDURA:", token);
+
+  try {
+    // 2. Faz o envio com o padrão 'Bearer' que o Django exigiu
+    const resposta = await axios.post('http://localhost:8000/api/perfil/foto/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${token}` // Voltamos para Bearer
+      }
+    })
+
+    if (dadosUsuario.value) {
+      dadosUsuario.value.fotoUrl = resposta.data.foto_url
+    }
+    alert('Foto de perfil atualizada com sucesso!');
+
+  } catch (error) {
+    console.error('ERRO REAL DO SERVIDOR:', error.response?.data || error)
+    alert('Erro ao salvar a foto. Verifique o console do navegador.')
   }
 }
 
@@ -38,7 +113,7 @@ onMounted(async () => {
       <header class="header-perfil animar">
         <div>
           <h1>Meu <span class="texto-gradiente">Perfil</span></h1>
-          <p>Gerencie suas informações e preferências de conta.</p>
+          <p>Gerencie suas informações e preferences de conta.</p>
         </div>
         <button class="botao-principal">✏️ Editar Perfil</button>
       </header>
@@ -47,11 +122,25 @@ onMounted(async () => {
         <aside class="coluna-lateral animar">
           <div class="cartao-perfil centro">
             <div class="avatar-container">
+
               <div class="avatar-circulo">
-                {{ dadosUsuario.nome.split(' ').map(n => n[0]).join('').toUpperCase() }}
+                <img v-if="dadosUsuario.fotoUrl" :src="dadosUsuario.fotoUrl" alt="Foto de Perfil" class="foto-renderizada" />
+                <span v-else>
+                  {{ dadosUsuario.nome.split(' ').map(n => n[0]).join('').toUpperCase() }}
+                </span>
               </div>
-              <button class="btn-foto">📷</button>
+
+              <button class="btn-foto" @click="abrirSeletorArquivo">📷</button>
+
+              <input
+                type="file"
+                ref="fileInput"
+                style="display: none"
+                accept="image/*"
+                @change="aoSelecionarFoto"
+              />
             </div>
+
             <h2>{{ dadosUsuario.nome }}</h2>
             <p class="email-texto">{{ dadosUsuario.email }}</p>
             <span class="badge-status">● Conta Ativa</span>
@@ -101,6 +190,13 @@ onMounted(async () => {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+
+.foto-renderizada {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
 
 .pagina-perfil {
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -193,6 +289,7 @@ h1 {
   justify-content: center;
   font-size: 2rem;
   font-weight: 800;
+  overflow: hidden;
 }
 
 .btn-foto {
@@ -205,6 +302,10 @@ h1 {
   width: 32px;
   height: 32px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .titulo-secao {
