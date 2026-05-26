@@ -26,71 +26,53 @@ const abrirSeletorArquivo = () => {
 
 const aoSelecionarFoto = async (event) => {
   const arquivo = event.target.files[0]
+
   if (!arquivo) return
 
   const formData = new FormData()
   formData.append('foto', arquivo)
 
-  // 1. SUPER VARREDURA: Procura em absolutamente todas as chaves do navegador
-  let token = null;
+  // Pega diretamente o access token salvo no login
+  const token = localStorage.getItem('access')
 
-  // Vasculha o localStorage
-  for (let i = 0; i < localStorage.length; i++) {
-    const chave = localStorage.key(i);
-    const valor = localStorage.getItem(chave);
-    // Se o valor começar com o padrão de Token JWT (eyJh...), nós encontramos!
-    if (valor && valor.includes('eyJh')) {
-      token = valor;
-      break;
-    }
-  }
+  console.log('TOKEN ENVIADO:', token)
 
-  // Se não achou no localStorage, vasculha o sessionStorage
+  // Verifica se existe token
   if (!token) {
-    for (let i = 0; i < sessionStorage.length; i++) {
-      const chave = sessionStorage.key(i);
-      const valor = sessionStorage.getItem(chave);
-      if (valor && valor.includes('eyJh')) {
-        token = valor;
-        break;
-      }
-    }
+    alert('Usuário não autenticado.')
+    return
   }
-
-  // Se o token foi encontrado em formato JSON complexo, limpa as aspas
-  if (token) {
-    token = token.replace(/^"+|"+$/g, '');
-    // Caso o token esteja envelopado em um objeto string (ex: {"access":"ey..."})
-    if (token.startsWith('{')) {
-      try {
-        const obj = JSON.parse(token);
-        token = obj.access || obj.token || obj.accessToken || Object.values(obj)[0];
-      } catch(e) {}
-    }
-  }
-
-  console.log("TOKEN CAPTURADO NA VARREDURA:", token);
 
   try {
-    // 2. Faz o envio com o padrão 'Bearer' que o Django exigiu
-    const resposta = await axios.post('http://localhost:8000/api/perfil/foto/', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        'Authorization': `Bearer ${token}` // Voltamos para Bearer
+    const resposta = await axios.post(
+      'http://localhost:8000/api/perfil/foto/',
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       }
-    })
+    )
 
+    // Atualiza foto na tela
     if (dadosUsuario.value) {
       dadosUsuario.value.fotoUrl = resposta.data.foto_url
     }
-    alert('Foto de perfil atualizada com sucesso!');
+
+    alert('Foto de perfil atualizada com sucesso!')
 
   } catch (error) {
     console.error('ERRO REAL DO SERVIDOR:', error.response?.data || error)
-    alert('Erro ao salvar a foto. Verifique o console do navegador.')
+
+    // Se token expirou
+    if (error.response?.data?.code === 'token_not_valid') {
+      alert('Sua sessão expirou. Faça login novamente.')
+      return
+    }
+
+    alert('Erro ao salvar a foto.')
   }
 }
-
 onMounted(async () => {
   await carregarPerfil()
 
@@ -123,12 +105,18 @@ onMounted(async () => {
           <div class="cartao-perfil centro">
             <div class="avatar-container">
 
-              <div class="avatar-circulo">
-                <img v-if="dadosUsuario.fotoUrl" :src="dadosUsuario.fotoUrl" alt="Foto de Perfil" class="foto-renderizada" />
-                <span v-else>
-                  {{ dadosUsuario.nome.split(' ').map(n => n[0]).join('').toUpperCase() }}
-                </span>
-              </div>
+             <div class="avatar-circulo" @click="abrirSeletorArquivo">
+              <img
+                v-if="dadosUsuario.fotoUrl"
+                :src="dadosUsuario.fotoUrl"
+                alt="Foto de Perfil"
+                class="foto-renderizada"
+              />
+
+      <span v-else>
+    {{ dadosUsuario.nome.split(' ').map(n => n[0]).join('').toUpperCase() }}
+      </span>
+            </div>
 
               <button class="btn-foto" @click="abrirSeletorArquivo">📷</button>
 
@@ -290,6 +278,8 @@ h1 {
   font-size: 2rem;
   font-weight: 800;
   overflow: hidden;
+  cursor: pointer;
+  transition: 0.2s ease;
 }
 
 .btn-foto {
