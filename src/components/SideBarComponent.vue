@@ -8,7 +8,7 @@
       <a href="#" class="menu-item active">
         <i class="fas fa-chart-pie"></i> Dashboard
       </a>
-      
+
       <a href="#" class="menu-item"><i class="fas fa-exchange-alt"></i> Transações</a>
       <a href="#" class="menu-item"><i class="fas fa-wallet"></i> Carteiras</a>
       <a href="#" class="menu-item"><i class="fas fa-credit-card"></i> Cartões</a>
@@ -29,8 +29,7 @@
 </template>
 
 <script setup>
-// Se a sua telinha de perfil for um componente separado, você pode importá-la aqui:
-// import MeuPerfil from './MeuPerfil.vue'
+//importar o component do perfil quando for pra dev 
 </script>
 
 <style scoped>
