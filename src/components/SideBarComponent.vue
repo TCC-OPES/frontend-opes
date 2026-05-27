@@ -17,19 +17,74 @@
       <a href="#" class="menu-item"><i class="fas fa-users"></i> Família</a>
     </nav>
 
-    <div class="user-profile">
-      <div class="avatar">JD</div>
+    <button @click="irParaPerfil" class="user-profile-btn" aria-label="Acessar perfil">
+      <div class="avatar">
+        {{ obterIniciais(usuario.nome) }}
+      </div>
       <div class="user-info">
-        <h4>João Silva</h4>
+        <h4>{{ usuario.nome || 'Carregando...' }}</h4>
         <p>Ver perfil</p>
       </div>
-      <i class="fas fa-chevron-right"></i>
-    </div>
+      <i class="fas fa-chevron-right arrow-icon"></i>
+    </button>
   </aside>
 </template>
 
 <script setup>
-//importar o component do perfil quando for pra dev 
+import { ref, onMounted } from 'vue';
+// import PerfilComponent from './component/PerfilComponent.vue'; // Se for usar localmente mais tarde
+
+// Estado reativo para armazenar os dados do usuário vindos do backend
+const usuario = ref({
+  nome: '',
+  email: ''
+});
+
+// Função para buscar os dados do backend
+const buscarDadosUsuario = async () => {
+  try {
+    // Substitua a URL abaixo pela rota real da sua API
+    const resposta = await fetch('https://api.seu-sistema.com/usuario/perfil', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        // Geralmente rotas de perfil exigem autenticação:
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+
+    if (!resposta.ok) throw new Error('Erro ao buscar dados do usuário');
+
+    const dados = await resposta.json();
+    usuario.value = dados; // Atualiza o estado com o nome/dados reais do cadastro
+  } catch (error) {
+    console.error('Erro na requisição:', error);
+    // Fallback caso a API falhe (opcional)
+    usuario.value = { nome: 'Usuário', email: '' };
+  }
+};
+
+// Executa a busca assim que o componente é renderizado na tela
+onMounted(() => {
+  buscarDadosUsuario();
+});
+
+// Função para gerar as iniciais do avatar dinamicamente (ex: "João Silva" -> "JS")
+const obterIniciais = (nome) => {
+  if (!nome) return '?';
+  const partes = nome.trim().split(' ');
+  if (partes.length > 1) {
+    return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
+  }
+  return partes[0][0].toUpperCase();
+};
+
+// Ação do botão ao ser clicado
+const irParaPerfil = () => {
+  console.log('Navegando para o perfil do usuário...');
+  // Se estiver usando o Vue Router, você faria algo como:
+  // router.push('/perfil');
+};
 </script>
 
 <style scoped>
@@ -53,12 +108,6 @@
   color: #1e293b;
 }
 
-.logo-icon {
-  background-color: #1b7339;
-  color: white;
-  padding: 4px 10px;
-  border-radius: 8px;
-}
 
 .menu {
   display: flex;
@@ -90,14 +139,29 @@
   color: white;
 }
 
-.user-profile {
+/* Transformado de div para button com resets de estilo CSS nativos */
+.user-profile-btn {
   display: flex;
   align-items: center;
+  text-align: left;
   gap: 12px;
   padding: 12px;
   background-color: #f8fafc;
+  border: 1px solid transparent;
   border-radius: 12px;
   cursor: pointer;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.user-profile-btn:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.user-profile-btn:focus {
+  outline: 2px solid #0b5ed7;
+  outline-offset: 2px;
 }
 
 .avatar {
@@ -110,15 +174,26 @@
   align-items: center;
   justify-content: center;
   font-weight: bold;
+  flex-shrink: 0; /* Impede o avatar de amassar se o texto for grande */
+}
+
+.user-info {
+  flex-grow: 1;
 }
 
 .user-info h4 {
   font-size: 0.9rem;
   color: #1e293b;
+  margin: 0;
 }
 
 .user-info p {
   font-size: 0.8rem;
   color: #94a3b8;
+  margin: 2px 0 0 0;
+}
+
+.arrow-icon {
+  color: #64748b;
 }
 </style>

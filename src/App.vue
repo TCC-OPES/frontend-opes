@@ -1,8 +1,9 @@
-<script>
-
-</script>
 <template>
-  <router-view />
+  <div style="display: flex;">
+    <Sidebar />
+
+    <main style="flex-grow: 1; padding: 20px;">
+      <router-view />
+    </main>
+  </div>
 </template>
-<style scoped>
-</style>
