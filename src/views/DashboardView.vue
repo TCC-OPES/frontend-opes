@@ -50,6 +50,7 @@
     </div>
 
   </div>
+  <PerfilComponent />
 </template>
 
 <script setup>

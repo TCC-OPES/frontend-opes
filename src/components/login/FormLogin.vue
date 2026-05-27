@@ -40,22 +40,39 @@ async function login() {
   carregando.value = true
 
   try {
-    const response = await axios.post('http://127.0.0.1:8000/api/login/', {
-      cpf: form.value.cpf.replace(/\D/g, ''),
-      password: form.value.senha
-    })
+    const response = await axios.post(
+      'http://127.0.0.1:8000/api/login/',
+      {
+        cpf: form.value.cpf.replace(/\D/g, ''),
+        password: form.value.senha
+      }
+    )
 
     console.log('Login realizado com sucesso:', response.data)
+
+    // SALVA OS TOKENS
+    localStorage.setItem('access', response.data.access)
+    localStorage.setItem('refresh', response.data.refresh)
+
+    // OPCIONAL: salvar dados do usuário
+    if (response.data.usuario) {
+      localStorage.setItem(
+        'usuario',
+        JSON.stringify(response.data.usuario)
+      )
+    }
 
     router.push('/dashboard')
 
   } catch (error) {
     console.error('Erro no login:', error)
+
     if (error.response) {
       alert(error.response.data.error || 'CPF ou senha incorretos')
     } else {
       alert('Não foi possível conectar ao servidor')
     }
+
   } finally {
     carregando.value = false
   }
