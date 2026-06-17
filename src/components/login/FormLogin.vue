@@ -1,10 +1,12 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 import HeaderLogin from './HeaderLogin.vue'
 import BaseInput from './BaseInput.vue'
 
 const router = useRouter()
+const carregando = ref(false)
 
 const form = ref({
   cpf: '',
@@ -18,6 +20,7 @@ const cpfFormatado = computed({
   },
   set(valor) {
     let v = valor.replace(/\D/g, '')
+
     if (v.length > 11) v = v.slice(0, 11)
 
     v = v.replace(/(\d{3})(\d)/, '$1.$2')
@@ -28,13 +31,51 @@ const cpfFormatado = computed({
   }
 })
 
-function login() {
+async function login() {
   if (!form.value.cpf || !form.value.senha) {
     alert('Preencha todos os campos!')
     return
   }
 
-  router.push('/dashboard')
+  carregando.value = true
+
+  try {
+    const response = await axios.post(
+      'http://127.0.0.1:8000/api/login/',
+      {
+        cpf: form.value.cpf.replace(/\D/g, ''),
+        password: form.value.senha
+      }
+    )
+
+    console.log('Login realizado com sucesso:', response.data)
+
+    // SALVA OS TOKENS
+    localStorage.setItem('access', response.data.access)
+    localStorage.setItem('refresh', response.data.refresh)
+
+    // OPCIONAL: salvar dados do usuário
+    if (response.data.usuario) {
+      localStorage.setItem(
+        'usuario',
+        JSON.stringify(response.data.usuario)
+      )
+    }
+
+    router.push('/dashboard')
+
+  } catch (error) {
+    console.error('Erro no login:', error)
+
+    if (error.response) {
+      alert(error.response.data.error || 'CPF ou senha incorretos')
+    } else {
+      alert('Não foi possível conectar ao servidor')
+    }
+
+  } finally {
+    carregando.value = false
+  }
 }
 </script>
 
@@ -72,7 +113,7 @@ function login() {
 
     <div class="criar">
       Não tem uma conta?
-      <a href="#">Criar conta</a>
+      <a href="/cadastro">Criar conta</a>
     </div>
   </div>
 </template>
@@ -98,14 +139,20 @@ button {
   padding: 18px;
   border: none;
   border-radius: 14px;
-  background: #059669;
+  background: #006400;
   color: white;
   font-weight: bold;
   cursor: pointer;
 }
 
+button:hover {
+  background: #228B22;
+}
+
+
 .criar {
   margin-top: 25px;
   text-align: center;
 }
+
 </style>
