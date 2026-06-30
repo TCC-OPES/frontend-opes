@@ -55,7 +55,7 @@
 
 <script setup>
 import HeaderComponent from '@/components/HeaderComponent.vue';
-import SideBarComponent from '@/components/SideBarComponent.vue';
+import SideBarComponent from '@/components/global/SideBarComponent.vue';
 </script>
 
 <style scoped>
