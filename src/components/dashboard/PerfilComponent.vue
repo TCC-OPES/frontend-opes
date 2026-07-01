@@ -5,12 +5,12 @@ const dadosUsuario = ref(null)
 const observador = ref(null)
 const fileInput = ref(null)
 
-// Busca os dados reais do seu backend usando a rota correta /api/me/
+
 const carregarPerfil = async () => {
   try {
     const resposta = await api.get('me/')
 
-    // Acessa a chave "data" onde o seu backend envelopa a resposta
+
     const dadosDoBack = resposta.data.data
 
     dadosUsuario.value = {
@@ -36,7 +36,7 @@ const abrirSeletorArquivo = () => {
   fileInput.value.click()
 }
 
-// Envia a foto usando a rota correta /api/perfil/foto/
+
 const aoSelecionarFoto = async (event) => {
   const arquivo = event.target.files[0]
   if (!arquivo) return

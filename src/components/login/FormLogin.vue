@@ -41,7 +41,7 @@ async function login() {
 
   try {
     const response = await axios.post(
-      'https://opes.class.fabricadesoftware.ifc.edu.br/api/login/',
+      'http://127.0.0.1:8000/api/login/',
       {
         cpf: form.value.cpf.replace(/\D/g, ''),
         password: form.value.senha
