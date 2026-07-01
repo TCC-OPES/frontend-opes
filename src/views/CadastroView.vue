@@ -52,7 +52,7 @@ async function submitForm() {
   carregando.value = true
 
   try {
-    await axios.post('https://opes.class.fabricadesoftware.ifc.edu.br/api/cadastro/', {
+    await axios.post('http://127.0.0.1:8000/api/cadastro/', {
       cpf: form.value.cpf.replace(/\D/g, ''),
       nome: form.value.nome,
       telefone: form.value.telefone.replace(/\D/g, ''),

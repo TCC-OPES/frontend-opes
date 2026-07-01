@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import api from '@/services/api'
 import HeaderLogin from './HeaderLogin.vue'
 import BaseInput from './BaseInput.vue'
 
@@ -40,13 +40,10 @@ async function login() {
   carregando.value = true
 
   try {
-    const response = await axios.post(
-      'http://127.0.0.1:8000/api/login/',
-      {
-        cpf: form.value.cpf.replace(/\D/g, ''),
-        password: form.value.senha
-      }
-    )
+    const response = await api.post('login/', {
+      cpf: form.value.cpf.replace(/\D/g, ''),
+      password: form.value.senha
+    })
 
     console.log('Login realizado com sucesso:', response.data)
 
@@ -149,10 +146,8 @@ button:hover {
   background: #228B22;
 }
 
-
 .criar {
   margin-top: 25px;
   text-align: center;
 }
-
 </style>
