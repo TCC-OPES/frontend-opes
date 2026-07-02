@@ -7,7 +7,6 @@ import FormInput from '../components/cadastro/FormInput.vue'
 import PasswordInput from '../components/cadastro/PasswordInput.vue'
 import imagem from '@/img/icon.relogio.renovado.png'
 
-
 const form = ref({
   cpf: '',
   nome: '',
@@ -33,7 +32,6 @@ const cpfFormatado = computed({
   }
 })
 
-
 const telefoneFormatado = computed({
   get() {
     return form.value.telefone
@@ -52,10 +50,12 @@ async function submitForm() {
   carregando.value = true
 
   try {
-    await axios.post('http://127.0.0.1:8000/api/cadastro/', {
+    // Puxando dinamicamente da variável de ambiente do Vite (.env)
+    const apiUrl = import.meta.env.VITE_API_URL
+    await axios.post(`${apiUrl}api/cadastro/`, {
       cpf: form.value.cpf.replace(/\D/g, ''),
       nome: form.value.nome,
-      telefone: form.value.telefone.replace(/\D/g, ''),
+        telefone: form.value.telefone.replace(/\D/g, ''),
       email: form.value.email,
       password: form.value.senha
     })
@@ -96,7 +96,6 @@ async function submitForm() {
         <form class="formulario" @submit.prevent="submitForm">
           <div class="all">
 
-
             <FormInput
               label="CPF"
               v-model="cpfFormatado"
@@ -105,13 +104,11 @@ async function submitForm() {
               maxlength="14"
             />
 
-
             <FormInput
               label="Nome Completo"
               v-model="form.nome"
               icon="fa-solid fa-user"
             />
-
 
             <FormInput
               label="Telefone"
@@ -121,14 +118,12 @@ async function submitForm() {
               maxlength="15"
             />
 
-
             <FormInput
               label="Email"
               v-model="form.email"
               type="email"
               icon="fa-solid fa-envelope"
             />
-
 
             <PasswordInput
               label="Senha"

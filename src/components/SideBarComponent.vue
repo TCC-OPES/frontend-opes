@@ -1,7 +1,7 @@
 <template>
   <aside class="sidebar">
     <div class="logo">
-      <span class="logo-icon">$</span> FinControl
+      <span class="logo-icon">$</span> OPES
     </div>
 
     <nav class="menu">
@@ -32,18 +32,16 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-// import PerfilComponent from './component/PerfilComponent.vue'; // Se for usar localmente mais tarde
 
-// Estado reativo para armazenar os dados do usuário vindos do backend
+
 const usuario = ref({
   nome: '',
   email: ''
 });
 
-// Função para buscar os dados do backend
 const buscarDadosUsuario = async () => {
   try {
-    // Substitua a URL abaixo pela rota real da sua API
+    
     const resposta = await fetch('https://api.seu-sistema.com/usuario/perfil', {
       method: 'GET',
       headers: {

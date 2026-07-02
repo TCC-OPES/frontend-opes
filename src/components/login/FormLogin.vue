@@ -1,11 +1,12 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import api from '@/services/api'
+import { useAuthStore } from '@/store/auth.js' // <-- Importando a nova Store
 import HeaderLogin from './HeaderLogin.vue'
 import BaseInput from './BaseInput.vue'
 
 const router = useRouter()
+const authStore = useAuthStore() // <-- Instanciando a Store
 const carregando = ref(false)
 
 const form = ref({
@@ -40,31 +41,19 @@ async function login() {
   carregando.value = true
 
   try {
-    const response = await api.post('login/', {
-      cpf: form.value.cpf.replace(/\D/g, ''),
-      password: form.value.senha
-    })
+    // Passamos o CPF limpo (sem pontos/traços) e a senha para a Store fazer o trabalho pesado
+    const cpfLimpo = form.value.cpf.replace(/\D/g, '')
+    await authStore.realizarLogin(cpfLimpo, form.value.senha)
 
-    console.log('Login realizado com sucesso:', response.data)
+    console.log('Login realizado com sucesso via Store!')
 
-    // SALVA OS TOKENS
-    localStorage.setItem('access', response.data.access)
-    localStorage.setItem('refresh', response.data.refresh)
-
-    // OPCIONAL: salvar dados do usuário
-    if (response.data.usuario) {
-      localStorage.setItem(
-        'usuario',
-        JSON.stringify(response.data.usuario)
-      )
-    }
-
+    // Redireciona o usuário
     router.push('/dashboard')
 
   } catch (error) {
     console.error('Erro no login:', error)
 
-    if (error.response) {
+    if (error.response && error.response.data) {
       alert(error.response.data.error || 'CPF ou senha incorretos')
     } else {
       alert('Não foi possível conectar ao servidor')
@@ -105,7 +94,9 @@ async function login() {
         <a href="#">Esqueceu sua senha?</a>
       </div>
 
-      <button type="submit">Acessar conta</button>
+      <button type="submit" :disabled="carregando">
+        {{ carregando ? 'Carregando...' : 'Acessar conta' }}
+      </button>
     </form>
 
     <div class="criar">
@@ -120,7 +111,7 @@ async function login() {
   width: 100%;
   max-width: 450px;
   padding: 50px 40px;
-  background: rgba(255,255,255,.85);
+  background: rgba(255, 255, 255, .85);
   backdrop-filter: blur(10px);
   border-radius: 28px;
 }
@@ -142,7 +133,12 @@ button {
   cursor: pointer;
 }
 
-button:hover {
+button:disabled {
+  background: #555;
+  cursor: not-allowed;
+}
+
+button:hover:not(:disabled) {
   background: #228B22;
 }
 
