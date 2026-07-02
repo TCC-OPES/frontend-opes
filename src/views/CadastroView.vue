@@ -57,7 +57,7 @@ async function submitForm() {
     const apiUrl = import.meta.env.VITE_API_URL
     await axios.post(`${apiUrl}api/cadastro/`, {
       cpf: form.value.cpf.replace(/\D/g, ''),
-      nome: form.value.nome,
+      name: form.value.nome,
       telefone: form.value.telefone.replace(/\D/g, ''),
       email: form.value.email,
       password: form.value.senha,

@@ -8,7 +8,7 @@ const fileInput = ref(null)
 
 const carregarPerfil = async () => {
   try {
-    const resposta = await api.get('me/')
+    const resposta = await api.get('api/me/')
 
 
     const dadosDoBack = resposta.data.data

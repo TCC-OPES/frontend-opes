@@ -12,7 +12,7 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = true
     try {
 
-      const response = await api.post('login/', {
+      const response = await api.post('api/login/', {
         cpf,
         password,
       })
@@ -42,7 +42,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function buscarPerfil() {
     try {
 
-      const response = await api.get('me/')
+      const response = await api.get('api/me/')
 
 
       const dadosDoUsuario = response.data.user || response.data
