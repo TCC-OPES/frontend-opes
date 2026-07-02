@@ -1,18 +1,22 @@
 <script setup>
 import { ref, computed } from 'vue'
 import axios from 'axios'
+import { useRouter } from 'vue-router' // <-- Importa o roteador
 
 import FormCard from '../components/cadastro/FormCard.vue'
 import FormInput from '../components/cadastro/FormInput.vue'
 import PasswordInput from '../components/cadastro/PasswordInput.vue'
 import imagem from '@/img/icon.relogio.renovado.png'
 
+const router = useRouter() // <-- Inicializa o roteador
+
 const form = ref({
   cpf: '',
   nome: '',
   telefone: '',
   email: '',
-  senha: ''
+  senha: '',
+  confirmarSenha: ''
 })
 
 const carregando = ref(false)
@@ -50,24 +54,28 @@ async function submitForm() {
   carregando.value = true
 
   try {
-    // Puxando dinamicamente da variável de ambiente do Vite (.env)
     const apiUrl = import.meta.env.VITE_API_URL
     await axios.post(`${apiUrl}api/cadastro/`, {
       cpf: form.value.cpf.replace(/\D/g, ''),
       nome: form.value.nome,
-        telefone: form.value.telefone.replace(/\D/g, ''),
+      telefone: form.value.telefone.replace(/\D/g, ''),
       email: form.value.email,
-      password: form.value.senha
+      password: form.value.senha,
+      password_confirm: form.value.confirmarSenha
     })
 
     alert('Conta criada com sucesso!')
+
+    // Redireciona o usuário para a rota de login
+    router.push('/login')
 
     form.value = {
       cpf: '',
       nome: '',
       telefone: '',
       email: '',
-      senha: ''
+      senha: '',
+      confirmarSenha: ''
     }
 
   } catch (error) {
@@ -128,6 +136,11 @@ async function submitForm() {
             <PasswordInput
               label="Senha"
               v-model="form.senha"
+            />
+
+            <PasswordInput
+              label="Confirmar Senha"
+              v-model="form.confirmarSenha"
             />
 
           </div>
