@@ -45,7 +45,7 @@ const aoSelecionarFoto = async (event) => {
   formData.append('foto', arquivo)
 
   try {
-    const resposta = await api.post('perfil/foto/', formData, {
+    const resposta = await api.post('api/user/foto/', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }

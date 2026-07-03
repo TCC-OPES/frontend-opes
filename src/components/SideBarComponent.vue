@@ -57,7 +57,6 @@ const buscarDadosUsuario = async () => {
     usuario.value = dados; // Atualiza o estado com o nome/dados reais do cadastro
   } catch (error) {
     console.error('Erro na requisição:', error);
-    // Fallback caso a API falhe (opcional)
     usuario.value = { nome: 'Usuário', email: '' };
   }
 };
