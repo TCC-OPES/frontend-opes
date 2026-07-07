@@ -1,26 +1,43 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import api from '@/services/api.js'
+
 const dadosUsuario = ref(null)
 const observador = ref(null)
 const fileInput = ref(null)
 
+// Computed para formatar o CPF que vem da API
+const cpfFormatado = computed(() => {
+  if (!dadosUsuario.value?.cpf) return ''
+  let v = dadosUsuario.value.cpf.replace(/\D/g, '').slice(0, 11)
+  v = v.replace(/(\d{3})(\d)/, '$1.$2')
+  v = v.replace(/(\d{3})(\d)/, '$1.$2')
+  v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+  return v
+})
+
+// Computed para formatar o Telefone que vem da API
+const telefoneFormatado = computed(() => {
+  if (!dadosUsuario.value?.telefone) return ''
+  let v = dadosUsuario.value.telefone.replace(/\D/g, '').slice(0, 11)
+  v = v.replace(/^(\d{2})(\d)/g, '($1) $2')
+  v = v.replace(/(\d)(\d{4})$/, '$1-$2')
+  return v
+})
 
 const carregarPerfil = async () => {
   try {
     const resposta = await api.get('api/me/')
-
-
     const dadosDoBack = resposta.data.data
 
     dadosUsuario.value = {
-      nome: dadosDoBack.nome,
+      nome: dadosDoBack.name,
       email: dadosDoBack.email,
       telefone: dadosDoBack.telefone,
       cpf: dadosDoBack.cpf,
       nascimento: dadosDoBack.nascimento,
       localizacao: dadosDoBack.localizacao,
-      fotoUrl: dadosDoBack.foto_url
+      fotoUrl: dadosDoBack.foto
     }
   } catch (error) {
     console.error('Erro ao carregar perfil:', error)
@@ -36,7 +53,6 @@ const abrirSeletorArquivo = () => {
   fileInput.value.click()
 }
 
-
 const aoSelecionarFoto = async (event) => {
   const arquivo = event.target.files[0]
   if (!arquivo) return
@@ -45,14 +61,14 @@ const aoSelecionarFoto = async (event) => {
   formData.append('foto', arquivo)
 
   try {
-    const resposta = await api.post('api/user/foto/', formData, {
+    const resposta = await api.patch('api/user/foto/', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
     })
 
     if (dadosUsuario.value) {
-      dadosUsuario.value.fotoUrl = resposta.data.foto_url
+      dadosUsuario.value.fotoUrl = resposta.data.foto
     }
     alert('Foto de perfil atualizada com sucesso!')
   } catch (error) {
@@ -76,6 +92,7 @@ onMounted(async () => {
   elementosParaAnimar.forEach((el) => observador.value.observe(el));
 });
 </script>
+
 <template>
   <main class="pagina-perfil">
     <section v-if="dadosUsuario" class="container-perfil">
@@ -91,18 +108,14 @@ onMounted(async () => {
         <aside class="coluna-lateral animar">
           <div class="cartao-perfil centro">
             <div class="avatar-container">
-
               <div class="avatar-circulo" @click="abrirSeletorArquivo">
                 <img v-if="dadosUsuario.fotoUrl" :src="dadosUsuario.fotoUrl" alt="Foto de Perfil"
                   class="foto-renderizada" />
-
                 <span v-else>
                   {{dadosUsuario.nome ? dadosUsuario.nome.split(' ').map(n => n[0]).join('').toUpperCase() : ''}}
                 </span>
               </div>
-
               <button class="btn-foto" @click="abrirSeletorArquivo">📷</button>
-
               <input type="file" ref="fileInput" style="display: none" accept="image/*" @change="aoSelecionarFoto" />
             </div>
 
@@ -126,11 +139,11 @@ onMounted(async () => {
               </div>
               <div class="campo">
                 <label>Telefone</label>
-                <input type="text" :value="dadosUsuario.telefone" disabled>
+                <input type="text" :value="telefoneFormatado" disabled>
               </div>
               <div class="campo">
                 <label>CPF</label>
-                <input type="text" :value="dadosUsuario.cpf" disabled>
+                <input type="text" :value="cpfFormatado" disabled>
               </div>
               <div class="campo">
                 <label>Data de Nascimento</label>
