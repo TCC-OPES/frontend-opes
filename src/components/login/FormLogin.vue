@@ -20,10 +20,13 @@ const cpfFormatado = computed({
     return form.value.cpf
   },
   set(valor) {
+    // Remove tudo o que não for número
     let v = valor.replace(/\D/g, '')
 
+    // Corta estritamente se passar de 11 números
     if (v.length > 11) v = v.slice(0, 11)
 
+    // Aplica a máscara de CPF (000.000.000-00)
     v = v.replace(/(\d{3})(\d)/, '$1.$2')
     v = v.replace(/(\d{3})(\d)/, '$1.$2')
     v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2')
@@ -62,6 +65,7 @@ async function login() {
   } finally {
     carregando.value = false
   }
+
 }
 </script>
 
@@ -75,15 +79,15 @@ async function login() {
         icon="fa-solid fa-address-card"
         placeholder="000.000.000-00"
         v-model="cpfFormatado"
+        maxlength="14"
       />
 
-      <BaseInput
-        label="Senha"
-        icon="fa-solid fa-eye"
-        type="password"
-        placeholder="•••••••"
-        v-model="form.senha"
-      />
+    <BaseInput
+      label="Senha"
+      type="password"
+      placeholder="•••••••"
+      v-model="form.senha"
+    />
 
       <div class="lembrar">
         <label>

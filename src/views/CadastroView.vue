@@ -6,7 +6,7 @@ import { useRouter } from 'vue-router' // <-- Importa o roteador
 import FormCard from '../components/cadastro/FormCard.vue'
 import FormInput from '../components/cadastro/FormInput.vue'
 import PasswordInput from '../components/cadastro/PasswordInput.vue'
-import imagem from '@/img/icon.relogio.renovado.png'
+
 
 const router = useRouter() // <-- Inicializa o roteador
 
@@ -90,7 +90,7 @@ async function submitForm() {
 <template>
   <div class="page">
     <div class="lado-imagem">
-      <img :src="imagem" alt="Ilustração" />
+      <img src="/icons/logo.png" alt="Ilustração" />
     </div>
 
     <div class="container-form">
@@ -163,13 +163,25 @@ async function submitForm() {
 </template>
 
 <style scoped>
+:deep(html), :deep(body) {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  overflow: hidden !important;
+}
 .page {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 
-  min-height: 100vh;
+
+  box-sizing: border-box;
+  height: 100vh;
+  max-height: 100vh;
+  width: 100vw;
+
+  overflow: hidden !important;
   padding: 20px;
 
   background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
@@ -189,14 +201,14 @@ async function submitForm() {
 .formulario {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px; /* Reduzido de 16px para 12px para economizar altura */
   text-align: left;
 }
 
 .all {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
+  gap: 12px; /* Reduzido de 16px para 12px */
 }
 
 .enviar {
@@ -229,31 +241,35 @@ async function submitForm() {
 @media (min-width: 769px) {
   .page {
     display: grid;
-    grid-template-columns: 1.3fr 0.9fr;
-    padding: 0 60px;
-    gap: 10px;
+    grid-template-columns: 1.4fr 0.8fr;
+    padding: 0 40px;
+    gap: 30px;
   }
 
   .lado-imagem {
     display: flex;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
-    padding-left: 40px;
+    padding: 10px;
+    /* Garante que o container da imagem respeite o limite máximo da tela */
+    max-height: 90vh;
     overflow: hidden;
   }
 
   .lado-imagem img {
-    width: 135%;
-    max-width: 1300px;
-    height: auto;
-    transform: translate(-310px, -60px);
+    width: 100%;
+    /* Ajustamos o max-width e adicionamos max-height para a imagem gigante */
+    /* se adaptar perfeitamente sem esticar a tela para baixo */
+    max-width: 750px;
+    max-height: 85vh;
+    object-fit: contain; /* Mantém a proporção da logo sem distorcer */
+    transform: none;
   }
 
   .all {
     grid-template-columns: repeat(2, 1fr);
   }
 }
-
 h1 {
   font-size: 24px;
   font-weight: bold;
@@ -269,7 +285,7 @@ h1 {
 .divisor {
   display: flex;
   align-items: center;
-  margin: 30px 0;
+  margin: 15px 0; /* Reduzido de 30px para 15px */
   color: #9ca3af;
   font-size: 14px;
 }

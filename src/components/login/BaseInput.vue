@@ -1,37 +1,54 @@
 <script setup>
-defineProps({
+import { ref } from 'vue'
+
+const model = defineModel()
+
+const props = defineProps({
   label: String,
   icon: String,
-  placeholder: String,
   type: {
     type: String,
     default: 'text'
   },
-  modelValue: String
+  placeholder: String
 })
 
-const emit = defineEmits(['update:modelValue'])
+// Estado interno para controlar a visibilidade caso seja um campo de senha
+const mostrarSenha = ref(false)
 </script>
 
 <template>
-  <div class="campo">
-    <label>{{ label }}</label>
+  <div class="input-group">
+    <label v-if="label">{{ label }}</label>
 
-    <div class="input-icon">
-      <i :class="icon"></i>
+    <div class="input-wrapper">
+      <!-- Se for um campo de senha, o ícone vira o alternador (olho) -->
+      <template v-if="props.type === 'password'">
+        <i
+          class="fa-solid eye-toggle"
+          :class="mostrarSenha ? 'fa-eye' : 'fa-eye-slash'"
+          @click="mostrarSenha = !mostrarSenha"
+        ></i>
+      </template>
 
+      <!-- Se NÃO for senha, exibe o ícone normal passado por prop -->
+      <template v-else>
+        <i v-if="icon" :class="icon"></i>
+      </template>
+
+      <!-- O :type muda dinamicamente se for um campo de senha -->
       <input
-        :type="type"
+        :type="props.type === 'password' ? (mostrarSenha ? 'text' : 'password') : props.type"
         :placeholder="placeholder"
-        :value="modelValue"
-        @input="emit('update:modelValue', $event.target.value)"
+        v-model="model"
+        v-bind="$attrs"
       />
     </div>
   </div>
 </template>
 
 <style scoped>
-.campo {
+.input-group {
   margin-bottom: 22px;
 }
 
@@ -40,7 +57,7 @@ label {
   margin-bottom: 8px;
 }
 
-.input-icon {
+.input-wrapper {
   display: flex;
   align-items: center;
   border: 1px solid #ddd;
@@ -53,5 +70,15 @@ input {
   border: none;
   outline: none;
   flex: 1;
+  background: transparent;
+}
+
+/* Estilo para quando o ícone for o olho clicável */
+.eye-toggle {
+  cursor: pointer;
+  user-select: none;
+  color: #9ca3af;
+  width: 20px; /* Garante tamanho fixo para o ícone não tremer a tela ao mudar */
+  text-align: center;
 }
 </style>
