@@ -50,12 +50,20 @@
     </div>
 
   </div>
+  <button @click="goToPerfil" class="botao-perfil">Ir para Perfil</button>
   <PerfilComponent />
 </template>
 
 <script setup>
 import HeaderComponent from '@/components/HeaderComponent.vue';
 import SideBarComponent from '@/components/SideBarComponent.vue';
+
+import { useRouter } from 'vue-router';
+const router = useRouter();
+
+const goToPerfil = () => {
+  router.push('/perfil');
+};
 </script>
 
 <style scoped>

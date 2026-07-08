@@ -1,78 +1,82 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import { ref, onMounted, computed } from 'vue'
+import api from '@/services/api.js'
 
 const dadosUsuario = ref(null)
 const observador = ref(null)
-const fileInput = ref(null) // Referência para o input escondido
+const fileInput = ref(null)
+
+// Computed para formatar o CPF que vem da API
+const cpfFormatado = computed(() => {
+  if (!dadosUsuario.value?.cpf) return ''
+  let v = dadosUsuario.value.cpf.replace(/\D/g, '').slice(0, 11)
+  v = v.replace(/(\d{3})(\d)/, '$1.$2')
+  v = v.replace(/(\d{3})(\d)/, '$1.$2')
+  v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+  return v
+})
+
+// Computed para formatar o Telefone que vem da API
+const telefoneFormatado = computed(() => {
+  if (!dadosUsuario.value?.telefone) return ''
+  let v = dadosUsuario.value.telefone.replace(/\D/g, '').slice(0, 11)
+  v = v.replace(/^(\d{2})(\d)/g, '($1) $2')
+  v = v.replace(/(\d)(\d{4})$/, '$1-$2')
+  return v
+})
 
 const carregarPerfil = async () => {
-  await new Promise(resolve => setTimeout(resolve, 600))
-  dadosUsuario.value = {
-    nome: 'Luiz Fernando',
-    email: 'luiz.fernando@gmail.com',
-    telefone: '(47) 98926-5959',
-    cpf: '123.456.789-00',
-    nascimento: '18/08/2009',
-    localizacao: 'Itinga, SC',
-    fotoUrl: null // Inicialmente nulo (vai mostrar as iniciais)
+  try {
+    const resposta = await api.get('api/me/')
+    const dadosDoBack = resposta.data.data
+
+    dadosUsuario.value = {
+      nome: dadosDoBack.name,
+      email: dadosDoBack.email,
+      telefone: dadosDoBack.telefone,
+      cpf: dadosDoBack.cpf,
+      nascimento: dadosDoBack.nascimento,
+      localizacao: dadosDoBack.localizacao,
+      fotoUrl: dadosDoBack.foto
+    }
+  } catch (error) {
+    console.error('Erro ao carregar perfil:', error)
+    if (error.response?.status === 401) {
+      alert('Sua sessão expirou. Faça login novamente.')
+    } else {
+      alert('Não foi possível carregar os dados do perfil.')
+    }
   }
 }
 
-// Função para abrir a janela de seleção de arquivo do computador
 const abrirSeletorArquivo = () => {
   fileInput.value.click()
 }
 
 const aoSelecionarFoto = async (event) => {
   const arquivo = event.target.files[0]
-
   if (!arquivo) return
 
   const formData = new FormData()
   formData.append('foto', arquivo)
 
-  // Pega diretamente o access token salvo no login
-  const token = localStorage.getItem('access')
-
-  console.log('TOKEN ENVIADO:', token)
-
-  // Verifica se existe token
-  if (!token) {
-    alert('Usuário não autenticado.')
-    return
-  }
-
   try {
-    const resposta = await axios.post(
-      'http://localhost:8000/api/perfil/foto/',
-      formData,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+    const resposta = await api.patch('api/user/foto/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
       }
-    )
+    })
 
-    // Atualiza foto na tela
     if (dadosUsuario.value) {
-      dadosUsuario.value.fotoUrl = resposta.data.foto_url
+      dadosUsuario.value.fotoUrl = resposta.data.foto
     }
-
     alert('Foto de perfil atualizada com sucesso!')
-
   } catch (error) {
-    console.error('ERRO REAL DO SERVIDOR:', error.response?.data || error)
-
-    // Se token expirou
-    if (error.response?.data?.code === 'token_not_valid') {
-      alert('Sua sessão expirou. Faça login novamente.')
-      return
-    }
-
+    console.error('Erro ao salvar foto:', error)
     alert('Erro ao salvar a foto.')
   }
 }
+
 onMounted(async () => {
   await carregarPerfil()
 
@@ -95,7 +99,7 @@ onMounted(async () => {
       <header class="header-perfil animar">
         <div>
           <h1>Meu <span class="texto-gradiente">Perfil</span></h1>
-          <p>Gerencie suas informações e preferences de conta.</p>
+          <p>Gerencie suas informações e preferências de conta.</p>
         </div>
         <button class="botao-principal">✏️ Editar Perfil</button>
       </header>
@@ -104,29 +108,15 @@ onMounted(async () => {
         <aside class="coluna-lateral animar">
           <div class="cartao-perfil centro">
             <div class="avatar-container">
-
-             <div class="avatar-circulo" @click="abrirSeletorArquivo">
-              <img
-                v-if="dadosUsuario.fotoUrl"
-                :src="dadosUsuario.fotoUrl"
-                alt="Foto de Perfil"
-                class="foto-renderizada"
-              />
-
-      <span v-else>
-    {{ dadosUsuario.nome.split(' ').map(n => n[0]).join('').toUpperCase() }}
-      </span>
-            </div>
-
+              <div class="avatar-circulo" @click="abrirSeletorArquivo">
+                <img v-if="dadosUsuario.fotoUrl" :src="dadosUsuario.fotoUrl" alt="Foto de Perfil"
+                  class="foto-renderizada" />
+                <span v-else>
+                  {{dadosUsuario.nome ? dadosUsuario.nome.split(' ').map(n => n[0]).join('').toUpperCase() : ''}}
+                </span>
+              </div>
               <button class="btn-foto" @click="abrirSeletorArquivo">📷</button>
-
-              <input
-                type="file"
-                ref="fileInput"
-                style="display: none"
-                accept="image/*"
-                @change="aoSelecionarFoto"
-              />
+              <input type="file" ref="fileInput" style="display: none" accept="image/*" @change="aoSelecionarFoto" />
             </div>
 
             <h2>{{ dadosUsuario.nome }}</h2>
@@ -149,11 +139,11 @@ onMounted(async () => {
               </div>
               <div class="campo">
                 <label>Telefone</label>
-                <input type="text" :value="dadosUsuario.telefone" disabled>
+                <input type="text" :value="telefoneFormatado" disabled>
               </div>
               <div class="campo">
                 <label>CPF</label>
-                <input type="text" :value="dadosUsuario.cpf" disabled>
+                <input type="text" :value="cpfFormatado" disabled>
               </div>
               <div class="campo">
                 <label>Data de Nascimento</label>
@@ -295,7 +285,7 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .titulo-secao {
@@ -346,13 +336,31 @@ h1 {
   height: 80vh;
 }
 
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #cbd5e1;
+  border-top-color: #10b981;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 850px) {
   .layout-grid {
     grid-template-columns: 1fr;
   }
+
   .grade-inputs {
     grid-template-columns: 1fr;
   }
+
   .header-perfil {
     flex-direction: column;
     text-align: center;

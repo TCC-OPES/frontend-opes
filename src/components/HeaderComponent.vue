@@ -23,7 +23,7 @@
 </template>
 
 <script setup>
-// Lógica de busca ou troca de datas pode ser adicionada aqui no futuro
+
 </script>
 
 <style scoped>
