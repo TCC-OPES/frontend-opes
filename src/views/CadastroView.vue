@@ -241,29 +241,39 @@ async function submitForm() {
 @media (min-width: 769px) {
   .page {
     display: grid;
-    grid-template-columns: 1.4fr 0.8fr;
+    /* Mudamos de 1fr 1fr para 1.4fr 1fr para dar mais espaço físico para a logo crescer */
+    grid-template-columns: 1.4fr 1fr;
+    /* Mantém o espaçamento perfeito e as bordas que você gostou */
     padding: 0 40px;
     gap: 30px;
+    align-items: center;
   }
 
   .lado-imagem {
     display: flex;
-    justify-content: center;
+    justify-content: flex-end; /* Mantém a logo colada na mesma distância do card */
     align-items: center;
-    padding: 10px;
-    /* Garante que o container da imagem respeite o limite máximo da tela */
-    max-height: 90vh;
-    overflow: hidden;
+    padding: 0;
+    width: 100%;
+    height: 100%;
   }
 
   .lado-imagem img {
+    /* Faz a logo ocupar todo o espaço da nova coluna maior */
     width: 100%;
-    /* Ajustamos o max-width e adicionamos max-height para a imagem gigante */
-    /* se adaptar perfeitamente sem esticar a tela para baixo */
-    max-width: 750px;
-    max-height: 85vh;
-    object-fit: contain; /* Mantém a proporção da logo sem distorcer */
+    /* Aumentamos consideravelmente a largura máxima permitida */
+    max-width: 800px;
+    /* Altura quase total da tela para permitir que ela expanda verticalmente */
+    max-height: 92vh;
+    object-fit: contain;
     transform: none;
+  }
+
+  .container-form {
+    display: flex;
+    justify-content: flex-start; /* Mantém o card grudado ao centro */
+    align-items: center;
+    width: 100%;
   }
 
   .all {
@@ -285,7 +295,7 @@ h1 {
 .divisor {
   display: flex;
   align-items: center;
-  margin: 15px 0; /* Reduzido de 30px para 15px */
+  margin: 15px 0;
   color: #9ca3af;
   font-size: 14px;
 }

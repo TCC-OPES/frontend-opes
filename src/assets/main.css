@@ -14,7 +14,7 @@ body,
 
 body {
   overflow-x: hidden;
-  background: #b7d4d1;
+  background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
 }
 
 a,
@@ -33,4 +33,11 @@ a,
 
 ul {
   list-style: none;
+}
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden !important;
 }
