@@ -19,7 +19,8 @@
 
     <button @click="irParaPerfil" class="user-profile-btn" aria-label="Acessar perfil">
       <div class="avatar">
-        {{ obterIniciais(usuario.nome) }}
+        <img v-if="usuario.fotoUrl" :src="usuario.fotoUrl" alt="Foto de perfil" class="foto-sidebar" />
+        <span v-else>{{ obterIniciais(usuario.nome) }}</span>
       </div>
       <div class="user-info">
         <h4>{{ usuario.nome || 'Carregando...' }}</h4>
@@ -32,32 +33,31 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router'; // 1. Importação do router adicionada
+import { useRouter } from 'vue-router';
+import api from '@/services/api.js';
 
-const router = useRouter(); // 2. Inicialização do router criada
+const router = useRouter();
 
 const usuario = ref({
   nome: '',
-  email: ''
+  email: '',
+  fotoUrl: ''
 });
 
 const buscarDadosUsuario = async () => {
   try {
-    const resposta = await fetch('https://api.seu-sistema.com/usuario/perfil', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    });
 
-    if (!resposta.ok) throw new Error('Erro ao buscar dados do usuário');
+    const resposta = await api.get('api/me/');
+    const dados = resposta.data.data;
 
-    const dados = await resposta.json();
-    usuario.value = dados;
+    usuario.value = {
+      nome: dados.name,
+      email: dados.email,
+      fotoUrl: dados.foto
+    };
   } catch (error) {
-    console.error('Erro na requisição:', error);
-    usuario.value = { nome: 'Usuário', email: '' };
+    console.error('Erro ao buscar dados do usuário na sidebar:', error);
+    usuario.value = { nome: 'Usuário', email: '', fotoUrl: '' };
   }
 };
 
@@ -74,7 +74,6 @@ const obterIniciais = (nome) => {
   return partes[0][0].toUpperCase();
 };
 
-// 3. Função alterada para executar o redirecionamento correto
 const irParaPerfil = () => {
   router.push('/perfil');
 };
@@ -138,7 +137,7 @@ const irParaPerfil = () => {
   gap: 12px;
   padding: 12px;
   background-color: #f8fafc;
-  border: 1px solid #cbd5e1; /* Borda padrão leve para manter a estrutura fina */
+  border: 1px solid #cbd5e1;
   border-radius: 12px;
   cursor: pointer;
   width: 100%;
@@ -150,7 +149,6 @@ const irParaPerfil = () => {
   border-color: #0b5ed7;
 }
 
-/* Modificado para remover aquela borda azul grossa do foco que aparecia no print */
 .user-profile-btn:focus {
   outline: none;
   border-color: #0b5ed7;
@@ -158,7 +156,7 @@ const irParaPerfil = () => {
 }
 
 .avatar {
-  background-color: #004d40;
+  background-color: #0f172a;
   color: white;
   width: 40px;
   height: 40px;
@@ -168,6 +166,14 @@ const irParaPerfil = () => {
   justify-content: center;
   font-weight: bold;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+
+.foto-sidebar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .user-info {
