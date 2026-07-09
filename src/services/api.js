@@ -1,17 +1,21 @@
-import axios from "axios";
+import axios from 'axios'
 
 const api = axios.create({
-  baseURL: "http://127.0.0.1:8000/api/",
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("access");
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  baseURL: import.meta.env.VITE_API_URL,
+  headers: {
+    'Content-Type': 'application/json'
   }
+})
 
-  return config;
-});
+// Adicionando o interceptor para enviar o Token automaticamente
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('access')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+}, (error) => {
+  return Promise.reject(error)
+})
 
-export default api;
+export default api

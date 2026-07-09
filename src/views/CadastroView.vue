@@ -1,19 +1,22 @@
 <script setup>
 import { ref, computed } from 'vue'
 import axios from 'axios'
+import { useRouter } from 'vue-router' // <-- Importa o roteador
 
 import FormCard from '../components/cadastro/FormCard.vue'
 import FormInput from '../components/cadastro/FormInput.vue'
 import PasswordInput from '../components/cadastro/PasswordInput.vue'
-import imagem from '@/img/icon.relogio.renovado.png'
 
+
+const router = useRouter() // <-- Inicializa o roteador
 
 const form = ref({
   cpf: '',
   nome: '',
   telefone: '',
   email: '',
-  senha: ''
+  senha: '',
+  confirmarSenha: ''
 })
 
 const carregando = ref(false)
@@ -33,7 +36,6 @@ const cpfFormatado = computed({
   }
 })
 
-
 const telefoneFormatado = computed({
   get() {
     return form.value.telefone
@@ -52,22 +54,28 @@ async function submitForm() {
   carregando.value = true
 
   try {
-    await axios.post('https://opes.class.fabricadesoftware.ifc.edu.br/api/cadastro/', {
+    const apiUrl = import.meta.env.VITE_API_URL
+    await axios.post(`${apiUrl}api/cadastro/`, {
       cpf: form.value.cpf.replace(/\D/g, ''),
       nome: form.value.nome,
       telefone: form.value.telefone.replace(/\D/g, ''),
       email: form.value.email,
-      password: form.value.senha
+      password: form.value.senha,
+      password_confirm: form.value.confirmarSenha
     })
 
     alert('Conta criada com sucesso!')
+
+    // Redireciona o usuário para a rota de login
+    router.push('/login')
 
     form.value = {
       cpf: '',
       nome: '',
       telefone: '',
       email: '',
-      senha: ''
+      senha: '',
+      confirmarSenha: ''
     }
 
   } catch (error) {
@@ -82,7 +90,7 @@ async function submitForm() {
 <template>
   <div class="page">
     <div class="lado-imagem">
-      <img :src="imagem" alt="Ilustração" />
+      <img src="/icons/logo.png" alt="Ilustração" />
     </div>
 
     <div class="container-form">
@@ -96,7 +104,6 @@ async function submitForm() {
         <form class="formulario" @submit.prevent="submitForm">
           <div class="all">
 
-
             <FormInput
               label="CPF"
               v-model="cpfFormatado"
@@ -105,13 +112,11 @@ async function submitForm() {
               maxlength="14"
             />
 
-
             <FormInput
               label="Nome Completo"
               v-model="form.nome"
               icon="fa-solid fa-user"
             />
-
 
             <FormInput
               label="Telefone"
@@ -121,7 +126,6 @@ async function submitForm() {
               maxlength="15"
             />
 
-
             <FormInput
               label="Email"
               v-model="form.email"
@@ -129,10 +133,14 @@ async function submitForm() {
               icon="fa-solid fa-envelope"
             />
 
-
             <PasswordInput
               label="Senha"
               v-model="form.senha"
+            />
+
+            <PasswordInput
+              label="Confirmar Senha"
+              v-model="form.confirmarSenha"
             />
 
           </div>
@@ -155,13 +163,25 @@ async function submitForm() {
 </template>
 
 <style scoped>
+:deep(html), :deep(body) {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  overflow: hidden !important;
+}
 .page {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 
-  min-height: 100vh;
+
+  box-sizing: border-box;
+  height: 100vh;
+  max-height: 100vh;
+  width: 100vw;
+
+  overflow: hidden !important;
   padding: 20px;
 
   background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
@@ -181,14 +201,14 @@ async function submitForm() {
 .formulario {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px; /* Reduzido de 16px para 12px para economizar altura */
   text-align: left;
 }
 
 .all {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
+  gap: 12px; /* Reduzido de 16px para 12px */
 }
 
 .enviar {
@@ -221,31 +241,45 @@ async function submitForm() {
 @media (min-width: 769px) {
   .page {
     display: grid;
-    grid-template-columns: 1.3fr 0.9fr;
-    padding: 0 60px;
-    gap: 10px;
+    /* Mudamos de 1fr 1fr para 1.4fr 1fr para dar mais espaço físico para a logo crescer */
+    grid-template-columns: 1.4fr 1fr;
+    /* Mantém o espaçamento perfeito e as bordas que você gostou */
+    padding: 0 40px;
+    gap: 30px;
+    align-items: center;
   }
 
   .lado-imagem {
     display: flex;
-    justify-content: flex-start;
+    justify-content: flex-end; /* Mantém a logo colada na mesma distância do card */
     align-items: center;
-    padding-left: 40px;
-    overflow: hidden;
+    padding: 0;
+    width: 100%;
+    height: 100%;
   }
 
   .lado-imagem img {
-    width: 135%;
-    max-width: 1300px;
-    height: auto;
-    transform: translate(-310px, -60px);
+    /* Faz a logo ocupar todo o espaço da nova coluna maior */
+    width: 100%;
+    /* Aumentamos consideravelmente a largura máxima permitida */
+    max-width: 800px;
+    /* Altura quase total da tela para permitir que ela expanda verticalmente */
+    max-height: 92vh;
+    object-fit: contain;
+    transform: none;
+  }
+
+  .container-form {
+    display: flex;
+    justify-content: flex-start; /* Mantém o card grudado ao centro */
+    align-items: center;
+    width: 100%;
   }
 
   .all {
     grid-template-columns: repeat(2, 1fr);
   }
 }
-
 h1 {
   font-size: 24px;
   font-weight: bold;
@@ -261,7 +295,7 @@ h1 {
 .divisor {
   display: flex;
   align-items: center;
-  margin: 30px 0;
+  margin: 15px 0;
   color: #9ca3af;
   font-size: 14px;
 }

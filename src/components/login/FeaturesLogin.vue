@@ -1,11 +1,10 @@
 <template>
   <div class="left">
-    <img :src="phone" alt="celular" class="phone-img" />
+    <img src="/icons/logo.png" alt="celular" class="phone-img" />
   </div>
 </template>
 
 <script setup>
-import phone from '../../img/icon.celular.renovado.png'
 </script>
 
 <style scoped>
@@ -17,10 +16,10 @@ import phone from '../../img/icon.celular.renovado.png'
 }
 
 .phone-img {
-  width: 40vw;
-  height: 40vw;
+  width: 45vw;
+  height: 45vw;
   object-fit: contain;
-  padding-bottom: 2vw;
+  
 }
 </style>
 
