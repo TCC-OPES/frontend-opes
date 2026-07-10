@@ -217,7 +217,7 @@ import SideBarComponent from '@/components/SideBarComponent.vue';
   }
 
   .analytics-grid {
-    grid-template-columns: 1.2fr 0.8fr; 
+    grid-template-columns: 1.2fr 0.8fr;
     gap: 24px;
   }
 

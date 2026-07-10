@@ -1,36 +1,3 @@
-<template>
-  <aside class="sidebar">
-    <div class="logo">
-      <span class="logo-icon">$</span> OPES
-    </div>
-
-    <nav class="menu">
-      <a href="#" class="menu-item active">
-        <i class="fas fa-chart-pie"></i> Dashboard
-      </a>
-
-      <a href="#" class="menu-item"><i class="fas fa-exchange-alt"></i> Transações</a>
-      <a href="#" class="menu-item"><i class="fas fa-wallet"></i> Carteiras</a>
-      <a href="#" class="menu-item"><i class="fas fa-credit-card"></i> Cartões</a>
-      <a href="#" class="menu-item"><i class="fas fa-target"></i> Metas</a>
-      <a href="#" class="menu-item"><i class="fas fa-chart-line"></i> Investimentos</a>
-      <a href="#" class="menu-item"><i class="fas fa-users"></i> Família</a>
-    </nav>
-
-    <button @click="irParaPerfil" class="user-profile-btn" aria-label="Acessar perfil">
-      <div class="avatar">
-        <img v-if="usuario.fotoUrl" :src="usuario.fotoUrl" alt="Foto de perfil" class="foto-sidebar" />
-        <span v-else>{{ obterIniciais(usuario.nome) }}</span>
-      </div>
-      <div class="user-info">
-        <h4>{{ usuario.nome || 'Carregando...' }}</h4>
-        <p>Ver perfil</p>
-      </div>
-      <i class="fas fa-chevron-right arrow-icon"></i>
-    </button>
-  </aside>
-</template>
-
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
@@ -77,7 +44,47 @@ const obterIniciais = (nome) => {
 const irParaPerfil = () => {
   router.push('/perfil');
 };
+
+const irParaInvestimentos = () => {
+  router.push('/investimento');
+};
 </script>
+
+<template>
+  <aside class="sidebar">
+    <div class="logo">
+      <span class="logo-icon">$</span> OPES
+    </div>
+
+    <nav class="menu">
+      <a href="#" class="menu-item active">
+        <i class="fas fa-chart-pie"></i> Dashboard
+      </a>
+
+      <a href="#" class="menu-item"><i class="fas fa-exchange-alt"></i> Transações</a>
+      <a href="#" class="menu-item"><i class="fas fa-wallet"></i> Carteiras</a>
+      <a href="#" class="menu-item"><i class="fas fa-credit-card"></i> Cartões</a>
+      <a href="#" class="menu-item"><i class="fas fa-target"></i> Metas</a>
+      <a href="#" class="menu-item" @click="irParaInvestimentos">
+        <i class="fas fa-chart-line"></i> Investimentos
+      </a>
+      <a href="#" class="menu-item"><i class="fas fa-users"></i> Família</a>
+    </nav>
+
+    <button @click="irParaPerfil" class="user-profile-btn" aria-label="Acessar perfil">
+      <div class="avatar">
+        <img v-if="usuario.fotoUrl" :src="usuario.fotoUrl" alt="Foto de perfil" class="foto-sidebar" />
+        <span v-else>{{ obterIniciais(usuario.nome) }}</span>
+      </div>
+      <div class="user-info">
+        <h4>{{ usuario.nome || 'Carregando...' }}</h4>
+        <p>Ver perfil</p>
+      </div>
+      <i class="fas fa-chevron-right arrow-icon"></i>
+    </button>
+  </aside>
+</template>
+
 
 <style scoped>
 .sidebar {
