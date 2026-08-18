@@ -10,7 +10,7 @@
       <div class="dashboard-content">
 
         <section class="welcome-section">
-          <h2>Bem-vindo de volta, João! 👋</h2>
+          <h2>Bem-vindo de volta, {{ userName }}! 👋</h2>
           <p>Aqui está um resumo completo das suas finanças</p>
         </section>
 
@@ -49,22 +49,46 @@
       </div>
     </div>
 
+    <!-- Componente do Botão + Modal carregado aqui -->
+    <AddTransactionModal />
+
   </div>
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue';
 import HeaderComponent from '@/components/HeaderComponent.vue';
 import SideBarComponent from '@/components/SideBarComponent.vue';
+import AddTransactionModal from '@/components/dashboard/AddTransactionModal.vue';
+
+// Criamos a variável reativa com um valor padrão caso não encontre o nome
+const userName = ref('Usuário');
+
+onMounted(() => {
+  // Pega os dados salvos no localStorage no momento do login
+  const storedUser = localStorage.getItem('user');
+
+  if (storedUser) {
+    try {
+      const userData = JSON.parse(storedUser);
+      // Pega o nome do objeto (seja 'name' ou 'nome')
+      userName.value = userData.name || userData.nome || 'Usuário';
+    } catch {
+      // Caso o valor no localStorage seja só uma string com o nome direto
+      userName.value = storedUser;
+    }
+  }
+});
 </script>
 
 <style scoped>
 /* --- BASE & LAYOUT (MOBILE FIRST) --- */
 .dashboard-layout {
   display: flex;
-  flex-direction: column; /* No mobile, os blocos ficam um embaixo do outro */
+  flex-direction: column;
   width: 100%;
   min-height: 100vh;
-  background-color: #f4f6f9;
+  background-color: #f4f6f9; /* Garante o contexto de posicionamento correto */
 }
 
 .main-container {
@@ -77,7 +101,7 @@ import SideBarComponent from '@/components/SideBarComponent.vue';
 
 .dashboard-content {
   flex: 1;
-  padding: 20px; /* Espaçamento menor no mobile para não espremer o conteúdo */
+  padding: 20px;
 }
 
 /* --- COMPONENTES DA TELA --- */
@@ -95,14 +119,14 @@ import SideBarComponent from '@/components/SideBarComponent.vue';
   margin-top: 4px;
 }
 
-/* Card Principal Gradiente (Mobile First) */
+/* Card Principal Gradiente */
 .balance-gradient-card {
   background: linear-gradient(135deg, #155e75 0%, #115e59 45%, #1d4ed8 100%);
   border-radius: 16px;
   padding: 20px;
   color: white;
   display: flex;
-  flex-direction: column; /* Empilha o saldo e os mini cards no mobile */
+  flex-direction: column;
   gap: 20px;
   margin-top: 20px;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
@@ -138,7 +162,7 @@ import SideBarComponent from '@/components/SideBarComponent.vue';
   padding: 12px;
   border-radius: 12px;
   backdrop-filter: blur(8px);
-  flex: 1; /* Faz as duas caixinhas dividirem o espaço por igual */
+  flex: 1;
 }
 .summary-box p {
   font-size: 0.8rem;
@@ -152,7 +176,7 @@ import SideBarComponent from '@/components/SideBarComponent.vue';
 .icon-receita { color: #34d399; }
 .icon-despesa { color: #f87171; }
 
-/* Grid de Gráficos (Mobile First = 1 coluna) */
+/* Grid de Gráficos */
 .analytics-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -183,14 +207,14 @@ import SideBarComponent from '@/components/SideBarComponent.vue';
   color: #94a3b8;
 }
 
-/* --- MEDIA QUERIES (ADAPTAÇÃO PARA TELAS GRANDES / DESKTOP) --- */
+/* --- MEDIA QUERIES --- */
 @media (min-width: 768px) {
   .dashboard-layout {
-    flex-direction: row; /* Sidebar do lado do conteúdo no Desktop */
+    flex-direction: row;
   }
 
   .dashboard-content {
-    padding: 0 40px 40px 40px; /* Mais espaçoso no PC */
+    padding: 0 40px 40px 40px;
   }
 
   .welcome-section h2 {
@@ -198,7 +222,7 @@ import SideBarComponent from '@/components/SideBarComponent.vue';
   }
 
   .balance-gradient-card {
-    flex-direction: row; /* Alinha saldo na esquerda e caixas na direita */
+    flex-direction: row;
     padding: 32px;
   }
 
