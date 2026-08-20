@@ -4,6 +4,7 @@ import PerfilView from '../views/PerfilView.vue'
 import HomeView from '../views/HomeView.vue'
 import CadastroView from '../views/CadastroView.vue'
 import LoginView from '../views/LoginView.vue'
+import CartoesView from '../views/CartoesView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -24,14 +25,19 @@ const router = createRouter({
       component: LoginView,
     },
     {
-    path: '/dashboard',
-    name: 'dashboard',
-    component: DashboardView
+      path: '/dashboard',
+      name: 'dashboard',
+      component: DashboardView,
     },
     {
-    path: '/perfil',
-    name: 'perfil',
-    component: PerfilView,
+      path: '/perfil',
+      name: 'perfil',
+      component: PerfilView,
+    },
+    {
+      path: '/cartoes',
+      name: 'cartoes',
+      component: CartoesView,
     },
   ],
 })
