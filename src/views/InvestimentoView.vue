@@ -26,23 +26,41 @@ import HeaderComponent from '@/components/HeaderComponent.vue'
 .app-layout {
   display: flex;
   min-height: 100vh;
-  background-color: #f8fafc;
+  width: 100%;
+  max-width: 100vw;
+  background-color: #ffffff;
+  overflow-x: hidden;
+  margin: 0;
+  border: none;
+}
+
+.app-layout :deep(.desktop-sidebar) {
+  display: none !important;
 }
 
 .main-wrapper {
   display: flex;
   flex-direction: column;
   flex: 1;
+  width: 100%;
   min-width: 0;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background-color: #ffffff;
 }
 
 .main-content {
   flex: 1;
-  overflow-y: auto;
-  padding: 1.5rem;
+  overflow-y: visible;
+  padding: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: #ffffff;
 }
 
-/* Transição nativa do Vue para evitar conflito com elementos fixed/absolutos */
 .fade-slide-enter-active {
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
@@ -55,5 +73,30 @@ import HeaderComponent from '@/components/HeaderComponent.vue'
 .fade-slide-enter-to {
   opacity: 1;
   transform: translateY(0);
+}
+
+@media (min-width: 640px) {
+  .main-content {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-layout {
+    background-color: #f8fafc;
+  }
+  .app-layout :deep(.desktop-sidebar) {
+    display: flex !important;
+  }
+  .main-wrapper {
+    height: 100vh;
+    overflow-y: hidden;
+    background-color: #f8fafc;
+  }
+  .main-content {
+    padding: 2rem;
+    overflow-y: auto;
+    background-color: #f8fafc;
+  }
 }
 </style>

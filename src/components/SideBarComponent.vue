@@ -2,7 +2,7 @@
   <aside class="sidebar-container">
     <div class="desktop-sidebar">
       <div class="logo">
-        <span class="logo-icon">$</span> OPES
+        <img src="/icons/logo.png" alt="Logo OPES" class="logo-img" />
       </div>
 
       <nav class="menu">
@@ -75,6 +75,10 @@
       <router-link to="/metas" class="mobile-nav-item">
         <i class="fas fa-bullseye"></i>
         <span>Metas</span>
+      </router-link>
+      <router-link to="/familia" class="mobile-nav-item">
+        <i class="fas fa-users"></i>
+        <span>Família</span>
       </router-link>
       <button @click="irParaPerfil" class="mobile-nav-item mobile-profile-btn">
         <div class="avatar avatar-mobile">
@@ -160,7 +164,7 @@ const irParaInvestimentos = () => {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  padding: 0 8px;
+  padding: 0 4px;
   box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
   z-index: 999;
 }
@@ -173,21 +177,20 @@ const irParaInvestimentos = () => {
   gap: 3px;
   color: #64748b;
   text-decoration: none;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 500;
   background: none;
   border: none;
   padding: 6px 0;
-  width: 20%;
+  width: 16.66%; /* Ajustado para caber 6 itens perfeitamente na barra mobile */
   cursor: pointer;
   transition: color 0.2s ease;
 }
 
 .mobile-nav-item i {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
 }
 
-/* Estilo para links ativos no mobile (router-link aplica essa classe automaticamente) */
 .mobile-nav-item.router-link-active,
 .mobile-nav-item.active {
   color: #0f766e;
@@ -243,12 +246,13 @@ const irParaInvestimentos = () => {
   }
 
   .logo {
-    font-size: 1.25rem;
-    font-weight: bold;
     display: flex;
     align-items: center;
-    gap: 8px;
-    color: #1e293b;
+  }
+
+  .logo-img {
+    height: 55px;
+    width: auto;
   }
 
   .menu {
@@ -276,7 +280,6 @@ const irParaInvestimentos = () => {
     color: #1e293b;
   }
 
-  /* Estilo para links ativos no desktop (router-link aplica automaticamente) */
   .menu-item.router-link-active,
   .menu-item.active {
     background-color: #0f766e;

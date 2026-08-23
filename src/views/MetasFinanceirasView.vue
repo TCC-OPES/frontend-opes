@@ -35,7 +35,6 @@ onMounted(async () => {
   iniciarObserver()
 })
 
-// Observa mudanças nas metas para reativar o observer assim que os cards forem renderizados
 watch(() => metasStore.metas, async () => {
   await nextTick()
   iniciarObserver()
@@ -156,22 +155,41 @@ async function deletarMeta(id) {
 .app-layout {
   display: flex;
   min-height: 100vh;
-  background-color: #f8fafc;
+  width: 100%;
+  max-width: 100vw;
+  background-color: #ffffff;
+  overflow-x: hidden;
+  margin: 0;
+  border: none;
+}
+
+.app-layout :deep(.desktop-sidebar) {
+  display: none !important;
 }
 
 .main-wrapper {
   flex: 1;
   display: flex;
   flex-direction: column;
+  width: 100%;
   min-width: 0;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background-color: #ffffff;
 }
 
 .metas-page {
   flex: 1;
-  padding: 24px;
+  padding: 16px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   color: #1e293b;
   box-sizing: border-box;
+  overflow-y: visible;
+  background-color: #ffffff;
+  width: 100%;
 }
 
 .metas-container {
@@ -179,42 +197,47 @@ async function deletarMeta(id) {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .metas-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
 }
 
 .metas-header h1 {
-  font-size: 24px;
+  font-size: 1.4rem;
   font-weight: 700;
   color: #0f172a;
   margin: 0;
 }
 
 .metas-header p {
-  font-size: 14px;
+  font-size: 0.875rem;
   color: #64748b;
-  margin: 4px 0 0 0;
+  margin: 2px 0 0 0;
 }
 
 .btn-add-meta {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   background-color: #006400;
   color: #ffffff;
   padding: 10px 16px;
   border-radius: 12px;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   border: none;
   cursor: pointer;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   transition: background-color 0.2s;
+  width: 100%;
 }
 
 .btn-add-meta:hover {
@@ -230,11 +253,12 @@ async function deletarMeta(id) {
   text-align: center;
   padding: 40px 0;
   color: #94a3b8;
+  font-size: 0.875rem;
 }
 
 .empty-state {
   background-color: #ffffff;
-  padding: 32px;
+  padding: 24px 16px;
   border-radius: 16px;
   text-align: center;
   border: 1px dashed #cbd5e1;
@@ -256,13 +280,14 @@ async function deletarMeta(id) {
 }
 
 .empty-state h3 {
+  font-size: 1rem;
   font-weight: 700;
   color: #334155;
   margin: 0;
 }
 
 .empty-state p {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #94a3b8;
   margin: 4px 0 0 0;
 }
@@ -270,7 +295,7 @@ async function deletarMeta(id) {
 .btn-add-empty {
   background-color: #006400;
   color: #ffffff;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   padding: 8px 16px;
   border-radius: 12px;
@@ -284,13 +309,50 @@ async function deletarMeta(id) {
 
 .goals-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  grid-template-columns: 1fr;
+  gap: 16px;
 }
 
-@media (max-width: 768px) {
+@media (min-width: 640px) {
+  .metas-page {
+    padding: 24px;
+  }
+  .metas-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .btn-add-meta {
+    width: auto;
+  }
+  .metas-header h1 {
+    font-size: 1.6rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-layout {
+    background-color: #f8fafc;
+  }
+  .app-layout :deep(.desktop-sidebar) {
+    display: flex !important;
+  }
+  .main-wrapper {
+    height: 100vh;
+    overflow-y: hidden;
+    background-color: #f8fafc;
+  }
+  .metas-page {
+    padding: 32px 40px;
+    overflow-y: auto;
+    background-color: #f8fafc;
+  }
+  .metas-header h1 {
+    font-size: 1.8rem;
+  }
   .goals-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
   }
 }
 </style>

@@ -29,7 +29,7 @@ onMounted(() => {
       </div>
       <nav>
         <RouterLink to="/login" class="botao-login">Entrar</RouterLink>
-        <RouterLink to="/cadastro" class="botao-principal">Grátis</RouterLink>
+        <RouterLink to="/cadastro" class="botao-principal">Cadastrar</RouterLink>
       </nav>
     </header>
 
@@ -133,13 +133,31 @@ onMounted(() => {
   font-family: 'Plus Jakarta Sans', sans-serif;
   color: #1a1a1a;
   width: 100%;
-  min-height: 100vh;
+  height: 100vh; /* Ocupa exatamente a altura da tela */
+  overflow-y: auto; /* Ativa a barra de rolagem vertical */
   padding-left: 20px;
   padding-right: 20px;
   background-image: radial-gradient(#e5e7eb 0.8px, transparent 0.8px);
   background-size: 24px 24px;
 }
 
+/* Estilização da barra de rolagem vertical */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
 
 .animar {
   opacity: 0;
@@ -159,7 +177,6 @@ onMounted(() => {
 .cartao-recurso:nth-child(4) { transition-delay: 0.3s; }
 .cartao-recurso:nth-child(5) { transition-delay: 0.4s; }
 .cartao-recurso:nth-child(6) { transition-delay: 0.5s; }
-
 
 .barra-navegacao {
   display: flex;
@@ -282,7 +299,6 @@ p {
   border-radius: 10px;
 }
 
-
 .secao-recursos {
   padding-top: 80px;
   padding-bottom: 80px;
@@ -376,7 +392,6 @@ p {
   margin-bottom: 0;
   text-align: left;
 }
-
 
 @media (min-width: 968px) {
   .pagina-inicial {

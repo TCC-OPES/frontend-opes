@@ -326,26 +326,46 @@ const obterCorProgresso = (porcentagem) => {
   display: flex;
   min-height: 100vh;
   width: 100%;
-  background-color: #f4f6f9;
+  max-width: 100vw;
+  background-color: #ffffff;
+  overflow-x: hidden;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  margin: 0;
+}
+
+.dashboard-layout :deep(.desktop-sidebar) {
+  display: none !important;
 }
 
 .main-container {
   flex: 1;
   display: flex;
   flex-direction: column;
+  width: 100%;
   min-width: 0;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
   position: relative;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background-color: #ffffff;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
 }
 
 .dashboard-content {
   flex: 1;
-  padding: 16px;
+  padding: 16px 16px 90px 16px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  overflow-y: auto;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-y: visible;
+  background-color: #ffffff;
 }
 
 .welcome-section h2 {
@@ -368,6 +388,8 @@ const obterCorProgresso = (porcentagem) => {
   flex-direction: column;
   gap: 20px;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .balance-main .label {
@@ -400,6 +422,7 @@ const obterCorProgresso = (porcentagem) => {
   padding: 12px 14px;
   border-radius: 12px;
   backdrop-filter: blur(8px);
+  min-width: 0;
 }
 .summary-box p {
   font-size: 0.75rem;
@@ -419,6 +442,7 @@ const obterCorProgresso = (porcentagem) => {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  width: 100%;
 }
 
 .chart-card,
@@ -428,6 +452,8 @@ const obterCorProgresso = (porcentagem) => {
   border-radius: 16px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
   min-width: 0;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .chart-card h3,
@@ -519,7 +545,7 @@ const obterCorProgresso = (porcentagem) => {
 
 .fab-button {
   position: fixed;
-  bottom: 20px;
+  bottom: 80px;
   right: 20px;
   width: 48px;
   height: 48px;
@@ -543,13 +569,31 @@ const obterCorProgresso = (porcentagem) => {
 }
 
 @media (min-width: 640px) {
-  .dashboard-content { padding: 24px; }
+  .dashboard-content { padding: 24px 24px 90px 24px; }
   .balance-gradient-card { padding: 24px; }
   .balance-main .amount { font-size: 2.2rem; }
 }
 
 @media (min-width: 1024px) {
-  .dashboard-content { padding: 32px 40px; }
+  .dashboard-layout {
+    background-color: #f4f6f9;
+  }
+  .dashboard-layout :deep(.desktop-sidebar) {
+    display: flex !important;
+  }
+  .main-container {
+    height: 100vh;
+    overflow-y: hidden;
+    background-color: #f4f6f9;
+  }
+  .dashboard-content {
+    padding: 32px 40px;
+    overflow-y: auto;
+    background-color: #f4f6f9;
+  }
+  .fab-button {
+    bottom: 20px;
+  }
   .welcome-section h2 { font-size: 1.8rem; }
   .balance-gradient-card {
     flex-direction: row;
