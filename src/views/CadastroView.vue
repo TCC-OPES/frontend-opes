@@ -1,14 +1,13 @@
 <script setup>
 import { ref, computed } from 'vue'
 import axios from 'axios'
-import { useRouter } from 'vue-router' // <-- Importa o roteador
+import { useRouter } from 'vue-router'
 
 import FormCard from '../components/cadastro/FormCard.vue'
 import FormInput from '../components/cadastro/FormInput.vue'
 import PasswordInput from '../components/cadastro/PasswordInput.vue'
 
-
-const router = useRouter() // <-- Inicializa o roteador
+const router = useRouter()
 
 const form = ref({
   cpf: '',
@@ -55,7 +54,7 @@ async function submitForm() {
 
   try {
     const apiUrl = import.meta.env.VITE_API_URL
-    await axios.post(`${apiUrl}/api/cadastro/`, {
+    await axios.post(`${apiUrl}api/cadastro/`, {
       cpf: form.value.cpf.replace(/\D/g, ''),
       nome: form.value.nome,
       telefone: form.value.telefone.replace(/\D/g, ''),
@@ -65,8 +64,6 @@ async function submitForm() {
     })
 
     alert('Conta criada com sucesso!')
-
-    // Redireciona o usuário para a rota de login
     router.push('/login')
 
     form.value = {
@@ -89,6 +86,10 @@ async function submitForm() {
 
 <template>
   <div class="page">
+    <div class="mobile-logo-container">
+      <img src="/icons/logo.png" alt="OPES Logo" class="logo-img" />
+    </div>
+
     <div class="lado-imagem">
       <img src="/icons/logo.png" alt="Ilustração" />
     </div>
@@ -163,29 +164,31 @@ async function submitForm() {
 </template>
 
 <style scoped>
-:deep(html), :deep(body) {
-  margin: 0;
-  padding: 0;
-  height: 100vh;
-  overflow: hidden !important;
-}
 .page {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-
-  box-sizing: border-box;
-  height: 100vh;
-  max-height: 100vh;
-  width: 100vw;
-
-  overflow: hidden !important;
-  padding: 20px;
-
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100vw;
   background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
   font-family: Arial, sans-serif;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.mobile-logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 36px 16px 16px 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.logo-img {
+  max-height: 70px;
+  width: auto;
+  object-fit: contain;
 }
 
 .lado-imagem {
@@ -194,21 +197,26 @@ async function submitForm() {
 
 .container-form {
   width: 100%;
+  flex: 1;
   display: flex;
   justify-content: center;
+  align-items: center;
+  padding: 16px;
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
 .formulario {
   display: flex;
   flex-direction: column;
-  gap: 12px; /* Reduzido de 16px para 12px para economizar altura */
+  gap: 12px;
   text-align: left;
 }
 
 .all {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px; /* Reduzido de 16px para 12px */
+  gap: 12px;
 }
 
 .enviar {
@@ -238,20 +246,31 @@ async function submitForm() {
   text-align: center;
 }
 
-@media (min-width: 769px) {
+@media (min-width: 1024px) {
+  :deep(html), :deep(body) {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden !important;
+  }
+
   .page {
     display: grid;
-    /* Mudamos de 1fr 1fr para 1.4fr 1fr para dar mais espaço físico para a logo crescer */
     grid-template-columns: 1.4fr 1fr;
-    /* Mantém o espaçamento perfeito e as bordas que você gostou */
     padding: 0 40px;
     gap: 30px;
     align-items: center;
+    height: 100vh;
+    overflow: hidden !important;
+  }
+
+  .mobile-logo-container {
+    display: none;
   }
 
   .lado-imagem {
     display: flex;
-    justify-content: flex-end; /* Mantém a logo colada na mesma distância do card */
+    justify-content: flex-end;
     align-items: center;
     padding: 0;
     width: 100%;
@@ -259,11 +278,8 @@ async function submitForm() {
   }
 
   .lado-imagem img {
-    /* Faz a logo ocupar todo o espaço da nova coluna maior */
     width: 100%;
-    /* Aumentamos consideravelmente a largura máxima permitida */
     max-width: 800px;
-    /* Altura quase total da tela para permitir que ela expanda verticalmente */
     max-height: 92vh;
     object-fit: contain;
     transform: none;
@@ -271,15 +287,20 @@ async function submitForm() {
 
   .container-form {
     display: flex;
-    justify-content: flex-start; /* Mantém o card grudado ao centro */
+    justify-content: flex-start;
     align-items: center;
     width: 100%;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 40px 0;
+    box-sizing: border-box;
   }
 
   .all {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
 h1 {
   font-size: 24px;
   font-weight: bold;

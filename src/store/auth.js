@@ -8,35 +8,42 @@ export const useAuthStore = defineStore('auth', () => {
   const loading = ref(false)
 
 
-  async function realizarLogin(cpf, password) {
-    loading.value = true
-    try {
+ async function realizarLogin(cpf, password) {
+  loading.value = true
+  try {
+    // 1. Enviando o CPF tanto como 'username' quanto 'cpf' para garantir compatibilidade com o Django Serializer
+    const response = await api.post('/api/login/', {
+      username: cpf, // O Django por padrão lê o campo 'username'
+      cpf: cpf,      // Mantido caso seu backend use um campo customizado
+      password: password,
+    })
 
-      const response = await api.post('api/login/', {
-        cpf,
-        password,
-      })
+    const accessToken = response.data.access
+    const refreshToken = response.data.refresh
 
+    // 2. Salva os tokens no localStorage
+    localStorage.setItem('access', accessToken)
+    localStorage.setItem('refresh', refreshToken)
 
-      localStorage.setItem('access', response.data.access)
-      localStorage.setItem('refresh', response.data.refresh)
+    // 3. Injeta o token diretamente nas requisições futuras do Axios
+    api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`
 
-
-      if (response.data.user) {
-        user.value = response.data.user
-        localStorage.setItem('user', JSON.stringify(response.data.user))
-      } else {
-        await buscarPerfil()
-      }
-
-      return response.data
-    } catch (error) {
-      console.error('Erro ao fazer login:', error)
-      throw error
-    } finally {
-      loading.value = false
+    // 4. Salva ou busca o usuário
+    if (response.data.user) {
+      user.value = response.data.user
+      localStorage.setItem('user', JSON.stringify(response.data.user))
+    } else {
+      await buscarPerfil()
     }
+
+    return response.data
+  } catch (error) {
+    console.error('Erro ao fazer login:', error)
+    throw error
+  } finally {
+    loading.value = false
   }
+}
 
 
   async function buscarPerfil() {
@@ -64,6 +71,8 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('access')
     localStorage.removeItem('refresh')
     localStorage.removeItem('user')
+
+    window.location.href = '/login'
   }
 
   return {

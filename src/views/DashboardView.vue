@@ -1,252 +1,615 @@
 <template>
   <div class="dashboard-layout">
-
     <SideBarComponent />
 
     <div class="main-container">
-
       <HeaderComponent />
 
-      <div class="dashboard-content">
-
-        <section class="welcome-section">
-          <h2>Bem-vindo de volta, {{ userName }}! 👋</h2>
+      <main class="dashboard-content">
+        <section class="welcome-section animar">
+          <h2>Bem-vindo de volta, {{ usuario.name || 'Usuário' }}! </h2>
           <p>Aqui está um resumo completo das suas finanças</p>
         </section>
 
-        <section class="balance-gradient-card">
+        <section class="balance-gradient-card animar">
           <div class="balance-main">
             <p class="label">Saldo Total</p>
-            <h1 class="amount">R$ 25.430,00</h1>
+            <h1 class="amount">R$ {{ formatarMoeda(saldoTotalGeral) }}</h1>
             <span class="trending-badge">
-              <i class="fas fa-arrow-up"></i> +12.5% <small>vs mês passado</small>
+              <i class="fas fa-arrow-up"></i> {{ resumo.porcentagem_mes || '+0%' }} <small>vs mês passado</small>
             </span>
           </div>
 
           <div class="balance-summary-boxes">
             <div class="summary-box">
               <p><i class="fas fa-arrow-up icon-receita"></i> Receitas</p>
-              <h3>R$ 11.000</h3>
+              <h3>R$ {{ formatarMoeda(resumo.receitas) }}</h3>
             </div>
             <div class="summary-box">
               <p><i class="fas fa-arrow-down icon-despesa"></i> Despesas</p>
-              <h3>R$ 6.400</h3>
+              <h3>R$ {{ formatarMoeda(resumo.despesas) }}</h3>
             </div>
           </div>
         </section>
 
-        <section class="analytics-grid">
+        <section class="analytics-grid animar">
           <div class="chart-card">
             <h3>Evolução Patrimonial</h3>
-            <div class="chart-placeholder">[Gráfico de Linha entra aqui]</div>
+            <div class="chart-wrapper">
+              <Line :data="lineChartData" :options="lineChartOptions" />
+            </div>
           </div>
           <div class="chart-card">
             <h3>Gastos Semanais</h3>
-            <div class="chart-placeholder">[Gráfico de Barras entra aqui]</div>
+            <div class="chart-wrapper">
+              <Bar :data="barChartData" :options="barChartOptions" />
+            </div>
           </div>
         </section>
 
-      </div>
+        <section class="bottom-grid animar">
+          <div class="card-section">
+            <h3>Próximas Contas</h3>
+            <div class="contas-list" v-if="proximasContas.length > 0">
+              <div v-for="conta in proximasContas" :key="conta.id" class="conta-item">
+                <div class="conta-info">
+                  <h4>{{ conta.descricao }}</h4>
+                  <p>{{ conta.categoria }} • {{ conta.vencimento }}</p>
+                </div>
+                <span class="conta-valor">R$ {{ formatarMoeda(conta.valor) }}</span>
+              </div>
+            </div>
+            <p v-else class="empty-msg">Nenhuma conta com vencimento próximo.</p>
+          </div>
+
+          <div class="card-section">
+            <h3>Minhas Metas</h3>
+            <div class="metas-list" v-if="metasFormatadas.length > 0">
+              <div v-for="meta in metasFormatadas" :key="meta.id" class="meta-item">
+                <div class="meta-header">
+                  <span>{{ meta.titulo }}</span>
+                  <span class="meta-percent">{{ meta.porcentagem }}%</span>
+                </div>
+                <div class="progress-bar">
+                  <div
+                    class="progress-fill"
+                    :class="obterCorProgresso(meta.porcentagem)"
+                    :style="{ width: meta.porcentagem + '%' }"
+                  ></div>
+                </div>
+              </div>
+            </div>
+            <p v-else-if="metasStore.carregando" class="empty-msg">Carregando metas...</p>
+            <p v-else class="empty-msg">Nenhuma meta cadastrada.</p>
+          </div>
+        </section>
+      </main>
+
+      <button class="fab-button" title="Nova Transação">
+        <i class="fas fa-plus"></i>
+      </button>
     </div>
-
-    <!-- Componente do Botão + Modal carregado aqui -->
-    <AddTransactionModal />
-
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import HeaderComponent from '@/components/HeaderComponent.vue';
-import SideBarComponent from '@/components/SideBarComponent.vue';
-import AddTransactionModal from '@/components/dashboard/AddTransactionModal.vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import HeaderComponent from '@/components/HeaderComponent.vue'
+import SideBarComponent from '@/components/SideBarComponent.vue'
+import { useMetasStore } from '@/store/metas'
+import investimentoService from '@/services/investimento'
+import api from '@/services/api'
 
-// Criamos a variável reativa com um valor padrão caso não encontre o nome
-const userName = ref('Usuário');
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+  LineElement,
+  PointElement,
+  CategoryScale,
+  LinearScale,
+  Filler
+} from 'chart.js'
+import { Line, Bar } from 'vue-chartjs'
 
-onMounted(() => {
-  // Pega os dados salvos no localStorage no momento do login
-  const storedUser = localStorage.getItem('user');
+ChartJS.register(
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+  LineElement,
+  PointElement,
+  CategoryScale,
+  LinearScale,
+  Filler
+)
 
-  if (storedUser) {
-    try {
-      const userData = JSON.parse(storedUser);
-      // Pega o nome do objeto (seja 'name' ou 'nome')
-      userName.value = userData.name || userData.nome || 'Usuário';
-    } catch {
-      // Caso o valor no localStorage seja só uma string com o nome direto
-      userName.value = storedUser;
+const metasStore = useMetasStore()
+let observer = null
+
+const usuario = ref({ name: '' })
+const resumo = ref({
+  saldo_total: 0,
+  receitas: 0,
+  despesas: 0,
+  porcentagem_mes: '+0%'
+})
+const proximasContas = ref([])
+const totalInvestidoStore = ref(0)
+
+const saldoTotalGeral = computed(() => {
+  const saldoBase = Number(resumo.value.saldo_total || 0)
+  return saldoBase + totalInvestidoStore.value
+})
+
+const lineChartData = ref({
+  labels: ['Out', 'Nov', 'Dez', 'Jan', 'Fev', 'Mar'],
+  datasets: [
+    {
+      label: 'Patrimônio',
+      data: [8500, 9200, 8900, 9800, 9400, 11500],
+      borderColor: '#15803d',
+      backgroundColor: 'rgba(21, 128, 61, 0.1)',
+      fill: true,
+      tension: 0.4,
+      pointRadius: 3,
+      pointHoverRadius: 6
+    }
+  ]
+})
+
+const lineChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      callbacks: {
+        label: (context) => ` R$ ${context.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+      }
+    }
+  },
+  scales: {
+    y: {
+      grid: { color: '#f1f5f9' },
+      ticks: {
+        color: '#94a3b8',
+        callback: (value) => `R$ ${value}`
+      }
+    },
+    x: {
+      grid: { display: false },
+      ticks: { color: '#94a3b8' }
     }
   }
-});
+}
+
+const barChartData = ref({
+  labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+  datasets: [
+    {
+      label: 'Gastos',
+      data: [310, 180, 450, 280, 520, 390, 150],
+      backgroundColor: '#2563eb',
+      borderRadius: 6
+    }
+  ]
+})
+
+const barChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      callbacks: {
+        label: (context) => ` R$ ${context.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+      }
+    }
+  },
+  scales: {
+    y: {
+      grid: { color: '#f1f5f9' },
+      ticks: {
+        color: '#94a3b8',
+        callback: (value) => `R$ ${value}`
+      }
+    },
+    x: {
+      grid: { display: false },
+      ticks: { color: '#94a3b8' }
+    }
+  }
+}
+
+const metasFormatadas = computed(() => {
+  return metasStore.metas.map((meta) => {
+    const atual = Number(meta.valor_atual || 0)
+    const objetivo = Number(meta.valor_objetivo || 1)
+    const porcentagem = Math.min(Math.round((atual / objetivo) * 100), 100)
+
+    return {
+      id: meta.id,
+      titulo: meta.nome || meta.titulo || 'Meta sem nome',
+      porcentagem
+    }
+  })
+})
+
+const carregarDadosDashboard = async () => {
+  try {
+    const userLocal = localStorage.getItem('user')
+
+    if (userLocal) {
+      const parsedUser = JSON.parse(userLocal)
+      const dadosUsuario = parsedUser.data || parsedUser
+      const nomeCompleto = dadosUsuario.name || dadosUsuario.nome || ''
+      const primeiroNome = nomeCompleto.trim().split(' ')[0]
+
+      usuario.value = {
+        name: primeiroNome
+      }
+    }
+
+    metasStore.carregarMetas()
+
+    const resInvestimentos = await investimentoService.buscarInvestimentos().catch(() => null)
+    if (resInvestimentos?.data) {
+      totalInvestidoStore.value = resInvestimentos.data.reduce((acc, item) => {
+        const val = Number(item.valor_investido ?? item.valor ?? 0)
+        return acc + val
+      }, 0)
+    }
+
+    const resResumo = await api.get('api/dashboard/resumo/').catch(() => null)
+    if (resResumo?.data) resumo.value = resResumo.data
+
+    const resContas = await api.get('api/contas/proximas/').catch(() => null)
+    if (resContas?.data) proximasContas.value = resContas.data
+
+    const resGraficos = await api.get('api/dashboard/graficos/').catch(() => null)
+    if (resGraficos?.data) {
+      if (resGraficos.data.evolucao_labels) lineChartData.value.labels = resGraficos.data.evolucao_labels
+      if (resGraficos.data.evolucao_valores) lineChartData.value.datasets[0].data = resGraficos.data.evolucao_valores
+      if (resGraficos.data.gastos_semanais) barChartData.value.datasets[0].data = resGraficos.data.gastos_semanais
+    }
+  } catch (error) {
+    console.error('Erro ao carregar dados do dashboard:', error)
+  }
+}
+
+onMounted(async () => {
+  await carregarDadosDashboard()
+
+  observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('exibir')
+      }
+    })
+  }, { threshold: 0.1 })
+
+  document.querySelectorAll('.animar').forEach((el) => observer.observe(el))
+})
+
+onUnmounted(() => {
+  if (observer) observer.disconnect()
+})
+
+const formatarMoeda = (valor) => {
+  if (!valor && valor !== 0) return '0,00'
+  return Number(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+const obterCorProgresso = (porcentagem) => {
+  if (porcentagem >= 70) return 'green'
+  if (porcentagem >= 35) return 'blue'
+  return 'gray'
+}
 </script>
 
 <style scoped>
-/* --- BASE & LAYOUT (MOBILE FIRST) --- */
+.animar {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s ease-out;
+}
+
+.animar.exibir {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .dashboard-layout {
   display: flex;
-  flex-direction: column;
-  width: 100%;
   min-height: 100vh;
-  background-color: #f4f6f9; /* Garante o contexto de posicionamento correto */
+  width: 100%;
+  max-width: 100vw;
+  background-color: #ffffff;
+  overflow-x: hidden;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  margin: 0;
+}
+
+.dashboard-layout :deep(.desktop-sidebar) {
+  display: none !important;
 }
 
 .main-container {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-width: 0;
   width: 100%;
+  min-width: 0;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background-color: #ffffff;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
 }
 
 .dashboard-content {
   flex: 1;
-  padding: 20px;
+  padding: 16px 16px 90px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-y: visible;
+  background-color: #ffffff;
 }
 
-/* --- COMPONENTES DA TELA --- */
-.welcome-section {
-  margin-top: 16px;
-}
 .welcome-section h2 {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   color: #1e293b;
   font-weight: 700;
 }
 .welcome-section p {
   color: #64748b;
-  font-size: 0.9rem;
-  margin-top: 4px;
+  font-size: 0.875rem;
+  margin-top: 2px;
 }
 
-/* Card Principal Gradiente */
 .balance-gradient-card {
-  background: linear-gradient(135deg, #155e75 0%, #115e59 45%, #1d4ed8 100%);
+  background: linear-gradient(135deg, #0d5c63 0%, #115e59 45%, #1e40af 100%);
   border-radius: 16px;
   padding: 20px;
   color: white;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  margin-top: 20px;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .balance-main .label {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   opacity: 0.85;
 }
 .balance-main .amount {
-  font-size: 2.2rem;
+  font-size: 1.8rem;
   font-weight: 700;
-  margin: 6px 0;
-  letter-spacing: -0.5px;
+  margin: 4px 0;
+  word-break: break-all;
 }
 .trending-badge {
   background: rgba(255, 255, 255, 0.2);
-  padding: 6px 14px;
+  padding: 4px 10px;
   border-radius: 20px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 
 .balance-summary-boxes {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
-  width: 100%;
 }
 .summary-box {
   background: rgba(255, 255, 255, 0.12);
-  padding: 12px;
+  padding: 12px 14px;
   border-radius: 12px;
   backdrop-filter: blur(8px);
-  flex: 1;
+  min-width: 0;
 }
 .summary-box p {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   opacity: 0.9;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 .summary-box h3 {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
+  word-break: break-all;
 }
 .icon-receita { color: #34d399; }
 .icon-despesa { color: #f87171; }
 
-/* Grid de Gráficos */
-.analytics-grid {
-  display: grid;
-  grid-template-columns: 1fr;
+.analytics-grid,
+.bottom-grid {
+  display: flex;
+  flex-direction: column;
   gap: 20px;
-  margin-top: 20px;
+  width: 100%;
 }
 
-.chart-card {
+.chart-card,
+.card-section {
   background: white;
-  padding: 20px;
+  padding: 16px;
   border-radius: 16px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+  min-width: 0;
+  box-sizing: border-box;
+  width: 100%;
 }
-.chart-card h3 {
+
+.chart-card h3,
+.card-section h3 {
   font-size: 1rem;
   color: #1e293b;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   font-weight: 600;
 }
-.chart-placeholder {
-  height: 200px;
+
+.chart-wrapper {
+  height: 220px;
+  position: relative;
+  width: 100%;
+}
+
+.contas-list,
+.metas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.conta-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
   background-color: #f8fafc;
-  border: 2px dashed #e2e8f0;
   border-radius: 12px;
+}
+
+.conta-info h4 {
+  font-size: 0.875rem;
+  color: #1e293b;
+  margin: 0;
+  font-weight: 600;
+}
+
+.conta-info p {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin: 2px 0 0 0;
+}
+
+.conta-valor {
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 0.875rem;
+}
+
+.meta-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 6px;
+}
+
+.meta-percent {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+.progress-fill.green { background-color: #15803d; }
+.progress-fill.blue { background-color: #2563eb; }
+.progress-fill.gray { background-color: #64748b; }
+
+.empty-msg {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.fab-button {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  background-color: #0f766e;
+  color: white;
+  border: none;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #94a3b8;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 99;
+  transition: transform 0.2s, background-color 0.2s;
 }
 
-/* --- MEDIA QUERIES --- */
-@media (min-width: 768px) {
+.fab-button:hover {
+  background-color: #0d9488;
+  transform: scale(1.05);
+}
+
+@media (min-width: 640px) {
+  .dashboard-content { padding: 24px 24px 90px 24px; }
+  .balance-gradient-card { padding: 24px; }
+  .balance-main .amount { font-size: 2.2rem; }
+}
+
+@media (min-width: 1024px) {
   .dashboard-layout {
-    flex-direction: row;
+    background-color: #f4f6f9;
   }
-
+  .dashboard-layout :deep(.desktop-sidebar) {
+    display: flex !important;
+  }
+  .main-container {
+    height: 100vh;
+    overflow-y: hidden;
+    background-color: #f4f6f9;
+  }
   .dashboard-content {
-    padding: 0 40px 40px 40px;
+    padding: 32px 40px;
+    overflow-y: auto;
+    background-color: #f4f6f9;
   }
-
-  .welcome-section h2 {
-    font-size: 1.8rem;
+  .fab-button {
+    bottom: 20px;
   }
-
+  .welcome-section h2 { font-size: 1.8rem; }
   .balance-gradient-card {
     flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
     padding: 32px;
   }
-
-  .balance-main .amount {
-    font-size: 2.6rem;
+  .balance-main .amount { font-size: 2.6rem; }
+  .balance-summary-boxes { display: flex; }
+  .summary-box { padding: 16px 24px; min-width: 140px; }
+  .summary-box h3 { font-size: 1.3rem; }
+  .analytics-grid, .bottom-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
   }
-
-  .balance-summary-boxes {
-    width: auto;
-    gap: 16px;
-  }
-
-  .summary-box {
-    padding: 16px 24px;
-    min-width: 140px;
-  }
-
-  .analytics-grid {
-    grid-template-columns: 1.2fr 0.8fr; 
-    gap: 24px;
-  }
-
-  .chart-placeholder {
-    height: 240px;
-  }
+  .chart-card, .card-section { padding: 24px; }
+  .chart-wrapper { height: 240px; }
 }
 </style>
