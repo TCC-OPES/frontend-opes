@@ -4,6 +4,7 @@ import PerfilView from '../views/PerfilView.vue'
 import HomeView from '../views/HomeView.vue'
 import CadastroView from '../views/CadastroView.vue'
 import LoginView from '../views/LoginView.vue'
+import InvestimentoView from '../views/InvestimentoView.vue'
 import CartoesView from '../views/CartoesView.vue'
 import MetasFinanceirasView from '@/views/MetasFinanceirasView.vue'
 
@@ -29,6 +30,11 @@ const router = createRouter({
       path: '/dashboard',
       name: 'dashboard',
       component: DashboardView,
+    },
+    {
+      path: '/investimento',
+      name: 'investimento',
+      component: InvestimentoView,
     },
     {
       path: '/perfil',

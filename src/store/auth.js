@@ -71,6 +71,8 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('access')
     localStorage.removeItem('refresh')
     localStorage.removeItem('user')
+
+    window.location.href = '/login'
   }
 
   return {

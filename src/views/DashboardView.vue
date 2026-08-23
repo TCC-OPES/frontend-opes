@@ -1,14 +1,11 @@
 <template>
   <div class="dashboard-layout">
-
     <SideBarComponent />
 
     <div class="main-container">
-
       <HeaderComponent />
 
       <div class="dashboard-content">
-
         <section class="welcome-section">
           <h2>Bem-vindo de volta, João! 👋</h2>
           <p>Aqui está um resumo completo das suas finanças</p>
@@ -45,20 +42,16 @@
             <div class="chart-placeholder">[Gráfico de Barras entra aqui]</div>
           </div>
         </section>
-
       </div>
     </div>
-
   </div>
-  <button @click="goToPerfil" class="botao-perfil">Ir para Perfil</button>
-  <PerfilComponent />
 </template>
 
 <script setup>
 import HeaderComponent from '@/components/HeaderComponent.vue';
 import SideBarComponent from '@/components/SideBarComponent.vue';
-
 import { useRouter } from 'vue-router';
+
 const router = useRouter();
 
 const goToPerfil = () => {
@@ -67,7 +60,6 @@ const goToPerfil = () => {
 </script>
 
 <style scoped>
-
 .dashboard-layout {
   display: flex;
   width: 100vw;
@@ -75,7 +67,6 @@ const goToPerfil = () => {
   overflow: hidden;
   background-color: #f4f6f9;
 }
-
 
 .main-container {
   flex: 1;
@@ -85,14 +76,12 @@ const goToPerfil = () => {
   overflow: hidden;
 }
 
-/* Área interna do miolo, abaixo do Header, com scroll independente se precisar */
 .dashboard-content {
   flex: 1;
   padding: 0 40px 40px 40px;
   overflow-y: auto;
 }
 
-/* Seção de boas vindas */
 .welcome-section {
   margin-top: 24px;
 }
@@ -107,7 +96,6 @@ const goToPerfil = () => {
   margin-top: 4px;
 }
 
-/* O Card com o Gradiente idêntico ao print */
 .balance-gradient-card {
   background: linear-gradient(135deg, #155e75 0%, #115e59 45%, #1d4ed8 100%);
   border-radius: 16px;
@@ -140,7 +128,6 @@ const goToPerfil = () => {
   gap: 6px;
 }
 
-/* Caixas menores de Receitas e Despesas dentro do card */
 .balance-summary-boxes {
   display: flex;
   gap: 16px;
@@ -164,10 +151,9 @@ const goToPerfil = () => {
 .icon-receita { color: #34d399; }
 .icon-despesa { color: #f87171; }
 
-/* Grid dos Gráficos */
 .analytics-grid {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr; /* Mantém a proporção do print */
+  grid-template-columns: 1.2fr 0.8fr;
   gap: 24px;
   margin-top: 24px;
 }
@@ -193,5 +179,48 @@ const goToPerfil = () => {
   align-items: center;
   justify-content: center;
   color: #94a3b8;
+}
+
+/* Responsividade mantida da FEAT-33 */
+@media (min-width: 768px) {
+  .dashboard-layout {
+    flex-direction: row;
+  }
+
+  .dashboard-content {
+    padding: 0 40px 40px 40px;
+  }
+
+  .welcome-section h2 {
+    font-size: 1.8rem;
+  }
+
+  .balance-gradient-card {
+    flex-direction: row;
+    padding: 32px;
+  }
+
+  .balance-main .amount {
+    font-size: 2.6rem;
+  }
+
+  .balance-summary-boxes {
+    width: auto;
+    gap: 16px;
+  }
+
+  .summary-box {
+    padding: 16px 24px;
+    min-width: 140px;
+  }
+
+  .analytics-grid {
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 24px;
+  }
+
+  .chart-placeholder {
+    height: 240px;
+  }
 }
 </style>

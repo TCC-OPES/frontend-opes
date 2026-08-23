@@ -1,3 +1,57 @@
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const usuario = ref({
+  nome: '',
+  email: '',
+  fotoUrl: ''
+})
+
+const buscarDadosUsuario = async () => {
+  try {
+    const resposta = await fetch('https://api.seu-sistema.com/usuario/perfil', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('access')}`
+      }
+    })
+
+    if (!resposta.ok) throw new Error('Erro ao buscar dados do usuário')
+
+    const dados = await resposta.json()
+    usuario.value = dados
+  } catch (error) {
+    console.error('Erro na requisição:', error)
+    usuario.value = { nome: 'Usuário', email: '' }
+  }
+}
+
+onMounted(() => {
+  buscarDadosUsuario()
+})
+
+const obterIniciais = (nome) => {
+  if (!nome) return '?'
+  const partes = nome.trim().split(' ')
+  if (partes.length > 1) {
+    return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase()
+  }
+  return partes[0][0].toUpperCase()
+}
+
+const irParaPerfil = () => {
+  router.push('/perfil')
+}
+
+const irParaInvestimentos = () => {
+  router.push('/investimento')
+}
+</script>
+
 <template>
   <aside class="sidebar">
     <div class="logo">
@@ -13,13 +67,16 @@
       <a href="#" class="menu-item"><i class="fas fa-wallet"></i> Carteiras</a>
       <a href="#" class="menu-item"><i class="fas fa-credit-card"></i> Cartões</a>
       <a href="#" class="menu-item"><i class="fas fa-target"></i> Metas</a>
-      <a href="#" class="menu-item"><i class="fas fa-chart-line"></i> Investimentos</a>
+      <a href="#" class="menu-item" @click.prevent="irParaInvestimentos">
+        <i class="fas fa-chart-line"></i> Investimentos
+      </a>
       <a href="#" class="menu-item"><i class="fas fa-users"></i> Família</a>
     </nav>
 
     <button @click="irParaPerfil" class="user-profile-btn" aria-label="Acessar perfil">
       <div class="avatar">
-        {{ obterIniciais(usuario.nome) }}
+        <img v-if="usuario.fotoUrl" :src="usuario.fotoUrl" alt="Foto de perfil" class="foto-sidebar" />
+        <span v-else>{{ obterIniciais(usuario.nome) }}</span>
       </div>
       <div class="user-info">
         <h4>{{ usuario.nome || 'Carregando...' }}</h4>
@@ -29,60 +86,6 @@
     </button>
   </aside>
 </template>
-
-<script setup>
-import { ref, onMounted } from 'vue';
-
-
-const usuario = ref({
-  nome: '',
-  email: ''
-});
-
-const buscarDadosUsuario = async () => {
-  try {
-    
-    const resposta = await fetch('https://api.seu-sistema.com/usuario/perfil', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        // Geralmente rotas de perfil exigem autenticação:
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    });
-
-    if (!resposta.ok) throw new Error('Erro ao buscar dados do usuário');
-
-    const dados = await resposta.json();
-    usuario.value = dados; // Atualiza o estado com o nome/dados reais do cadastro
-  } catch (error) {
-    console.error('Erro na requisição:', error);
-    usuario.value = { nome: 'Usuário', email: '' };
-  }
-};
-
-// Executa a busca assim que o componente é renderizado na tela
-onMounted(() => {
-  buscarDadosUsuario();
-});
-
-// Função para gerar as iniciais do avatar dinamicamente (ex: "João Silva" -> "JS")
-const obterIniciais = (nome) => {
-  if (!nome) return '?';
-  const partes = nome.trim().split(' ');
-  if (partes.length > 1) {
-    return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
-  }
-  return partes[0][0].toUpperCase();
-};
-
-// Ação do botão ao ser clicado
-const irParaPerfil = () => {
-  console.log('Navegando para o perfil do usuário...');
-  // Se estiver usando o Vue Router, você faria algo como:
-  // router.push('/perfil');
-};
-</script>
 
 <style scoped>
 .sidebar {
@@ -104,7 +107,6 @@ const irParaPerfil = () => {
   gap: 8px;
   color: #1e293b;
 }
-
 
 .menu {
   display: flex;
@@ -136,7 +138,6 @@ const irParaPerfil = () => {
   color: white;
 }
 
-/* Transformado de div para button com resets de estilo CSS nativos */
 .user-profile-btn {
   display: flex;
   align-items: center;
@@ -171,7 +172,14 @@ const irParaPerfil = () => {
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  flex-shrink: 0; /* Impede o avatar de amassar se o texto for grande */
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.foto-sidebar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .user-info {
