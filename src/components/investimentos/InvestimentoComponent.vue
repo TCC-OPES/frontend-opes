@@ -1,25 +1,6 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
-
-const CHAVE_LOCAL_STORAGE = 'meus_investimentos_v1'
-
-const investimentosService = {
-  async getInvestimentos() {
-    const dadosSalvos = localStorage.getItem(CHAVE_LOCAL_STORAGE)
-    return dadosSalvos ? JSON.parse(dadosSalvos) : []
-  },
-  async criarInvestimento(novoItem) {
-    return {
-      id: Date.now(),
-      ...novoItem,
-      valor: Number(novoItem.valor),
-      rendimento: Number(novoItem.rendimento)
-    }
-  },
-  async deletarInvestimento(id) {
-    return true
-  }
-}
+import { ref, computed, onMounted } from 'vue'
+import api from '@/services/api'
 
 const ativos = ref([])
 const carregando = ref(true)
@@ -33,18 +14,16 @@ const novoAtivo = ref({
   cor: '#2563EB'
 })
 
-watch(
-  ativos,
-  (novosAtivos) => {
-    localStorage.setItem(CHAVE_LOCAL_STORAGE, JSON.stringify(novosAtivos))
-  },
-  { deep: true }
-)
-
+// Buscar investimentos da API Django
 const carregarDados = async () => {
   try {
     carregando.value = true
-    ativos.value = await investimentosService.getInvestimentos()
+    const { data } = await api.get('api/investimentos/')
+    ativos.value = data.map(item => ({
+      ...item,
+      valor: item.valor_investido ?? item.valor ?? 0,
+      rendimento: item.rentabilidade ?? item.rendimento ?? 0
+    }))
   } catch (erro) {
     console.error('Erro ao carregar investimentos:', erro)
   } finally {
@@ -97,27 +76,36 @@ const fecharModal = () => {
   exibeModal.value = false
 }
 
+// Salvar novo ativo no backend
 const salvarInvestimento = async () => {
   if (!novoAtivo.value.nome || !novoAtivo.value.valor) return
 
   try {
     salvando.value = true
-    const itemCriado = await investimentosService.criarInvestimento(novoAtivo.value)
-    ativos.value.push(itemCriado)
+    const payload = {
+      nome: novoAtivo.value.nome,
+      valor_investido: Number(novoAtivo.value.valor),
+      rentabilidade: Number(novoAtivo.value.rendimento) || 0,
+      cor: novoAtivo.value.cor
+    }
+
+    await api.post('api/investimentos/', payload)
+    await carregarDados()
     fecharModal()
   } catch (erro) {
-    console.error('Erro ao salvar:', erro)
+    console.error('Erro ao salvar investimento:', erro)
   } finally {
     salvando.value = false
   }
 }
 
+// Deletar ativo do backend
 const removerInvestimento = async (id) => {
   try {
-    await investimentosService.deletarInvestimento(id)
+    await api.delete(`api/investimentos/${id}/`)
     ativos.value = ativos.value.filter(item => item.id !== id)
   } catch (erro) {
-    console.error('Erro ao deletar:', erro)
+    console.error('Erro ao deletar investimento:', erro)
   }
 }
 
@@ -180,7 +168,7 @@ onMounted(() => {
                 cy="18"
                 r="15.915"
                 fill="transparent"
-                :stroke="segmento.cor"
+                :stroke="segmento.cor || '#2563EB'"
                 stroke-width="5"
                 :stroke-dasharray="segmento.dashArray"
                 :stroke-dashoffset="segmento.dashOffset"
@@ -198,7 +186,7 @@ onMounted(() => {
           <ul v-if="ativos.length" class="investments-list">
             <li v-for="ativo in ativos" :key="ativo.id" class="investment-item">
               <div class="item-info">
-                <span class="color-dot" :style="{ backgroundColor: ativo.cor }"></span>
+                <span class="color-dot" :style="{ backgroundColor: ativo.cor || '#2563EB' }"></span>
                 <span class="item-name">{{ ativo.nome }}</span>
               </div>
               <div class="item-actions">
@@ -261,7 +249,9 @@ onMounted(() => {
 .investimentos-container {
   padding: 1.5rem 2rem;
   background-color: #f8fafc;
-  min-height: 100vh;
+  height: 100%;
+  max-height: calc(100vh - 70px); /* Ajusta à altura da tela descontando o header superior */
+  overflow-y: auto; /* Garante que a barra de rolagem vertical reapareça */
   box-sizing: border-box;
 }
 
@@ -298,6 +288,7 @@ onMounted(() => {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.25rem;
+  padding-bottom: 2rem;
 }
 
 .card,

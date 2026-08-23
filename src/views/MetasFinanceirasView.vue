@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { Plus, Target } from '@lucide/vue'
 import { useMetasStore } from '@/store/metas'
 
@@ -13,9 +13,36 @@ import AdicionarMeta from '@/components/metas/AdicionarMeta.vue'
 const metasStore = useMetasStore()
 const modalAberto = ref(false)
 const metaEmEdicao = ref(null)
+let observer = null
 
-onMounted(() => {
-  metasStore.carregarMetas()
+const iniciarObserver = () => {
+  if (observer) observer.disconnect()
+
+  observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('exibir')
+      }
+    })
+  }, { threshold: 0.1 })
+
+  document.querySelectorAll('.animar').forEach((el) => observer.observe(el))
+}
+
+onMounted(async () => {
+  await metasStore.carregarMetas()
+  await nextTick()
+  iniciarObserver()
+})
+
+// Observa mudanças nas metas para reativar o observer assim que os cards forem renderizados
+watch(() => metasStore.metas, async () => {
+  await nextTick()
+  iniciarObserver()
+}, { deep: true })
+
+onUnmounted(() => {
+  if (observer) observer.disconnect()
 })
 
 function abrirModalNovaMeta() {
@@ -53,7 +80,7 @@ async function deletarMeta(id) {
       <main class="metas-page">
         <div class="metas-container">
 
-          <div class="metas-header">
+          <div class="metas-header animar">
             <div>
               <h1>Metas Financeiras</h1>
               <p>Acompanhe o progresso dos seus objetivos financeiros</p>
@@ -65,18 +92,20 @@ async function deletarMeta(id) {
             </button>
           </div>
 
-          <MetasResumoCards
-            :totalMetas="metasStore.totalMetas"
-            :valorTotal="metasStore.valorTotalGeral"
-            :valorEconomizado="metasStore.valorEconomizadoGeral"
-            :progressoGeral="metasStore.progressoGeral"
-          />
+          <div class="animar">
+            <MetasResumoCards
+              :totalMetas="metasStore.totalMetas"
+              :valorTotal="metasStore.valorTotalGeral"
+              :valorEconomizado="metasStore.valorEconomizadoGeral"
+              :progressoGeral="metasStore.progressoGeral"
+            />
+          </div>
 
           <div v-if="metasStore.carregando" class="loading-state">
             Carregando suas metas...
           </div>
 
-          <div v-else-if="metasStore.metas.length === 0" class="empty-state">
+          <div v-else-if="metasStore.metas.length === 0" class="empty-state animar">
             <div class="empty-icon-bg">
               <Target class="icon-target" />
             </div>
@@ -89,7 +118,7 @@ async function deletarMeta(id) {
             </button>
           </div>
 
-          <div v-else class="goals-grid">
+          <div v-else class="goals-grid animar">
             <CardMetaItem
               v-for="meta in metasStore.metas"
               :key="meta.id"
@@ -113,6 +142,17 @@ async function deletarMeta(id) {
 </template>
 
 <style scoped>
+.animar {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s ease-out;
+}
+
+.animar.exibir {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .app-layout {
   display: flex;
   min-height: 100vh;

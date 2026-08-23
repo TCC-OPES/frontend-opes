@@ -6,15 +6,15 @@
       <HeaderComponent />
 
       <main class="dashboard-content">
-        <section class="welcome-section">
+        <section class="welcome-section animar">
           <h2>Bem-vindo de volta, {{ usuario.name || 'Usuário' }}! </h2>
           <p>Aqui está um resumo completo das suas finanças</p>
         </section>
 
-        <section class="balance-gradient-card">
+        <section class="balance-gradient-card animar">
           <div class="balance-main">
             <p class="label">Saldo Total</p>
-            <h1 class="amount">R$ {{ formatarMoeda(resumo.saldo_total) }}</h1>
+            <h1 class="amount">R$ {{ formatarMoeda(saldoTotalGeral) }}</h1>
             <span class="trending-badge">
               <i class="fas fa-arrow-up"></i> {{ resumo.porcentagem_mes || '+0%' }} <small>vs mês passado</small>
             </span>
@@ -32,7 +32,7 @@
           </div>
         </section>
 
-        <section class="analytics-grid">
+        <section class="analytics-grid animar">
           <div class="chart-card">
             <h3>Evolução Patrimonial</h3>
             <div class="chart-wrapper">
@@ -47,7 +47,7 @@
           </div>
         </section>
 
-        <section class="bottom-grid">
+        <section class="bottom-grid animar">
           <div class="card-section">
             <h3>Próximas Contas</h3>
             <div class="contas-list" v-if="proximasContas.length > 0">
@@ -93,10 +93,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import HeaderComponent from '@/components/HeaderComponent.vue'
 import SideBarComponent from '@/components/SideBarComponent.vue'
 import { useMetasStore } from '@/store/metas'
+import investimentoService from '@/services/investimento'
 import api from '@/services/api'
 
 import {
@@ -126,6 +127,7 @@ ChartJS.register(
 )
 
 const metasStore = useMetasStore()
+let observer = null
 
 const usuario = ref({ name: '' })
 const resumo = ref({
@@ -135,6 +137,12 @@ const resumo = ref({
   porcentagem_mes: '+0%'
 })
 const proximasContas = ref([])
+const totalInvestidoStore = ref(0)
+
+const saldoTotalGeral = computed(() => {
+  const saldoBase = Number(resumo.value.saldo_total || 0)
+  return saldoBase + totalInvestidoStore.value
+})
 
 const lineChartData = ref({
   labels: ['Out', 'Nov', 'Dez', 'Jan', 'Fev', 'Mar'],
@@ -247,6 +255,14 @@ const carregarDadosDashboard = async () => {
 
     metasStore.carregarMetas()
 
+    const resInvestimentos = await investimentoService.buscarInvestimentos().catch(() => null)
+    if (resInvestimentos?.data) {
+      totalInvestidoStore.value = resInvestimentos.data.reduce((acc, item) => {
+        const val = Number(item.valor_investido ?? item.valor ?? 0)
+        return acc + val
+      }, 0)
+    }
+
     const resResumo = await api.get('api/dashboard/resumo/').catch(() => null)
     if (resResumo?.data) resumo.value = resResumo.data
 
@@ -264,8 +280,22 @@ const carregarDadosDashboard = async () => {
   }
 }
 
-onMounted(() => {
-  carregarDadosDashboard()
+onMounted(async () => {
+  await carregarDadosDashboard()
+
+  observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('exibir')
+      }
+    })
+  }, { threshold: 0.1 })
+
+  document.querySelectorAll('.animar').forEach((el) => observer.observe(el))
+})
+
+onUnmounted(() => {
+  if (observer) observer.disconnect()
 })
 
 const formatarMoeda = (valor) => {
@@ -281,6 +311,17 @@ const obterCorProgresso = (porcentagem) => {
 </script>
 
 <style scoped>
+.animar {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s ease-out;
+}
+
+.animar.exibir {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .dashboard-layout {
   display: flex;
   min-height: 100vh;

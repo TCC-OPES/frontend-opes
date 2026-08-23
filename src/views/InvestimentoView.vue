@@ -8,12 +8,15 @@ import HeaderComponent from '@/components/HeaderComponent.vue'
   <div class="app-layout">
     <SideBarComponent />
 
-
     <div class="main-wrapper">
       <HeaderComponent />
 
       <main class="main-content">
-        <InvestimentoComponent />
+        <Transition name="fade-slide" appear>
+          <div>
+            <InvestimentoComponent />
+          </div>
+        </Transition>
       </main>
     </div>
   </div>
@@ -26,7 +29,6 @@ import HeaderComponent from '@/components/HeaderComponent.vue'
   background-color: #f8fafc;
 }
 
-
 .main-wrapper {
   display: flex;
   flex-direction: column;
@@ -38,5 +40,20 @@ import HeaderComponent from '@/components/HeaderComponent.vue'
   flex: 1;
   overflow-y: auto;
   padding: 1.5rem;
+}
+
+/* Transição nativa do Vue para evitar conflito com elementos fixed/absolutos */
+.fade-slide-enter-active {
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateY(15px);
+}
+
+.fade-slide-enter-to {
+  opacity: 1;
+  transform: translateY(0);
 }
 </style>
