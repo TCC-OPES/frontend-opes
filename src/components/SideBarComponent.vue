@@ -1,53 +1,55 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import api from '@/services/api.js';
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
-const router = useRouter();
+const router = useRouter()
 
 const usuario = ref({
   nome: '',
   email: '',
   fotoUrl: ''
-});
+})
 
 const buscarDadosUsuario = async () => {
   try {
+    const resposta = await fetch('https://api.seu-sistema.com/usuario/perfil', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('access')}`
+      }
+    })
 
-    const resposta = await api.get('api/me/');
-    const dados = resposta.data.data;
+    if (!resposta.ok) throw new Error('Erro ao buscar dados do usuário')
 
-    usuario.value = {
-      nome: dados.name,
-      email: dados.email,
-      fotoUrl: dados.foto
-    };
+    const dados = await resposta.json()
+    usuario.value = dados
   } catch (error) {
-    console.error('Erro ao buscar dados do usuário na sidebar:', error);
-    usuario.value = { nome: 'Usuário', email: '', fotoUrl: '' };
+    console.error('Erro na requisição:', error)
+    usuario.value = { nome: 'Usuário', email: '' }
   }
-};
+}
 
 onMounted(() => {
-  buscarDadosUsuario();
-});
+  buscarDadosUsuario()
+})
 
 const obterIniciais = (nome) => {
-  if (!nome) return '?';
-  const partes = nome.trim().split(' ');
+  if (!nome) return '?'
+  const partes = nome.trim().split(' ')
   if (partes.length > 1) {
-    return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
+    return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase()
   }
-  return partes[0][0].toUpperCase();
-};
+  return partes[0][0].toUpperCase()
+}
 
 const irParaPerfil = () => {
-  router.push('/perfil');
-};
+  router.push('/perfil')
+}
 
 const irParaInvestimentos = () => {
-  router.push('/investimento');
-};
+  router.push('/investimento')
+}
 </script>
 
 <template>
@@ -65,7 +67,7 @@ const irParaInvestimentos = () => {
       <a href="#" class="menu-item"><i class="fas fa-wallet"></i> Carteiras</a>
       <a href="#" class="menu-item"><i class="fas fa-credit-card"></i> Cartões</a>
       <a href="#" class="menu-item"><i class="fas fa-target"></i> Metas</a>
-      <a href="#" class="menu-item" @click="irParaInvestimentos">
+      <a href="#" class="menu-item" @click.prevent="irParaInvestimentos">
         <i class="fas fa-chart-line"></i> Investimentos
       </a>
       <a href="#" class="menu-item"><i class="fas fa-users"></i> Família</a>
@@ -84,7 +86,6 @@ const irParaInvestimentos = () => {
     </button>
   </aside>
 </template>
-
 
 <style scoped>
 .sidebar {
@@ -144,7 +145,7 @@ const irParaInvestimentos = () => {
   gap: 12px;
   padding: 12px;
   background-color: #f8fafc;
-  border: 1px solid #cbd5e1;
+  border: 1px solid transparent;
   border-radius: 12px;
   cursor: pointer;
   width: 100%;
@@ -153,17 +154,16 @@ const irParaInvestimentos = () => {
 
 .user-profile-btn:hover {
   background-color: #f1f5f9;
-  border-color: #0b5ed7;
+  border-color: #cbd5e1;
 }
 
 .user-profile-btn:focus {
-  outline: none;
-  border-color: #0b5ed7;
-  box-shadow: 0 0 0 3px rgba(11, 94, 215, 0.15);
+  outline: 2px solid #0b5ed7;
+  outline-offset: 2px;
 }
 
 .avatar {
-  background-color: #0f172a;
+  background-color: #004d40;
   color: white;
   width: 40px;
   height: 40px;
@@ -175,7 +175,6 @@ const irParaInvestimentos = () => {
   flex-shrink: 0;
   overflow: hidden;
 }
-
 
 .foto-sidebar {
   width: 100%;
