@@ -19,8 +19,7 @@
 
     <button @click="irParaPerfil" class="user-profile-btn" aria-label="Acessar perfil">
       <div class="avatar">
-        <img v-if="usuario.fotoUrl" :src="usuario.fotoUrl" alt="Foto de perfil" class="foto-sidebar" />
-        <span v-else>{{ obterIniciais(usuario.nome) }}</span>
+        {{ obterIniciais(usuario.nome) }}
       </div>
       <div class="user-info">
         <h4>{{ usuario.nome || 'Carregando...' }}</h4>
@@ -33,38 +32,41 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import api from '@/services/api.js';
 
-const router = useRouter();
 
 const usuario = ref({
   nome: '',
-  email: '',
-  fotoUrl: ''
+  email: ''
 });
 
 const buscarDadosUsuario = async () => {
   try {
+    
+    const resposta = await fetch('https://api.seu-sistema.com/usuario/perfil', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        // Geralmente rotas de perfil exigem autenticação:
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
 
-    const resposta = await api.get('api/me/');
-    const dados = resposta.data.data;
+    if (!resposta.ok) throw new Error('Erro ao buscar dados do usuário');
 
-    usuario.value = {
-      nome: dados.name,
-      email: dados.email,
-      fotoUrl: dados.foto
-    };
+    const dados = await resposta.json();
+    usuario.value = dados; // Atualiza o estado com o nome/dados reais do cadastro
   } catch (error) {
-    console.error('Erro ao buscar dados do usuário na sidebar:', error);
-    usuario.value = { nome: 'Usuário', email: '', fotoUrl: '' };
+    console.error('Erro na requisição:', error);
+    usuario.value = { nome: 'Usuário', email: '' };
   }
 };
 
+// Executa a busca assim que o componente é renderizado na tela
 onMounted(() => {
   buscarDadosUsuario();
 });
 
+// Função para gerar as iniciais do avatar dinamicamente (ex: "João Silva" -> "JS")
 const obterIniciais = (nome) => {
   if (!nome) return '?';
   const partes = nome.trim().split(' ');
@@ -74,8 +76,11 @@ const obterIniciais = (nome) => {
   return partes[0][0].toUpperCase();
 };
 
+// Ação do botão ao ser clicado
 const irParaPerfil = () => {
-  router.push('/perfil');
+  console.log('Navegando para o perfil do usuário...');
+  // Se estiver usando o Vue Router, você faria algo como:
+  // router.push('/perfil');
 };
 </script>
 
@@ -99,6 +104,7 @@ const irParaPerfil = () => {
   gap: 8px;
   color: #1e293b;
 }
+
 
 .menu {
   display: flex;
@@ -130,6 +136,7 @@ const irParaPerfil = () => {
   color: white;
 }
 
+/* Transformado de div para button com resets de estilo CSS nativos */
 .user-profile-btn {
   display: flex;
   align-items: center;
@@ -137,7 +144,7 @@ const irParaPerfil = () => {
   gap: 12px;
   padding: 12px;
   background-color: #f8fafc;
-  border: 1px solid #cbd5e1;
+  border: 1px solid transparent;
   border-radius: 12px;
   cursor: pointer;
   width: 100%;
@@ -146,17 +153,16 @@ const irParaPerfil = () => {
 
 .user-profile-btn:hover {
   background-color: #f1f5f9;
-  border-color: #0b5ed7;
+  border-color: #cbd5e1;
 }
 
 .user-profile-btn:focus {
-  outline: none;
-  border-color: #0b5ed7;
-  box-shadow: 0 0 0 3px rgba(11, 94, 215, 0.15);
+  outline: 2px solid #0b5ed7;
+  outline-offset: 2px;
 }
 
 .avatar {
-  background-color: #0f172a;
+  background-color: #004d40;
   color: white;
   width: 40px;
   height: 40px;
@@ -165,15 +171,7 @@ const irParaPerfil = () => {
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-
-
-.foto-sidebar {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  flex-shrink: 0; /* Impede o avatar de amassar se o texto for grande */
 }
 
 .user-info {
