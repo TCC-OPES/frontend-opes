@@ -14,15 +14,16 @@ const novoAtivo = ref({
   cor: '#2563EB'
 })
 
-// Buscar investimentos da API Django
+// Buscar investimentos da API Django (com cache-buster timestamp para evitar travamento do PWA)
 const carregarDados = async () => {
   try {
     carregando.value = true
-    const { data } = await api.get('api/investimentos/')
+    const { data } = await api.get(`api/investimentos/?t=${Date.now()}`)
     ativos.value = data.map(item => ({
       ...item,
       valor: item.valor_investido ?? item.valor ?? 0,
-      rendimento: item.rentabilidade ?? item.rendimento ?? 0
+      rendimento: item.rentabilidade ?? item.rendimento ?? 0,
+      cor: item.cor || '#2563EB'
     }))
   } catch (erro) {
     console.error('Erro ao carregar investimentos:', erro)
@@ -57,6 +58,7 @@ const segmentosGrafico = computed(() => {
 
     return {
       ...ativo,
+      cor: ativo.cor || '#2563EB',
       dashArray: `${percentual} ${100 - percentual}`,
       dashOffset: offset
     }
@@ -89,8 +91,16 @@ const salvarInvestimento = async () => {
       cor: novoAtivo.value.cor
     }
 
-    await api.post('api/investimentos/', payload)
-    await carregarDados()
+    const { data } = await api.post('api/investimentos/', payload)
+
+    // Insere o retorno diretamente no array para atualizar a UI instantaneamente
+    ativos.value.push({
+      ...data,
+      valor: data.valor_investido ?? data.valor ?? 0,
+      rendimento: data.rentabilidade ?? data.rendimento ?? 0,
+      cor: data.cor || novoAtivo.value.cor
+    })
+
     fecharModal()
   } catch (erro) {
     console.error('Erro ao salvar investimento:', erro)
@@ -168,7 +178,7 @@ onMounted(() => {
                 cy="18"
                 r="15.915"
                 fill="transparent"
-                :stroke="segmento.cor || '#2563EB'"
+                :stroke="segmento.cor"
                 stroke-width="5"
                 :stroke-dasharray="segmento.dashArray"
                 :stroke-dashoffset="segmento.dashOffset"
@@ -186,7 +196,7 @@ onMounted(() => {
           <ul v-if="ativos.length" class="investments-list">
             <li v-for="ativo in ativos" :key="ativo.id" class="investment-item">
               <div class="item-info">
-                <span class="color-dot" :style="{ backgroundColor: ativo.cor || '#2563EB' }"></span>
+                <span class="color-dot" :style="{ backgroundColor: ativo.cor }"></span>
                 <span class="item-name">{{ ativo.nome }}</span>
               </div>
               <div class="item-actions">
@@ -250,8 +260,8 @@ onMounted(() => {
   padding: 1.5rem 2rem;
   background-color: #f8fafc;
   height: 100%;
-  max-height: calc(100vh - 70px); /* Ajusta à altura da tela descontando o header superior */
-  overflow-y: auto; /* Garante que a barra de rolagem vertical reapareça */
+  max-height: calc(100vh - 70px);
+  overflow-y: auto;
   box-sizing: border-box;
 }
 
@@ -345,7 +355,7 @@ onMounted(() => {
 }
 
 .donut-segment {
-  transition: stroke-dasharray 0.3s ease;
+  transition: stroke-dasharray 0.3s ease, stroke 0.3s ease;
 }
 
 .investments-list {
