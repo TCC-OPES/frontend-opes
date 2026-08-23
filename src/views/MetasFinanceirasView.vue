@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { Plus, Target } from '@lucide/vue'
 import { useMetasStore } from '@/store/metas'
 
@@ -13,9 +13,35 @@ import AdicionarMeta from '@/components/metas/AdicionarMeta.vue'
 const metasStore = useMetasStore()
 const modalAberto = ref(false)
 const metaEmEdicao = ref(null)
+let observer = null
 
-onMounted(() => {
-  metasStore.carregarMetas()
+const iniciarObserver = () => {
+  if (observer) observer.disconnect()
+
+  observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('exibir')
+      }
+    })
+  }, { threshold: 0.1 })
+
+  document.querySelectorAll('.animar').forEach((el) => observer.observe(el))
+}
+
+onMounted(async () => {
+  await metasStore.carregarMetas()
+  await nextTick()
+  iniciarObserver()
+})
+
+watch(() => metasStore.metas, async () => {
+  await nextTick()
+  iniciarObserver()
+}, { deep: true })
+
+onUnmounted(() => {
+  if (observer) observer.disconnect()
 })
 
 function abrirModalNovaMeta() {
@@ -53,7 +79,7 @@ async function deletarMeta(id) {
       <main class="metas-page">
         <div class="metas-container">
 
-          <div class="metas-header">
+          <div class="metas-header animar">
             <div>
               <h1>Metas Financeiras</h1>
               <p>Acompanhe o progresso dos seus objetivos financeiros</p>
@@ -65,18 +91,20 @@ async function deletarMeta(id) {
             </button>
           </div>
 
-          <MetasResumoCards
-            :totalMetas="metasStore.totalMetas"
-            :valorTotal="metasStore.valorTotalGeral"
-            :valorEconomizado="metasStore.valorEconomizadoGeral"
-            :progressoGeral="metasStore.progressoGeral"
-          />
+          <div class="animar">
+            <MetasResumoCards
+              :totalMetas="metasStore.totalMetas"
+              :valorTotal="metasStore.valorTotalGeral"
+              :valorEconomizado="metasStore.valorEconomizadoGeral"
+              :progressoGeral="metasStore.progressoGeral"
+            />
+          </div>
 
           <div v-if="metasStore.carregando" class="loading-state">
             Carregando suas metas...
           </div>
 
-          <div v-else-if="metasStore.metas.length === 0" class="empty-state">
+          <div v-else-if="metasStore.metas.length === 0" class="empty-state animar">
             <div class="empty-icon-bg">
               <Target class="icon-target" />
             </div>
@@ -89,7 +117,7 @@ async function deletarMeta(id) {
             </button>
           </div>
 
-          <div v-else class="goals-grid">
+          <div v-else class="goals-grid animar">
             <CardMetaItem
               v-for="meta in metasStore.metas"
               :key="meta.id"
@@ -113,25 +141,55 @@ async function deletarMeta(id) {
 </template>
 
 <style scoped>
+.animar {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s ease-out;
+}
+
+.animar.exibir {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .app-layout {
   display: flex;
   min-height: 100vh;
-  background-color: #f8fafc;
+  width: 100%;
+  max-width: 100vw;
+  background-color: #ffffff;
+  overflow-x: hidden;
+  margin: 0;
+  border: none;
+}
+
+.app-layout :deep(.desktop-sidebar) {
+  display: none !important;
 }
 
 .main-wrapper {
   flex: 1;
   display: flex;
   flex-direction: column;
+  width: 100%;
   min-width: 0;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background-color: #ffffff;
 }
 
 .metas-page {
   flex: 1;
-  padding: 24px;
+  padding: 16px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   color: #1e293b;
   box-sizing: border-box;
+  overflow-y: visible;
+  background-color: #ffffff;
+  width: 100%;
 }
 
 .metas-container {
@@ -139,42 +197,47 @@ async function deletarMeta(id) {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .metas-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
 }
 
 .metas-header h1 {
-  font-size: 24px;
+  font-size: 1.4rem;
   font-weight: 700;
   color: #0f172a;
   margin: 0;
 }
 
 .metas-header p {
-  font-size: 14px;
+  font-size: 0.875rem;
   color: #64748b;
-  margin: 4px 0 0 0;
+  margin: 2px 0 0 0;
 }
 
 .btn-add-meta {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   background-color: #006400;
   color: #ffffff;
   padding: 10px 16px;
   border-radius: 12px;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   border: none;
   cursor: pointer;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   transition: background-color 0.2s;
+  width: 100%;
 }
 
 .btn-add-meta:hover {
@@ -190,11 +253,12 @@ async function deletarMeta(id) {
   text-align: center;
   padding: 40px 0;
   color: #94a3b8;
+  font-size: 0.875rem;
 }
 
 .empty-state {
   background-color: #ffffff;
-  padding: 32px;
+  padding: 24px 16px;
   border-radius: 16px;
   text-align: center;
   border: 1px dashed #cbd5e1;
@@ -216,13 +280,14 @@ async function deletarMeta(id) {
 }
 
 .empty-state h3 {
+  font-size: 1rem;
   font-weight: 700;
   color: #334155;
   margin: 0;
 }
 
 .empty-state p {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #94a3b8;
   margin: 4px 0 0 0;
 }
@@ -230,7 +295,7 @@ async function deletarMeta(id) {
 .btn-add-empty {
   background-color: #006400;
   color: #ffffff;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   padding: 8px 16px;
   border-radius: 12px;
@@ -244,13 +309,50 @@ async function deletarMeta(id) {
 
 .goals-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  grid-template-columns: 1fr;
+  gap: 16px;
 }
 
-@media (max-width: 768px) {
+@media (min-width: 640px) {
+  .metas-page {
+    padding: 24px;
+  }
+  .metas-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .btn-add-meta {
+    width: auto;
+  }
+  .metas-header h1 {
+    font-size: 1.6rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-layout {
+    background-color: #f8fafc;
+  }
+  .app-layout :deep(.desktop-sidebar) {
+    display: flex !important;
+  }
+  .main-wrapper {
+    height: 100vh;
+    overflow-y: hidden;
+    background-color: #f8fafc;
+  }
+  .metas-page {
+    padding: 32px 40px;
+    overflow-y: auto;
+    background-color: #f8fafc;
+  }
+  .metas-header h1 {
+    font-size: 1.8rem;
+  }
   .goals-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
   }
 }
 </style>
