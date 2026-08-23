@@ -1,3 +1,82 @@
+<template>
+  <aside class="sidebar-container">
+    <div class="desktop-sidebar">
+      <div class="logo">
+        <span class="logo-icon">$</span> OPES
+      </div>
+
+      <nav class="menu">
+        <router-link to="/dashboard" class="menu-item active">
+          <i class="fas fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </router-link>
+        <router-link to="/transacoes" class="menu-item">
+          <i class="fas fa-exchange-alt"></i>
+          <span>Transações</span>
+        </router-link>
+        <router-link to="/carteiras" class="menu-item">
+          <i class="fas fa-wallet"></i>
+          <span>Carteiras</span>
+        </router-link>
+        <router-link to="/cartoes" class="menu-item">
+          <i class="fas fa-credit-card"></i>
+          <span>Cartões</span>
+        </router-link>
+        <router-link to="/metas" class="menu-item">
+          <i class="fas fa-bullseye"></i>
+          <span>Metas</span>
+        </router-link>
+        <a href="#" class="menu-item" @click.prevent="irParaInvestimentos">
+          <i class="fas fa-chart-line"></i>
+          <span>Investimentos</span>
+        </a>
+        <router-link to="/familia" class="menu-item">
+          <i class="fas fa-users"></i>
+          <span>Família</span>
+        </router-link>
+      </nav>
+
+      <button @click="irParaPerfil" class="user-profile-btn" aria-label="Acessar perfil">
+        <div class="avatar">
+          <img v-if="usuario.fotoUrl" :src="usuario.fotoUrl" alt="Foto de perfil" class="foto-sidebar" />
+          <span v-else>{{ obterIniciais(usuario.nome) }}</span>
+        </div>
+        <div class="user-info">
+          <h4>{{ usuario.nome || 'Carregando...' }}</h4>
+          <p>Ver perfil</p>
+        </div>
+        <i class="fas fa-chevron-right arrow-icon"></i>
+      </button>
+    </div>
+
+    <nav class="mobile-bottom-nav">
+      <router-link to="/dashboard" class="mobile-nav-item active">
+        <i class="fas fa-chart-pie"></i>
+        <span>Home</span>
+      </router-link>
+      <router-link to="/transacoes" class="mobile-nav-item">
+        <i class="fas fa-exchange-alt"></i>
+        <span>Extrato</span>
+      </router-link>
+      <a href="#" class="mobile-nav-item" @click.prevent="irParaInvestimentos">
+        <i class="fas fa-chart-line"></i>
+        <span>Investir</span>
+      </a>
+      <router-link to="/metas" class="mobile-nav-item">
+        <i class="fas fa-bullseye"></i>
+        <span>Metas</span>
+      </router-link>
+      <button @click="irParaPerfil" class="mobile-nav-item mobile-profile-btn">
+        <div class="avatar avatar-mobile">
+          <img v-if="usuario.fotoUrl" :src="usuario.fotoUrl" alt="Foto de perfil" class="foto-sidebar" />
+          <span v-else>{{ obterIniciais(usuario.nome) }}</span>
+        </div>
+        <span>Perfil</span>
+      </button>
+    </nav>
+  </aside>
+</template>
+
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -10,37 +89,36 @@ const usuario = ref({
   fotoUrl: ''
 })
 
-const buscarDadosUsuario = async () => {
+const carregarDadosUsuario = () => {
   try {
-    const resposta = await fetch('https://api.seu-sistema.com/usuario/perfil', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('access')}`
+    const userLocal = localStorage.getItem('user')
+
+    if (userLocal) {
+      const parsedUser = JSON.parse(userLocal)
+      const dados = parsedUser.data || parsedUser
+
+      const nomeCompleto = dados.name || dados.nome || ''
+      const primeiroNome = nomeCompleto.trim().split(' ')[0]
+
+      usuario.value = {
+        nome: primeiroNome,
+        email: dados.email || '',
+        fotoUrl: dados.foto || dados.fotoUrl || dados.avatar || ''
       }
-    })
-
-    if (!resposta.ok) throw new Error('Erro ao buscar dados do usuário')
-
-    const dados = await resposta.json()
-    usuario.value = dados
+    }
   } catch (error) {
-    console.error('Erro na requisição:', error)
-    usuario.value = { nome: 'Usuário', email: '' }
+    console.error('Erro ao ler dados do localStorage:', error)
+    usuario.value = { nome: 'Usuário', email: '', fotoUrl: '' }
   }
 }
 
 onMounted(() => {
-  buscarDadosUsuario()
+  carregarDadosUsuario()
 })
 
 const obterIniciais = (nome) => {
   if (!nome) return '?'
-  const partes = nome.trim().split(' ')
-  if (partes.length > 1) {
-    return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase()
-  }
-  return partes[0][0].toUpperCase()
+  return nome.charAt(0).toUpperCase()
 }
 
 const irParaPerfil = () => {
@@ -52,118 +130,70 @@ const irParaInvestimentos = () => {
 }
 </script>
 
-<template>
-  <aside class="sidebar">
-    <div class="logo">
-      <span class="logo-icon">$</span> OPES
-    </div>
-
-    <nav class="menu">
-      <a href="#" class="menu-item active">
-        <i class="fas fa-chart-pie"></i> Dashboard
-      </a>
-
-      <a href="#" class="menu-item"><i class="fas fa-exchange-alt"></i> Transações</a>
-      <a href="#" class="menu-item"><i class="fas fa-wallet"></i> Carteiras</a>
-      <a href="#" class="menu-item"><i class="fas fa-credit-card"></i> Cartões</a>
-      <a href="#" class="menu-item"><i class="fas fa-target"></i> Metas</a>
-      <a href="#" class="menu-item" @click.prevent="irParaInvestimentos">
-        <i class="fas fa-chart-line"></i> Investimentos
-      </a>
-      <a href="#" class="menu-item"><i class="fas fa-users"></i> Família</a>
-    </nav>
-
-    <button @click="irParaPerfil" class="user-profile-btn" aria-label="Acessar perfil">
-      <div class="avatar">
-        <img v-if="usuario.fotoUrl" :src="usuario.fotoUrl" alt="Foto de perfil" class="foto-sidebar" />
-        <span v-else>{{ obterIniciais(usuario.nome) }}</span>
-      </div>
-      <div class="user-info">
-        <h4>{{ usuario.nome || 'Carregando...' }}</h4>
-        <p>Ver perfil</p>
-      </div>
-      <i class="fas fa-chevron-right arrow-icon"></i>
-    </button>
-  </aside>
-</template>
-
 <style scoped>
-.sidebar {
-  width: 260px;
+.sidebar-container {
+  z-index: 1000;
+}
+
+.desktop-sidebar {
+  display: none;
+}
+
+.mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 65px;
   background-color: #ffffff;
-  padding: 24px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 8px;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+  z-index: 999;
+}
+
+.mobile-nav-item {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  border-right: 1px solid #e2e8f0;
-  height: 100vh;
-}
-
-.logo {
-  font-size: 1.25rem;
-  font-weight: bold;
-  display: flex;
   align-items: center;
-  gap: 8px;
-  color: #1e293b;
-}
-
-.menu {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 40px;
-  flex-grow: 1;
-}
-
-.menu-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  justify-content: center;
+  gap: 3px;
   color: #64748b;
   text-decoration: none;
-  border-radius: 8px;
+  font-size: 0.7rem;
   font-weight: 500;
-  transition: all 0.2s;
-}
-
-.menu-item:hover {
-  background-color: #f1f5f9;
-  color: #1e293b;
-}
-
-.menu-item.active {
-  background-color: #0b5ed7;
-  color: white;
-}
-
-.user-profile-btn {
-  display: flex;
-  align-items: center;
-  text-align: left;
-  gap: 12px;
-  padding: 12px;
-  background-color: #f8fafc;
-  border: 1px solid transparent;
-  border-radius: 12px;
+  background: none;
+  border: none;
+  padding: 6px 0;
+  width: 20%;
   cursor: pointer;
-  width: 100%;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease;
 }
 
-.user-profile-btn:hover {
-  background-color: #f1f5f9;
-  border-color: #cbd5e1;
+.mobile-nav-item i {
+  font-size: 1.1rem;
 }
 
-.user-profile-btn:focus {
-  outline: 2px solid #0b5ed7;
-  outline-offset: 2px;
+.mobile-nav-item.active {
+  color: #0f766e;
+  font-weight: 700;
+}
+
+.mobile-profile-btn {
+  padding: 0;
+}
+
+.avatar-mobile {
+  width: 24px;
+  height: 24px;
+  font-size: 0.7rem;
 }
 
 .avatar {
-  background-color: #004d40;
+  background-color: #0f766e;
   color: white;
   width: 40px;
   height: 40px;
@@ -182,23 +212,100 @@ const irParaInvestimentos = () => {
   object-fit: cover;
 }
 
-.user-info {
-  flex-grow: 1;
-}
+@media (min-width: 1024px) {
+  .mobile-bottom-nav {
+    display: none;
+  }
 
-.user-info h4 {
-  font-size: 0.9rem;
-  color: #1e293b;
-  margin: 0;
-}
+  .desktop-sidebar {
+    width: 260px;
+    background-color: #ffffff;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-right: 1px solid #e2e8f0;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+  }
 
-.user-info p {
-  font-size: 0.8rem;
-  color: #94a3b8;
-  margin: 2px 0 0 0;
-}
+  .logo {
+    font-size: 1.25rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #1e293b;
+  }
 
-.arrow-icon {
-  color: #64748b;
+  .menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 40px;
+    flex-grow: 1;
+  }
+
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    color: #64748b;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .menu-item:hover {
+    background-color: #f1f5f9;
+    color: #1e293b;
+  }
+
+  .menu-item.active {
+    background-color: #0f766e;
+    color: white;
+  }
+
+  .user-profile-btn {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    gap: 12px;
+    padding: 12px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s ease;
+  }
+
+  .user-profile-btn:hover {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+  }
+
+  .user-info {
+    flex-grow: 1;
+  }
+
+  .user-info h4 {
+    font-size: 0.9rem;
+    color: #1e293b;
+    margin: 0;
+  }
+
+  .user-info p {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin: 2px 0 0 0;
+  }
+
+  .arrow-icon {
+    color: #64748b;
+  }
 }
 </style>
