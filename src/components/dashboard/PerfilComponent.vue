@@ -195,7 +195,7 @@ const aoSelecionarFoto = async (e) => {
   formData.append('foto', file)
 
   try {
-    const { data } = await api.patch('api/me/', formData, {
+    const { data } = await api.patch('api/user/foto/', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
     sincronizarEstadoLocal(data.data || data)

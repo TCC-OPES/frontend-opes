@@ -6,7 +6,7 @@
       </div>
 
       <nav class="menu">
-        <router-link to="/dashboard" class="menu-item active">
+        <router-link to="/dashboard" class="menu-item">
           <i class="fas fa-chart-pie"></i>
           <span>Dashboard</span>
         </router-link>
@@ -26,7 +26,12 @@
           <i class="fas fa-bullseye"></i>
           <span>Metas</span>
         </router-link>
-        <a href="#" class="menu-item" @click.prevent="irParaInvestimentos">
+        <a
+          href="#"
+          class="menu-item"
+          :class="{ active: router.currentRoute.value.path === '/investimento' }"
+          @click.prevent="irParaInvestimentos"
+        >
           <i class="fas fa-chart-line"></i>
           <span>Investimentos</span>
         </a>
@@ -50,7 +55,7 @@
     </div>
 
     <nav class="mobile-bottom-nav">
-      <router-link to="/dashboard" class="mobile-nav-item active">
+      <router-link to="/dashboard" class="mobile-nav-item">
         <i class="fas fa-chart-pie"></i>
         <span>Home</span>
       </router-link>
@@ -58,7 +63,12 @@
         <i class="fas fa-exchange-alt"></i>
         <span>Extrato</span>
       </router-link>
-      <a href="#" class="mobile-nav-item" @click.prevent="irParaInvestimentos">
+      <a
+        href="#"
+        class="mobile-nav-item"
+        :class="{ active: router.currentRoute.value.path === '/investimento' }"
+        @click.prevent="irParaInvestimentos"
+      >
         <i class="fas fa-chart-line"></i>
         <span>Investir</span>
       </a>
@@ -177,6 +187,8 @@ const irParaInvestimentos = () => {
   font-size: 1.1rem;
 }
 
+/* Estilo para links ativos no mobile (router-link aplica essa classe automaticamente) */
+.mobile-nav-item.router-link-active,
 .mobile-nav-item.active {
   color: #0f766e;
   font-weight: 700;
@@ -264,6 +276,8 @@ const irParaInvestimentos = () => {
     color: #1e293b;
   }
 
+  /* Estilo para links ativos no desktop (router-link aplica automaticamente) */
+  .menu-item.router-link-active,
   .menu-item.active {
     background-color: #0f766e;
     color: white;
