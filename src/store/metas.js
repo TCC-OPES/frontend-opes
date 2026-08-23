@@ -6,7 +6,6 @@ export const useMetasStore = defineStore('metas', () => {
   const metas = ref([])
   const carregando = ref(false)
 
-  // Busca as metas cadastradas do usuário logado no backend
   async function carregarMetas() {
     carregando.value = true
     try {
@@ -19,7 +18,6 @@ export const useMetasStore = defineStore('metas', () => {
     }
   }
 
-  // Envia uma nova meta para salvar no backend
   async function adicionarMeta(dadosMeta) {
     try {
       const response = await api.post('api/metas/', dadosMeta)
@@ -31,10 +29,40 @@ export const useMetasStore = defineStore('metas', () => {
     }
   }
 
-  // Cálculos dinâmicos dos indicadores superiores
+  async function editarMeta(id, dadosMeta) {
+    try {
+      const response = await api.put(`api/metas/${id}/`, dadosMeta)
+      const index = metas.value.findIndex(m => m.id === id)
+      if (index !== -1) {
+        metas.value[index] = response.data
+      }
+      return response.data
+    } catch (error) {
+      console.error('Erro ao editar meta:', error)
+      throw error
+    }
+  }
+
+  async function deletarMeta(id) {
+    try {
+      await api.delete(`api/metas/${id}/`)
+      metas.value = metas.value.filter(m => m.id !== id)
+    } catch (error) {
+      console.error('Erro ao deletar meta:', error)
+      throw error
+    }
+  }
+
   const totalMetas = computed(() => metas.value.length)
-  const valorTotalGeral = computed(() => metas.value.reduce((acc, m) => acc + Number(m.valorTotal || m.valor_total || 0), 0))
-  const valorEconomizadoGeral = computed(() => metas.value.reduce((acc, m) => acc + Number(m.valorAtual || m.valor_atual || 0), 0))
+
+  const valorTotalGeral = computed(() =>
+    metas.value.reduce((acc, m) => acc + Number(m.valor_objetivo || 0), 0)
+  )
+
+  const valorEconomizadoGeral = computed(() =>
+    metas.value.reduce((acc, m) => acc + Number(m.valor_atual || 0), 0)
+  )
+
   const progressoGeral = computed(() => {
     if (valorTotalGeral.value === 0) return 0
     return ((valorEconomizadoGeral.value / valorTotalGeral.value) * 100).toFixed(1)
@@ -49,5 +77,7 @@ export const useMetasStore = defineStore('metas', () => {
     progressoGeral,
     carregarMetas,
     adicionarMeta,
+    editarMeta,
+    deletarMeta
   }
 })

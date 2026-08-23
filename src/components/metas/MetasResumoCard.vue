@@ -1,5 +1,5 @@
 <script setup>
-import { Target, DollarSign, TrendingUp, CheckCircle } from 'lucide-vue-next'
+import { Target, DollarSign, TrendingUp, CheckCircle } from '@lucide/vue'
 
 defineProps({
   totalMetas: Number,

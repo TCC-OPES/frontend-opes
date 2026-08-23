@@ -1,6 +1,13 @@
 <script setup>
-import { ref } from 'vue'
-import { X } from 'lucide-vue-next'
+import { ref, watch } from 'vue'
+import { X } from '@lucide/vue'
+
+const props = defineProps({
+  metaParaEditar: {
+    type: Object,
+    default: null
+  }
+})
 
 const emit = defineEmits(['fechar', 'salvar'])
 
@@ -14,9 +21,52 @@ const form = ref({
   descricao: ''
 })
 
+// O watch garante que o formulário preencha os dados no momento exato em que a prop chegar
+watch(
+  () => props.metaParaEditar,
+  (novaMeta) => {
+    if (novaMeta) {
+      form.value = {
+        nome: novaMeta.titulo || novaMeta.nome || '',
+        categoria: novaMeta.categoria || '',
+        valorTotal: novaMeta.valor_objetivo || novaMeta.valorTotal || '',
+        valorAtual: novaMeta.valor_atual || novaMeta.valorAtual || '',
+        mensal: novaMeta.valor_mensal || novaMeta.mensal || '',
+        prazoData: novaMeta.data_limite || novaMeta.prazoData || '',
+        descricao: novaMeta.descricao || ''
+      }
+    } else {
+      // Limpa os campos se for uma nova meta
+      form.value = {
+        nome: '',
+        categoria: '',
+        valorTotal: '',
+        valorAtual: '',
+        mensal: '',
+        prazoData: '',
+        descricao: ''
+      }
+    }
+  },
+  { immediate: true }
+)
+
 function submitForm() {
-  if (!form.value.nome || !form.value.valorTotal) return
-  emit('salvar', { ...form.value })
+  if (!form.value.nome || !form.value.valorTotal || !form.value.prazoData || !form.value.categoria) {
+    return
+  }
+
+  const payload = {
+    titulo: form.value.nome,
+    categoria: form.value.categoria,
+    valor_objetivo: Number(Number(form.value.valorTotal).toFixed(2)),
+    valor_mensal: Number(Number(form.value.mensal || 0).toFixed(2)),
+    data_limite: form.value.prazoData,
+    valor_atual: Number(Number(form.value.valorAtual || 0).toFixed(2)),
+    descricao: form.value.descricao
+  }
+
+  emit('salvar', payload)
   emit('fechar')
 }
 </script>
@@ -25,7 +75,7 @@ function submitForm() {
   <div class="modal-overlay">
     <div class="modal-card">
       <div class="modal-header">
-        <h2>Adicionar Meta</h2>
+        <h2>{{ metaParaEditar ? 'Editar Meta' : 'Adicionar Meta' }}</h2>
         <button class="btn-close" @click="$emit('fechar')">
           <X class="icon-close" />
         </button>
@@ -34,39 +84,45 @@ function submitForm() {
       <form @submit.prevent="submitForm" class="modal-form">
         <div class="form-group">
           <label>Nome da Meta</label>
-          <input 
-            v-model="form.nome" 
-            type="text" 
-            placeholder="Ex: Viagem para o Japão" 
+          <input
+            v-model="form.nome"
+            type="text"
+            placeholder="Ex: Viagem para o Japão"
             required
           />
         </div>
 
         <div class="form-group">
           <label>Categoria</label>
-          <input 
-            v-model="form.categoria" 
-            type="text" 
-            placeholder="Ex: Viagem, Veículo" 
-          />
+          <select v-model="form.categoria" required class="select-input">
+            <option value="" disabled>Selecione uma categoria</option>
+            <option value="lazer">Lazer</option>
+            <option value="veiculo">Veículo</option>
+            <option value="seguranca">Segurança</option>
+            <option value="educacao">Educação</option>
+            <option value="moradia">Moradia</option>
+            <option value="saude">Saúde</option>
+          </select>
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label>Valor Total (R$)</label>
-            <input 
-              v-model="form.valorTotal" 
-              type="number" 
-              placeholder="10000" 
+            <input
+              v-model="form.valorTotal"
+              type="number"
+              step="0.01"
+              placeholder="10000"
               required
             />
           </div>
           <div class="form-group">
             <label>Já Guardado (R$)</label>
-            <input 
-              v-model="form.valorAtual" 
-              type="number" 
-              placeholder="2000" 
+            <input
+              v-model="form.valorAtual"
+              type="number"
+              step="0.01"
+              placeholder="2000"
             />
           </div>
         </div>
@@ -74,27 +130,29 @@ function submitForm() {
         <div class="form-row">
           <div class="form-group">
             <label>Aporte Mensal (R$)</label>
-            <input 
-              v-model="form.mensal" 
-              type="number" 
-              placeholder="500" 
+            <input
+              v-model="form.mensal"
+              type="number"
+              step="0.01"
+              placeholder="500"
+              required
             />
           </div>
           <div class="form-group">
             <label>Data Limite</label>
-            <input 
-              v-model="form.prazoData" 
-              type="text" 
-              placeholder="Ex: Dezembro 2026" 
+            <input
+              v-model="form.prazoData"
+              type="date"
+              required
             />
           </div>
         </div>
 
         <div class="form-group">
           <label>Descrição</label>
-          <textarea 
-            v-model="form.descricao" 
-            placeholder="Breve descrição da meta..." 
+          <textarea
+            v-model="form.descricao"
+            placeholder="Breve descrição da meta..."
             rows="2"
           ></textarea>
         </div>
@@ -104,7 +162,7 @@ function submitForm() {
             Cancelar
           </button>
           <button type="submit" class="btn-submit">
-            Salvar Meta
+            {{ metaParaEditar ? 'Atualizar Meta' : 'Salvar Meta' }}
           </button>
         </div>
       </form>
@@ -184,6 +242,7 @@ function submitForm() {
 }
 
 .form-group input,
+.form-group select,
 .form-group textarea {
   width: 100%;
   padding: 8px 12px;
@@ -192,9 +251,12 @@ function submitForm() {
   border-radius: 12px;
   box-sizing: border-box;
   outline: none;
+  background-color: #ffffff;
+  color: #1e293b;
 }
 
 .form-group input:focus,
+.form-group select:focus,
 .form-group textarea:focus {
   border-color: #059669;
 }

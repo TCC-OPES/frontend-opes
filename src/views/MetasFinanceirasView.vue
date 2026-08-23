@@ -1,69 +1,81 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Plus, Target } from 'lucide-vue-next'
+import { Plus, Target } from '@lucide/vue'
 import { useMetasStore } from '@/store/metas'
 
 import Sidebar from '@/components/SideBarComponent.vue'
 import Header from '@/components/HeaderComponent.vue'
 
-// Importação dos componentes da tela de metas
 import MetasResumoCards from '@/components/metas/MetasResumoCard.vue'
 import CardMetaItem from '@/components/metas/CardMetaItem.vue'
 import AdicionarMeta from '@/components/metas/AdicionarMeta.vue'
 
 const metasStore = useMetasStore()
 const modalAberto = ref(false)
+const metaEmEdicao = ref(null)
 
 onMounted(() => {
   metasStore.carregarMetas()
 })
 
-async function salvarNovaMeta(dados) {
-  await metasStore.adicionarMeta(dados)
+function abrirModalNovaMeta() {
+  metaEmEdicao.value = null
+  modalAberto.value = true
+}
+
+function abrirModalEdicao(meta) {
+  metaEmEdicao.value = meta
+  modalAberto.value = true
+}
+
+async function salvarMeta(dados) {
+  if (metaEmEdicao.value) {
+    await metasStore.editarMeta(metaEmEdicao.value.id, dados)
+  } else {
+    await metasStore.adicionarMeta(dados)
+  }
+}
+
+async function deletarMeta(id) {
+  if (confirm('Tem certeza que deseja excluir esta meta?')) {
+    await metasStore.deletarMeta(id)
+  }
 }
 </script>
 
 <template>
   <div class="app-layout">
-    <!-- Menu Lateral -->
     <Sidebar />
 
-    <!-- Área de Conteúdo Principal -->
     <div class="main-wrapper">
-      <!-- Cabeçalho Global / Topo -->
       <Header />
 
-      <!-- Conteúdo Interno da Página -->
       <main class="metas-page">
         <div class="metas-container">
-          
-          <!-- Cabeçalho da Seção de Metas -->
+
           <div class="metas-header">
             <div>
               <h1>Metas Financeiras</h1>
               <p>Acompanhe o progresso dos seus objetivos financeiros</p>
             </div>
-            
-            <button @click="modalAberto = true" class="btn-add-meta">
+
+            <button @click="abrirModalNovaMeta" class="btn-add-meta">
               <Plus class="icon-plus" />
               Nova Meta
             </button>
           </div>
 
-          <!-- Métricas do Topo -->
-          <MetasResumoCards 
+          <MetasResumoCards
             :totalMetas="metasStore.totalMetas"
             :valorTotal="metasStore.valorTotalGeral"
             :valorEconomizado="metasStore.valorEconomizadoGeral"
             :progressoGeral="metasStore.progressoGeral"
           />
 
-          <!-- Estado de Carregamento -->
           <div v-if="metasStore.carregando" class="loading-state">
             Carregando suas metas...
           </div>
 
-          <!-- Estado Vazio (Nenhuma Meta) -->
           <div v-else-if="metasStore.metas.length === 0" class="empty-state">
             <div class="empty-icon-bg">
               <Target class="icon-target" />
@@ -72,17 +84,18 @@ async function salvarNovaMeta(dados) {
               <h3>Nenhuma meta encontrada</h3>
               <p>Cadastre seu primeiro objetivo financeiro para acompanhar seu progresso.</p>
             </div>
-            <button @click="modalAberto = true" class="btn-add-empty">
+            <button @click="abrirModalNovaMeta" class="btn-add-empty">
               Adicionar Meta
             </button>
           </div>
 
-          <!-- Lista de Metas (Grid) -->
           <div v-else class="goals-grid">
-            <CardMetaItem 
-              v-for="meta in metasStore.metas" 
-              :key="meta.id" 
-              :meta="meta" 
+            <CardMetaItem
+              v-for="meta in metasStore.metas"
+              :key="meta.id"
+              :meta="meta"
+              @editar="abrirModalEdicao"
+              @deletar="deletarMeta"
             />
           </div>
 
@@ -90,17 +103,16 @@ async function salvarNovaMeta(dados) {
       </main>
     </div>
 
-    <!-- Modal de Cadastro -->
-    <AdicionarMeta 
-      v-if="modalAberto" 
-      @fechar="modalAberto = false" 
-      @salvar="salvarNovaMeta" 
+    <AdicionarMeta
+      v-if="modalAberto"
+      :metaParaEditar="metaEmEdicao"
+      @fechar="modalAberto = false"
+      @salvar="salvarMeta"
     />
   </div>
 </template>
 
 <style scoped>
-/* Estrutura Base de Layout */
 .app-layout {
   display: flex;
   min-height: 100vh;
@@ -111,10 +123,9 @@ async function salvarNovaMeta(dados) {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-width: 0; /* Previne overflow de elementos filhos no flex */
+  min-width: 0;
 }
 
-/* Área Interna da View */
 .metas-page {
   flex: 1;
   padding: 24px;
@@ -131,7 +142,6 @@ async function salvarNovaMeta(dados) {
   gap: 24px;
 }
 
-/* Cabeçalho da Seção */
 .metas-header {
   display: flex;
   justify-content: space-between;
@@ -176,7 +186,6 @@ async function salvarNovaMeta(dados) {
   height: 16px;
 }
 
-/* Estados */
 .loading-state {
   text-align: center;
   padding: 40px 0;
@@ -233,7 +242,6 @@ async function salvarNovaMeta(dados) {
   background-color: #228b22;
 }
 
-/* Grid de Metas */
 .goals-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

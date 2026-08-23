@@ -1,5 +1,5 @@
 <script setup>
-import { Target, Calendar } from 'lucide-vue-next'
+import { Target, Calendar, Pencil, Trash2 } from '@lucide/vue'
 
 defineProps({
   meta: {
@@ -8,25 +8,48 @@ defineProps({
   }
 })
 
+const emit = defineEmits(['editar', 'deletar'])
+
 function formatarMoeda(valor) {
-  return (valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })
+  return Number(valor || 0).toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 2
+  })
+}
+
+function formatarData(dataISO) {
+  if (!dataISO) return 'Sem data'
+  const [ano, mes, dia] = dataISO.split('-')
+  return `${dia}/${mes}/${ano}`
 }
 
 function calcularPercentual(atual, total) {
-  if (!total || total === 0) return '0.0'
-  return ((atual / total) * 100).toFixed(1)
+  if (!total || Number(total) === 0) return '0.0'
+  return ((Number(atual) / Number(total)) * 100).toFixed(1)
 }
 </script>
 
 <template>
   <div class="goal-card">
     <div class="goal-header">
-      <div class="icon-wrapper">
-        <Target class="icon-target" />
+      <div class="header-left">
+        <div class="icon-wrapper">
+          <Target class="icon-target" />
+        </div>
+        <div class="goal-titles">
+          <h3>{{ meta.titulo || meta.nome }}</h3>
+          <span class="category">{{ meta.categoria || 'Geral' }}</span>
+        </div>
       </div>
-      <div class="goal-titles">
-        <h3>{{ meta.nome }}</h3>
-        <span class="category">{{ meta.categoria || 'Geral' }}</span>
+
+      <div class="actions">
+        <button class="btn-action edit" @click="emit('editar', meta)" title="Editar Meta">
+          <Pencil class="action-icon" />
+        </button>
+        <button class="btn-action delete" @click="emit('deletar', meta.id)" title="Excluir Meta">
+          <Trash2 class="action-icon" />
+        </button>
       </div>
     </div>
 
@@ -36,20 +59,20 @@ function calcularPercentual(atual, total) {
       <div class="progress-text">
         <span class="label">Progresso</span>
         <span class="percent">
-          {{ calcularPercentual(meta.valor_atual || meta.valorAtual, meta.valor_total || meta.valorTotal) }}%
+          {{ calcularPercentual(meta.valor_atual || meta.valorAtual, meta.valor_objetivo || meta.valorTotal) }}%
         </span>
       </div>
-      
+
       <div class="progress-bar-bg">
-        <div 
-          class="progress-bar-fill" 
-          :style="{ width: `${Math.min(100, ( (meta.valor_atual || meta.valorAtual) / (meta.valor_total || meta.valorTotal) ) * 100)}%` }"
+        <div
+          class="progress-bar-fill"
+          :style="{ width: `${Math.min(100, Number(calcularPercentual(meta.valor_atual || meta.valorAtual, meta.valor_objetivo || meta.valorTotal)))}%` }"
         ></div>
       </div>
 
       <div class="progress-values">
         <span>{{ formatarMoeda(meta.valor_atual || meta.valorAtual) }}</span>
-        <span class="total">{{ formatarMoeda(meta.valor_total || meta.valorTotal) }}</span>
+        <span class="total">{{ formatarMoeda(meta.valor_objetivo || meta.valorTotal) }}</span>
       </div>
     </div>
 
@@ -57,22 +80,22 @@ function calcularPercentual(atual, total) {
       <div class="metric">
         <span class="label">Faltam</span>
         <span class="val">
-          {{ formatarMoeda(Math.max(0, (meta.valor_total || meta.valorTotal) - (meta.valor_atual || meta.valorAtual))) }}
+          {{ formatarMoeda(Math.max(0, Number(meta.valor_objetivo || meta.valorTotal || 0) - Number(meta.valor_atual || meta.valorAtual || 0))) }}
         </span>
       </div>
       <div class="metric">
         <span class="label">Mensal</span>
-        <span class="val">{{ formatarMoeda(meta.mensal) }}</span>
+        <span class="val">{{ formatarMoeda(meta.valor_mensal || meta.mensal) }}</span>
       </div>
       <div class="metric">
-        <span class="label">Prazo</span>
-        <span class="val">{{ meta.prazo_meses || meta.prazoMeses || 12 }} meses</span>
+        <span class="label">Status</span>
+        <span class="val">Em andamento</span>
       </div>
     </div>
 
     <div class="date-footer">
       <Calendar class="icon-calendar" />
-      <span>Prazo: {{ meta.prazo_data || meta.prazoData || 'Sem data' }}</span>
+      <span>Prazo: {{ formatarData(meta.data_limite || meta.prazoData) }}</span>
     </div>
   </div>
 </template>
@@ -90,6 +113,13 @@ function calcularPercentual(atual, total) {
 }
 
 .goal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.header-left {
   display: flex;
   align-items: flex-start;
   gap: 14px;
@@ -121,6 +151,37 @@ function calcularPercentual(atual, total) {
   font-size: 12px;
   color: #94a3b8;
   font-weight: 500;
+  text-transform: capitalize;
+}
+
+.actions {
+  display: flex;
+  gap: 4px;
+}
+
+.btn-action {
+  background: transparent;
+  border: none;
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #94a3b8;
+  transition: all 0.2s;
+}
+
+.btn-action.edit:hover {
+  background-color: #f1f5f9;
+  color: #2563eb;
+}
+
+.btn-action.delete:hover {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+.action-icon {
+  width: 16px;
+  height: 16px;
 }
 
 .goal-description {
