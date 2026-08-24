@@ -47,7 +47,7 @@
           <span v-else>{{ obterIniciais(usuario.nome) }}</span>
         </div>
         <div class="user-info">
-          <h4>{{ usuario.nome || 'Carregando...' }}</h4>
+          <h4>{{ usuario.nome }}</h4>
           <p>Ver perfil</p>
         </div>
         <i class="fas fa-chevron-right arrow-icon"></i>
@@ -96,42 +96,30 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+const usuario = ref({ nome: 'Usuário', fotoUrl: '' })
 
-const usuario = ref({
-  nome: '',
-  email: '',
-  fotoUrl: ''
-})
+onMounted(() => {
+  const userLocal = localStorage.getItem('user')
 
-const carregarDadosUsuario = () => {
-  try {
-    const userLocal = localStorage.getItem('user')
-
-    if (userLocal) {
+  if (userLocal) {
+    try {
       const parsedUser = JSON.parse(userLocal)
-      const dados = parsedUser.data || parsedUser
-
-      const nomeCompleto = dados.name || dados.nome || ''
-      const primeiroNome = nomeCompleto.trim().split(' ')[0]
+      const dadosUsuario = parsedUser.data || parsedUser
+      const nomeCompleto = dadosUsuario.name || dadosUsuario.nome || 'Usuário'
+      const primeiroNome = nomeCompleto !== 'Usuário' ? nomeCompleto.trim().split(' ')[0] : 'Usuário'
 
       usuario.value = {
         nome: primeiroNome,
-        email: dados.email || '',
-        fotoUrl: dados.foto || dados.fotoUrl || dados.avatar || ''
+        fotoUrl: dadosUsuario.foto || dadosUsuario.fotoUrl || dadosUsuario.avatar || ''
       }
+    } catch (e) {
+      console.error('Erro ao ler usuário do localStorage', e)
     }
-  } catch (error) {
-    console.error('Erro ao ler dados do localStorage:', error)
-    usuario.value = { nome: 'Usuário', email: '', fotoUrl: '' }
   }
-}
-
-onMounted(() => {
-  carregarDadosUsuario()
 })
 
 const obterIniciais = (nome) => {
-  if (!nome) return '?'
+  if (!nome || nome === 'Usuário') return '?'
   return nome.charAt(0).toUpperCase()
 }
 
@@ -182,7 +170,7 @@ const irParaInvestimentos = () => {
   background: none;
   border: none;
   padding: 6px 0;
-  width: 16.66%; /* Ajustado para caber 6 itens perfeitamente na barra mobile */
+  width: 16.66%;
   cursor: pointer;
   transition: color 0.2s ease;
 }

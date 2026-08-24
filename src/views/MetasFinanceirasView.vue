@@ -70,13 +70,13 @@ async function deletarMeta(id) {
 </script>
 
 <template>
-  <div class="app-layout">
+  <div class="dashboard-layout">
     <Sidebar />
 
-    <div class="main-wrapper">
+    <div class="main-container">
       <Header />
 
-      <main class="metas-page">
+      <main class="dashboard-content">
         <div class="metas-container">
 
           <div class="metas-header animar">
@@ -141,6 +141,8 @@ async function deletarMeta(id) {
 </template>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+
 .animar {
   opacity: 0;
   transform: translateY(20px);
@@ -152,44 +154,40 @@ async function deletarMeta(id) {
   transform: translateY(0);
 }
 
-.app-layout {
+.dashboard-layout {
   display: flex;
-  min-height: 100vh;
-  width: 100%;
-  max-width: 100vw;
+  height: 100vh;
+  width: 100vw;
   background-color: #ffffff;
-  overflow-x: hidden;
+  overflow: hidden;
   margin: 0;
-  border: none;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-.app-layout :deep(.desktop-sidebar) {
+.dashboard-layout :deep(.desktop-sidebar) {
   display: none !important;
 }
 
-.main-wrapper {
+.main-container {
   flex: 1;
   display: flex;
   flex-direction: column;
-  width: 100%;
-  min-width: 0;
-  min-height: 100vh;
+  height: 100vh;
   position: relative;
-  overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
   background-color: #ffffff;
 }
 
-.metas-page {
+.dashboard-content {
   flex: 1;
-  padding: 16px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  color: #1e293b;
-  box-sizing: border-box;
-  overflow-y: visible;
-  background-color: #ffffff;
+  padding: 16px 16px 90px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
   width: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+  background-color: #f4f6f9;
 }
 
 .metas-container {
@@ -210,14 +208,14 @@ async function deletarMeta(id) {
 }
 
 .metas-header h1 {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #0f172a;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #1e293b;
   margin: 0;
 }
 
 .metas-header p {
-  font-size: 0.875rem;
+  font-size: 0.95rem;
   color: #64748b;
   margin: 2px 0 0 0;
 }
@@ -229,10 +227,10 @@ async function deletarMeta(id) {
   gap: 8px;
   background-color: #006400;
   color: #ffffff;
-  padding: 10px 16px;
+  padding: 12px 20px;
   border-radius: 12px;
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 700;
   border: none;
   cursor: pointer;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -314,7 +312,7 @@ async function deletarMeta(id) {
 }
 
 @media (min-width: 640px) {
-  .metas-page {
+  .dashboard-content {
     padding: 24px;
   }
   .metas-header {
@@ -326,29 +324,26 @@ async function deletarMeta(id) {
     width: auto;
   }
   .metas-header h1 {
-    font-size: 1.6rem;
+    font-size: 1.8rem;
   }
 }
 
 @media (min-width: 1024px) {
-  .app-layout {
-    background-color: #f8fafc;
+  .dashboard-layout {
+    background-color: #f4f6f9;
   }
-  .app-layout :deep(.desktop-sidebar) {
+  .dashboard-layout :deep(.desktop-sidebar) {
     display: flex !important;
   }
-  .main-wrapper {
+  .main-container {
     height: 100vh;
-    overflow-y: hidden;
-    background-color: #f8fafc;
+    overflow: hidden;
+    background-color: #f4f6f9;
   }
-  .metas-page {
+  .dashboard-content {
     padding: 32px 40px;
     overflow-y: auto;
-    background-color: #f8fafc;
-  }
-  .metas-header h1 {
-    font-size: 1.8rem;
+    background-color: #f4f6f9;
   }
   .goals-grid {
     grid-template-columns: repeat(2, 1fr);

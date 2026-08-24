@@ -7,7 +7,7 @@
 
       <main class="dashboard-content">
         <section class="welcome-section animar">
-          <h2>Bem-vindo de volta, {{ usuario.name || 'Usuário' }}! </h2>
+          <h2>Bem-vindo, {{ usuario.name || 'Usuário' }}! </h2>
           <p>Aqui está um resumo completo das suas finanças</p>
         </section>
 
@@ -324,14 +324,10 @@ const obterCorProgresso = (porcentagem) => {
 
 .dashboard-layout {
   display: flex;
-  min-height: 100vh;
-  width: 100%;
-  max-width: 100vw;
+  height: 100vh;
+  width: 100vw;
   background-color: #ffffff;
-  overflow-x: hidden;
-  border-radius: 0;
-  border: none;
-  box-shadow: none;
+  overflow: hidden;
   margin: 0;
 }
 
@@ -343,17 +339,10 @@ const obterCorProgresso = (porcentagem) => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  width: 100%;
-  min-width: 0;
-  min-height: 100vh;
+  height: 100vh;
   position: relative;
-  overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
   background-color: #ffffff;
-  border-radius: 0;
-  border: none;
-  box-shadow: none;
 }
 
 .dashboard-content {
@@ -364,7 +353,7 @@ const obterCorProgresso = (porcentagem) => {
   gap: 20px;
   width: 100%;
   box-sizing: border-box;
-  overflow-y: visible;
+  overflow-y: auto; /* <-- AQUI É O SEGREDO: Rola apenas o conteúdo interno no mobile */
   background-color: #ffffff;
 }
 
@@ -583,12 +572,12 @@ const obterCorProgresso = (porcentagem) => {
   }
   .main-container {
     height: 100vh;
-    overflow-y: hidden;
+    overflow: hidden;
     background-color: #f4f6f9;
   }
   .dashboard-content {
     padding: 32px 40px;
-    overflow-y: auto;
+    overflow-y: auto; /* <-- NO DESKTOP: Trava a tela e faz apenas este miolo rolar com a barra interna */
     background-color: #f4f6f9;
   }
   .fab-button {
