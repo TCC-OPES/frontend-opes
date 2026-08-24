@@ -1,20 +1,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import api from '@/services/api'
+import api from '../../services/api'
 
 const ativos = ref([])
 const carregando = ref(true)
-const exibeModal = ref(false)
-const salvando = ref(false)
 
-const novoAtivo = ref({
-  nome: '',
-  valor: '',
-  rendimento: '',
-  cor: '#2563EB'
-})
-
-// Buscar investimentos da API Django (com cache-buster timestamp para evitar travamento do PWA)
 const carregarDados = async () => {
   try {
     carregando.value = true
@@ -69,47 +59,6 @@ const formatarMoeda = (valor) => {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(valor || 0)
 }
 
-const abrirModal = () => {
-  novoAtivo.value = { nome: '', valor: '', rendimento: '', cor: '#2563EB' }
-  exibeModal.value = true
-}
-
-const fecharModal = () => {
-  exibeModal.value = false
-}
-
-// Salvar novo ativo no backend
-const salvarInvestimento = async () => {
-  if (!novoAtivo.value.nome || !novoAtivo.value.valor) return
-
-  try {
-    salvando.value = true
-    const payload = {
-      nome: novoAtivo.value.nome,
-      valor_investido: Number(novoAtivo.value.valor),
-      rentabilidade: Number(novoAtivo.value.rendimento) || 0,
-      cor: novoAtivo.value.cor
-    }
-
-    const { data } = await api.post('api/investimentos/', payload)
-
-    // Insere o retorno diretamente no array para atualizar a UI instantaneamente
-    ativos.value.push({
-      ...data,
-      valor: data.valor_investido ?? data.valor ?? 0,
-      rendimento: data.rentabilidade ?? data.rendimento ?? 0,
-      cor: data.cor || novoAtivo.value.cor
-    })
-
-    fecharModal()
-  } catch (erro) {
-    console.error('Erro ao salvar investimento:', erro)
-  } finally {
-    salvando.value = false
-  }
-}
-
-// Deletar ativo do backend
 const removerInvestimento = async (id) => {
   try {
     await api.delete(`api/investimentos/${id}/`)
@@ -118,6 +67,17 @@ const removerInvestimento = async (id) => {
     console.error('Erro ao deletar investimento:', erro)
   }
 }
+
+const adicionarAtivoLocal = (novoItem) => {
+  ativos.value.push({
+    ...novoItem,
+    valor: novoItem.valor_investido ?? novoItem.valor ?? 0,
+    rendimento: novoItem.rentabilidade ?? novoItem.rendimento ?? 0,
+    cor: novoItem.cor || '#2563EB'
+  })
+}
+
+defineExpose({ adicionarAtivoLocal })
 
 onMounted(() => {
   carregarDados()
@@ -136,7 +96,6 @@ onMounted(() => {
     </div>
 
     <template v-else>
-      <!-- Cards de Resumo -->
       <section class="cards-grid">
         <div class="card">
           <div class="card-header">
@@ -163,9 +122,7 @@ onMounted(() => {
         </div>
       </section>
 
-      <!-- Conteúdo Principal -->
       <section class="content-grid">
-        <!-- Distribuição de Ativos -->
         <div class="content-card">
           <h3>Distribuição de Ativos</h3>
           <div v-if="ativos.length" class="chart-wrapper">
@@ -190,7 +147,6 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Lista de Investimentos -->
         <div class="content-card">
           <h3>Meus Investimentos</h3>
           <ul v-if="ativos.length" class="investments-list">
@@ -214,55 +170,12 @@ onMounted(() => {
         </div>
       </section>
     </template>
-
-    <!-- FAB -->
-    <button @click="abrirModal" class="fab-button" title="Novo Investimento">+</button>
-
-    <!-- Modal Form -->
-    <div v-if="exibeModal" class="modal-overlay" @click.self="fecharModal">
-      <div class="modal-content">
-        <h3>Novo Investimento</h3>
-        <form @submit.prevent="salvarInvestimento">
-          <div class="form-group">
-            <label>Nome do Ativo</label>
-            <input v-model="novoAtivo.nome" type="text" placeholder="Ex: Tesouro Direto" required />
-          </div>
-
-          <div class="form-group">
-            <label>Valor Investido (R$)</label>
-            <input v-model.number="novoAtivo.valor" type="number" step="0.01" placeholder="1000.00" required />
-          </div>
-
-          <div class="form-group">
-            <label>Rendimento (%)</label>
-            <input v-model.number="novoAtivo.rendimento" type="number" step="0.1" placeholder="10.5" required />
-          </div>
-
-          <div class="form-group">
-            <label>Cor de Exibição</label>
-            <input v-model="novoAtivo.cor" type="color" class="input-color" />
-          </div>
-
-          <div class="modal-actions">
-            <button type="button" @click="fecharModal" class="btn-secondary">Cancelar</button>
-            <button type="submit" class="btn-primary" :disabled="salvando">
-              {{ salvando ? 'Salvando...' : 'Adicionar' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
   </div>
 </template>
 
 <style scoped>
 .investimentos-container {
-  padding: 1.5rem 2rem;
-  background-color: #f8fafc;
-  height: 100%;
-  max-height: calc(100vh - 70px);
-  overflow-y: auto;
-  box-sizing: border-box;
+  width: 100%;
 }
 
 .page-header h1 {
@@ -270,7 +183,6 @@ onMounted(() => {
   font-weight: 800;
   color: #0f172a;
   margin: 0 0 0.25rem 0;
-  letter-spacing: -0.02em;
 }
 
 .page-header p {
@@ -428,111 +340,6 @@ onMounted(() => {
 }
 
 .btn-delete:hover { opacity: 1; }
-
-.fab-button {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background-color: #059669;
-  color: white;
-  border: none;
-  font-size: 1.75rem;
-  font-weight: 300;
-  cursor: pointer;
-  box-shadow: 0 8px 20px rgba(5, 150, 105, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s ease;
-}
-
-.fab-button:hover {
-  transform: scale(1.05);
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-}
-
-.modal-content {
-  background: white;
-  width: 100%;
-  max-width: 440px;
-  border-radius: 20px;
-  padding: 1.75rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-}
-
-.modal-content h3 {
-  margin: 0 0 1.25rem 0;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.form-group {
-  margin-bottom: 1.125rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-}
-
-.form-group label {
-  font-size: 0.813rem;
-  color: #475569;
-  font-weight: 600;
-}
-
-.form-group input {
-  padding: 0.75rem 1rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  font-size: 0.938rem;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.form-group input:focus {
-  border-color: #2563eb;
-}
-
-.input-color {
-  height: 44px;
-  padding: 0.25rem;
-  cursor: pointer;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 0.75rem;
-  margin-top: 1.75rem;
-}
-
-.btn-primary, .btn-secondary {
-  flex: 1;
-  padding: 0.875rem;
-  border-radius: 10px;
-  border: none;
-  font-weight: 600;
-  font-size: 0.938rem;
-  cursor: pointer;
-}
-
-.btn-primary { background: #059669; color: white; }
-.btn-secondary { background: #f1f5f9; color: #475569; }
 
 @media (max-width: 900px) {
   .cards-grid { grid-template-columns: 1fr; }
