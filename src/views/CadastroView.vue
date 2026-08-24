@@ -1,13 +1,14 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import api from '@/services/api'
+import { useAuthStore } from '@/store/auth'
 
-import FormCard from '../components/cadastro/FormCard.vue'
-import FormInput from '../components/cadastro/FormInput.vue'
-import PasswordInput from '../components/cadastro/PasswordInput.vue'
+import FormCard from '@/components/cadastro/FormCard.vue'
+import FormInput from '@/components/cadastro/FormInput.vue'
+import PasswordInput from '@/components/cadastro/PasswordInput.vue'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 const form = ref({
   cpf: '',
@@ -26,11 +27,9 @@ const cpfFormatado = computed({
   },
   set(valor) {
     let v = valor.replace(/\D/g, '').slice(0, 11)
-
     v = v.replace(/(\d{3})(\d)/, '$1.$2')
     v = v.replace(/(\d{3})(\d)/, '$1.$2')
     v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2')
-
     form.value.cpf = v
   }
 })
@@ -41,10 +40,8 @@ const telefoneFormatado = computed({
   },
   set(valor) {
     let v = valor.replace(/\D/g, '').slice(0, 11)
-
     v = v.replace(/^(\d{2})(\d)/g, '($1) $2')
     v = v.replace(/(\d)(\d{4})$/, '$1-$2')
-
     form.value.telefone = v
   }
 })
@@ -53,30 +50,23 @@ async function submitForm() {
   carregando.value = true
 
   try {
-    await api.post('api/cadastro/', {
-      cpf: form.value.cpf.replace(/\D/g, ''),
-      name: form.value.nome, // Corrigido de 'nome' para 'name' para o Django salvar corretamente
-      telefone: form.value.telefone.replace(/\D/g, ''),
+    const cpfLimpo = form.value.cpf.replace(/\D/g, '')
+    const telefoneLimpo = form.value.telefone.replace(/\D/g, '')
+
+    await authStore.cadastrar({
+      cpf: cpfLimpo,
+      name: form.value.nome,
+      telefone: telefoneLimpo,
       email: form.value.email,
       password: form.value.senha,
       password_confirm: form.value.confirmarSenha
     })
 
-    alert('Conta criada com sucesso!')
-    router.push('/login')
-
-    form.value = {
-      cpf: '',
-      nome: '',
-      telefone: '',
-      email: '',
-      senha: '',
-      confirmarSenha: ''
-    }
+    router.push('/dashboard')
 
   } catch (error) {
     console.log(error)
-    alert('Erro ao cadastrar')
+    alert('Erro ao cadastrar. Verifique os dados inseridos.')
   } finally {
     carregando.value = false
   }

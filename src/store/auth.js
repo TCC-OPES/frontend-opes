@@ -9,7 +9,6 @@ export const useAuthStore = defineStore('auth', () => {
   async function realizarLogin(cpf, password) {
     loading.value = true
     try {
-      // Remove pontos e traços do CPF antes de enviar
       const cpfLimpo = cpf.replace(/\D/g, '')
 
       const response = await api.post('api/login/', {
@@ -42,10 +41,45 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // NOVA FUNÇÃO DE CADASTRO COM AUTO-LOGIN
+  async function cadastrar(dadosCadastro) {
+    loading.value = true
+    try {
+      const response = await api.post('api/cadastro/', dadosCadastro)
+
+      // Se o backend já retorna o token no cadastro, salvamos e logamos direto
+      if (response.data && response.data.access) {
+        const accessToken = response.data.access
+        const refreshToken = response.data.refresh
+
+        localStorage.setItem('access', accessToken)
+        if (refreshToken) localStorage.setItem('refresh', refreshToken)
+
+        api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`
+
+        if (response.data.user) {
+          user.value = response.data.user
+          localStorage.setItem('user', JSON.stringify(response.data.user))
+        } else {
+          await buscarPerfil()
+        }
+      } else {
+        // Caso o backend não retorne o token no cadastro, fazemos o login automático logo em seguida
+        await realizarLogin(dadosCadastro.cpf, dadosCadastro.password)
+      }
+
+      return response.data
+    } catch (error) {
+      console.error('Erro ao cadastrar:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
   async function buscarPerfil() {
     try {
       const response = await api.get('api/me/')
-
       const dadosDoUsuario = response.data.user || response.data
 
       user.value = dadosDoUsuario
@@ -73,6 +107,7 @@ export const useAuthStore = defineStore('auth', () => {
     user,
     loading,
     realizarLogin,
+    cadastrar,
     buscarPerfil,
     logout
   }
