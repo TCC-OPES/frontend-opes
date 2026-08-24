@@ -1,12 +1,15 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/store/auth.js' // <-- Importando a nova Store
+import { useAuthStore } from '@/store/auth.js'
+
+import FormCard from '@/components/cadastro/FormCard.vue'
 import HeaderLogin from './HeaderLogin.vue'
 import BaseInput from './BaseInput.vue'
+import PasswordInput from '@/components/cadastro/PasswordInput.vue'
 
 const router = useRouter()
-const authStore = useAuthStore() // <-- Instanciando a Store
+const authStore = useAuthStore()
 const carregando = ref(false)
 
 const form = ref({
@@ -20,13 +23,9 @@ const cpfFormatado = computed({
     return form.value.cpf
   },
   set(valor) {
-    // Remove tudo o que não for número
     let v = valor.replace(/\D/g, '')
-
-    // Corta estritamente se passar de 11 números
     if (v.length > 11) v = v.slice(0, 11)
 
-    // Aplica a máscara de CPF (000.000.000-00)
     v = v.replace(/(\d{3})(\d)/, '$1.$2')
     v = v.replace(/(\d{3})(\d)/, '$1.$2')
     v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2')
@@ -44,110 +43,158 @@ async function login() {
   carregando.value = true
 
   try {
-    // Passamos o CPF limpo (sem pontos/traços) e a senha para a Store fazer o trabalho pesado
     const cpfLimpo = form.value.cpf.replace(/\D/g, '')
     await authStore.realizarLogin(cpfLimpo, form.value.senha)
 
-    console.log('Login realizado com sucesso via Store!')
-
-    // Redireciona o usuário
     router.push('/dashboard')
-
   } catch (error) {
     console.error('Erro no login:', error)
-
     if (error.response && error.response.data) {
       alert(error.response.data.error || 'CPF ou senha incorretos')
     } else {
       alert('Não foi possível conectar ao servidor')
     }
-
   } finally {
     carregando.value = false
   }
-
 }
 </script>
 
 <template>
-  <div class="container-login">
-    <HeaderLogin />
+  <FormCard class="card-interno">
+    <div class="scroll-content">
+      <HeaderLogin />
 
-    <form @submit.prevent="login">
-      <BaseInput
-        label="CPF"
-        icon="fa-solid fa-address-card"
-        placeholder="000.000.000-00"
-        v-model="cpfFormatado"
-        maxlength="14"
-      />
+      <form @submit.prevent="login" class="formulario">
+        <div class="all">
+          <BaseInput
+            label="CPF"
+            icon="fa-solid fa-address-card"
+            placeholder="000.000.000-00"
+            v-model="cpfFormatado"
+            maxlength="14"
+          />
 
-    <BaseInput
-      label="Senha"
-      type="password"
-      placeholder="•••••••"
-      v-model="form.senha"
-    />
+          <PasswordInput
+            label="Senha"
+            v-model="form.senha"
+          />
+        </div>
 
-      <div class="lembrar">
-        <label>
-          <input type="checkbox" v-model="form.lembrar" />
-          Lembrar-me
-        </label>
+        <div class="lembrar">
+          <label>
+            <input type="checkbox" v-model="form.lembrar" />
+            Lembrar-me
+          </label>
 
-        <a href="#">Esqueceu sua senha?</a>
+          <a href="#">Esqueceu sua senha?</a>
+        </div>
+
+        <button type="submit" :disabled="carregando" class="enviar">
+          {{ carregando ? 'Carregando...' : 'Acessar conta' }}
+        </button>
+      </form>
+
+      <div class="criar">
+        Não tem uma conta?
+        <router-link to="/cadastro">Criar conta</router-link>
       </div>
-
-      <button type="submit" :disabled="carregando">
-        {{ carregando ? 'Carregando...' : 'Acessar conta' }}
-      </button>
-    </form>
-
-    <div class="criar">
-      Não tem uma conta?
-      <a href="/cadastro">Criar conta</a>
     </div>
-  </div>
+  </FormCard>
 </template>
 
 <style scoped>
-.container-login {
+.card-interno {
   width: 100%;
   max-width: 450px;
-  padding: 50px 40px;
-  background: rgba(255, 255, 255, .85);
+  box-sizing: border-box;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(10px);
   border-radius: 28px;
+}
+
+/* Scroll ATIVO por padrão para dispositivos móveis */
+.scroll-content {
+  overflow-y: auto;
+  max-height: calc(90vh - 48px);
+  padding-right: 4px;
+  box-sizing: border-box;
+}
+
+.scroll-content::-webkit-scrollbar {
+  width: 6px;
+}
+.scroll-content::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.all {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
 }
 
 .lembrar {
   display: flex;
   justify-content: space-between;
-  margin: 25px 0;
+  margin: 16px 0;
+  font-size: 14px;
+  color: #4b5563;
 }
 
-button {
+.enviar {
   width: 100%;
-  padding: 18px;
+  padding: 14px;
   border: none;
   border-radius: 14px;
   background: #006400;
   color: white;
   font-weight: bold;
   cursor: pointer;
+  display: block;
 }
 
-button:disabled {
+.enviar:disabled {
   background: #555;
   cursor: not-allowed;
 }
 
-button:hover:not(:disabled) {
+.enviar:hover:not(:disabled) {
   background: #228B22;
 }
 
 .criar {
-  margin-top: 25px;
+  margin-top: 20px;
   text-align: center;
+  font-size: 14px;
+  color: #4b5563;
+}
+
+.criar a {
+  color: #006400;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+/* DESKTOP: Remove o scroll completamente */
+@media (min-width: 769px) {
+  .card-interno {
+    max-height: 95vh;
+  }
+
+  .scroll-content {
+    max-height: calc(95vh - 48px);
+    overflow-y: hidden;
+  }
 }
 </style>
