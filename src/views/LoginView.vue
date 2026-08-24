@@ -1,95 +1,83 @@
 <script setup>
 import FormLogin from '@/components/login/FormLogin.vue'
-import FeaturesLogin from '@/components/login/FeaturesLogin.vue'
 </script>
 
 <template>
-  <div class="main-wrapper">
-    <div class="mobile-logo-container">
-      <img src="/public/icons/logo.png" alt="OPES Logo" class="logo-img" />
+  <div class="page">
+    <div class="lado-imagem">
+      <img src="/icons/logo.png" alt="Ilustração" />
     </div>
 
-    <section class="login-side">
+    <div class="container-form">
       <FormLogin />
-    </section>
-
-    <section class="side-illustration">
-      <FeaturesLogin />
-    </section>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.main-wrapper {
+:deep(html), :deep(body) {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  overflow: hidden !important;
+}
+
+.page {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  width: 100%;
-  max-width: 100vw;
-  background: linear-gradient(
-    135deg,
-    rgba(224, 242, 241, 1) 0%,
-    rgba(178, 223, 219, 1) 100%
-  );
-  overflow-x: hidden;
-  margin: 0;
+  align-items: center;
+  justify-content: center;
   box-sizing: border-box;
-}
-
-.mobile-logo-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 36px 16px 16px 16px;
-}
-
-.logo-img {
-  max-height: 70px;
-  width: auto;
-  object-fit: contain;
-}
-
-.login-side {
-  width: 100%;
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  height: 100vh;
+  max-height: 100vh;
+  width: 100vw;
+  overflow: hidden !important;
   padding: 16px;
-  box-sizing: border-box;
+  background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
+  font-family: Arial, sans-serif;
 }
 
-.side-illustration {
+.lado-imagem {
   display: none;
 }
 
-@media (min-width: 1024px) {
-  .main-wrapper {
-    flex-direction: row;
-    height: 100vh;
-    overflow: hidden;
-  }
+.container-form {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-  .mobile-logo-container {
-    display: none;
-  }
-
-  .login-side {
-    flex: 1;
-    padding: 40px;
-    height: 100%;
-    overflow-y: auto;
-  }
-
-  .side-illustration {
-    flex: 1;
-    display: flex;
-    justify-content: center;
+@media (min-width: 769px) {
+  .page {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    padding: 0 40px;
+    gap: 30px;
     align-items: center;
-    padding: 40px;
+  }
+
+  .lado-imagem {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0;
+    width: 100%;
     height: 100%;
-    overflow-y: auto;
-    box-sizing: border-box;
+  }
+
+  .lado-imagem img {
+    width: 100%;
+    max-width: 800px;
+    max-height: 92vh;
+    object-fit: contain;
+  }
+
+  .container-form {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
   }
 }
 </style>

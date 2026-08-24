@@ -14,6 +14,6 @@
 
 .welcome p {
   color: #6b7280;
-  margin-bottom: 40px;
+  margin-bottom: 30px;
 }
 </style>

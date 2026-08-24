@@ -1,12 +1,21 @@
 <template>
-  <!-- Se for a tela de cadastro, renderiza direto sem o flex global e sem padding -->
-  <router-view v-if="$route.path === '/cadastro'" />
+  <div id="app-layout">
+    <!-- Sidebar / Navegação -->
+    <SidebarComponent />
 
-  <!-- Para o resto do sistema, mantém o layout normal com a Sidebar -->
-  <div v-else style="display: flex;">
-    <Sidebar />
-    <main style="flex-grow: 1; padding: 20px;">
+    <!-- Onde as páginas são carregadas -->
+    <main class="conteudo-principal">
       <router-view />
     </main>
   </div>
 </template>
+
+<style>
+/* Adicione isso no seu estilo global ou no App.vue */
+@media (max-width: 1023px) {
+  .conteudo-principal, #app-layout, .app-container {
+    padding-bottom: 85px !important; /* Cria um respiro para a barra mobile não cobrir nada */
+    box-sizing: border-box;
+  }
+}
+</style>
