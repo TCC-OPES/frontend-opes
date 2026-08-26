@@ -7,6 +7,7 @@ import LoginView from '../views/LoginView.vue'
 import InvestimentoView from '../views/InvestimentoView.vue'
 import CartoesView from '../views/CartoesView.vue'
 import MetasFinanceirasView from '@/views/MetasFinanceirasView.vue'
+import TransacoesView from '@/views/TransacoesView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -50,7 +51,12 @@ const router = createRouter({
       path: '/metas',
       name: 'metas',
       component: MetasFinanceirasView
-    }
+    },
+    {
+      path: '/transacoes',
+      name: 'transacoes',
+      component: TransacoesView
+    },
   ],
 })
 
