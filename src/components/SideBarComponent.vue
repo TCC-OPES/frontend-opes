@@ -135,6 +135,7 @@ const irParaInvestimentos = () => {
 <style scoped>
 .sidebar-container {
   z-index: 1000;
+  width: 0;
 }
 
 .desktop-sidebar {
@@ -216,12 +217,20 @@ const irParaInvestimentos = () => {
 }
 
 @media (min-width: 1024px) {
+  .sidebar-container {
+    width: 260px;
+    flex-shrink: 0;
+  }
+
   .mobile-bottom-nav {
     display: none;
   }
 
   .desktop-sidebar {
     width: 260px;
+    min-width: 260px;
+    max-width: 260px;
+    box-sizing: border-box;
     background-color: #ffffff;
     padding: 24px;
     display: flex;
@@ -231,16 +240,20 @@ const irParaInvestimentos = () => {
     height: 100vh;
     position: sticky;
     top: 0;
+    flex-shrink: 0;
   }
 
   .logo {
     display: flex;
     align-items: center;
+    height: 55px;
+    flex-shrink: 0;
   }
 
   .logo-img {
     height: 55px;
     width: auto;
+    display: block;
   }
 
   .menu {
@@ -249,18 +262,43 @@ const irParaInvestimentos = () => {
     gap: 8px;
     margin-top: 40px;
     flex-grow: 1;
+    width: 100%;
+    flex-shrink: 0;
   }
 
   .menu-item {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px 16px;
+    height: 44px;
+    padding: 0 16px;
     color: #64748b;
     text-decoration: none;
     border-radius: 8px;
+    font-family: "Plus Jakarta Sans", Arial, sans-serif;
     font-weight: 500;
-    transition: all 0.2s;
+    font-size: 1rem;
+    letter-spacing: normal;
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid transparent;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .menu-item i {
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .menu-item span {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: inherit;
+    font-weight: inherit;
+    font-size: inherit;
   }
 
   .menu-item:hover {
@@ -271,7 +309,8 @@ const irParaInvestimentos = () => {
   .menu-item.router-link-active,
   .menu-item.active {
     background-color: #0f766e;
-    color: white;
+    color: #ffffff;
+    font-weight: 500;
   }
 
   .user-profile-btn {
@@ -285,7 +324,9 @@ const irParaInvestimentos = () => {
     border-radius: 12px;
     cursor: pointer;
     width: 100%;
+    box-sizing: border-box;
     transition: all 0.2s ease;
+    flex-shrink: 0;
   }
 
   .user-profile-btn:hover {
@@ -295,12 +336,16 @@ const irParaInvestimentos = () => {
 
   .user-info {
     flex-grow: 1;
+    min-width: 0;
   }
 
   .user-info h4 {
     font-size: 0.9rem;
     color: #1e293b;
     margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .user-info p {
@@ -311,6 +356,7 @@ const irParaInvestimentos = () => {
 
   .arrow-icon {
     color: #64748b;
+    flex-shrink: 0;
   }
 }
 </style>
