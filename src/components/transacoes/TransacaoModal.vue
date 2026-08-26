@@ -5,13 +5,13 @@ import { useTransacoesStore } from '@/store/transacoes'
 const emit = defineEmits(['fechar'])
 const transacoesStore = useTransacoesStore()
 
-// Objeto reativo mapeando exatamente os campos do Django
+
 const formulario = ref({
   titulo: '',
   categoria: '',
   tipo: 'receita',
   valor: '',
-  data: new Date().toISOString().split('T')[0] // Data de hoje formatada
+  data: new Date().toISOString().split('T')[0]
 })
 
 const carregandoSalvar = ref(false)
@@ -22,7 +22,7 @@ async function submeterFormulario() {
   carregandoSalvar.value = false
 
   if (sucesso) {
-    emit('fechar') // Fecha a modal se deu certo
+    emit('fechar')
   }
 }
 </script>

@@ -59,7 +59,7 @@ onUnmounted(() => {
       </div>
 
       <div class="botoes-direita">
-        <button class="btn-acao" @click="emit('exportar')">Exportar</button>
+        <button class="btn-acao" @click="emit('exportar')" title="Exportar">Exportar</button>
         <button class="btn-primario" @click="emit('abrir-modal')">Nova Transação</button>
       </div>
     </div>
@@ -108,11 +108,9 @@ onUnmounted(() => {
 
 .barra-acoes {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 12px;
+  margin-bottom: 24px;
 }
 
 .filtros-abas {
@@ -121,16 +119,20 @@ onUnmounted(() => {
   padding: 4px;
   border-radius: 10px;
   gap: 4px;
+  width: 100%;
 }
 
 .filtros-abas button {
+  flex: 1;
   background: transparent;
   border: none;
-  padding: 8px 16px;
+  padding: 8px 12px;
   border-radius: 8px;
   font-weight: 600;
   color: #64748b;
   cursor: pointer;
+  font-size: 13px;
+  text-align: center;
 }
 
 .filtros-abas button.ativo {
@@ -142,9 +144,11 @@ onUnmounted(() => {
 .botoes-direita {
   display: flex;
   gap: 10px;
+  width: 100%;
 }
 
 .btn-acao {
+  flex: 1;
   background: white;
   border: 1px solid #cbd5e1;
   padding: 10px 16px;
@@ -152,9 +156,11 @@ onUnmounted(() => {
   font-weight: 600;
   color: #334155;
   cursor: pointer;
+  text-align: center;
 }
 
 .btn-primario {
+  flex: 1.5;
   background: #16a34a;
   border: none;
   padding: 10px 18px;
@@ -162,6 +168,7 @@ onUnmounted(() => {
   font-weight: 600;
   color: white;
   cursor: pointer;
+  text-align: center;
 }
 
 .historico-secao h3 {
@@ -239,5 +246,25 @@ onUnmounted(() => {
   background: white;
   border-radius: 14px;
   border: 1px solid #e2e8f0;
+}
+
+@media (min-width: 768px) {
+  .barra-acoes {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .filtros-abas {
+    width: auto;
+  }
+  .filtros-abas button {
+    flex: initial;
+  }
+  .botoes-direita {
+    width: auto;
+  }
+  .btn-acao, .btn-primario {
+    flex: initial;
+  }
 }
 </style>

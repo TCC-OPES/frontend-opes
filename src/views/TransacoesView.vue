@@ -32,10 +32,12 @@ onUnmounted(() => {
 
 <template>
   <div class="layout-app">
-
+    <!-- Barra Lateral (Sidebar) -->
     <SideBarComponent class="sidebar" />
 
+    <!-- Conteúdo Principal -->
     <div class="main-wrapper">
+      <!-- Header Superior -->
       <HeaderComponent />
 
       <main class="transacoes-container">
@@ -60,6 +62,7 @@ onUnmounted(() => {
           @abrir-modal="modalAberta = true"
         />
 
+        <!-- Modal de Criação -->
         <TransacaoModal
           v-if="modalAberta"
           @fechar="modalAberta = false"
@@ -81,28 +84,41 @@ onUnmounted(() => {
   transform: translateY(0);
 }
 
+/* Trava a tela inteira para evitar scroll global indesejado */
 .layout-app {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  width: 100vw;
   background-color: #f8fafc;
+  overflow: hidden;
+  margin: 0;
 }
 
+/* Esconde a barra lateral padrão em mobile se necessário, mantendo o comportamento das outras abas */
+.layout-app :deep(.desktop-sidebar) {
+  display: none !important;
+}
 
 .main-wrapper {
   display: flex;
   flex-direction: column;
   flex: 1;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
   width: 100%;
 }
 
+/* O SEGREDO: Rola apenas este container interno no mobile e desktop */
 .transacoes-container {
   flex: 1;
-  padding: 16px;
+  padding: 16px 16px 90px 16px;
   box-sizing: border-box;
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
+  overflow-y: auto;
 }
 
 .header-pagina {
@@ -121,19 +137,23 @@ onUnmounted(() => {
   font-size: 13px;
 }
 
-
+/* Responsividade para Desktop (A partir de 1024px) */
 @media (min-width: 1024px) {
   .layout-app {
-    flex-direction: row;
+    flex-direction: row; /* Coloca a sidebar lado a lado */
+  }
+
+  .layout-app :deep(.desktop-sidebar) {
+    display: flex !important;
   }
 
   .main-wrapper {
-    overflow-y: auto;
     height: 100vh;
+    overflow: hidden;
   }
 
   .transacoes-container {
-    padding: 30px;
+    padding: 32px 40px;
   }
 
   .header-pagina h1 {
