@@ -14,10 +14,6 @@
           <i class="fas fa-exchange-alt"></i>
           <span>Transações</span>
         </router-link>
-        <router-link to="/carteiras" class="menu-item">
-          <i class="fas fa-wallet"></i>
-          <span>Carteiras</span>
-        </router-link>
         <router-link to="/cartoes" class="menu-item">
           <i class="fas fa-credit-card"></i>
           <span>Cartões</span>
