@@ -6,6 +6,7 @@ import HeaderComponent from '@/components/HeaderComponent.vue'
 import TransacoesStats from '@/components/transacoes/TransacoesStats.vue'
 import TransacoesLista from '@/components/transacoes/TransacoesLista.vue'
 import TransacaoModal from '@/components/transacoes/TransacaoModal.vue'
+import ConexoesBancarias from '@/components/transacoes/ConexoesBancarias.vue'
 
 const transacoesStore = useTransacoesStore()
 const modalAberta = ref(false)
@@ -47,6 +48,8 @@ onUnmounted(() => {
             <p>Gerencie todas as suas movimentações financeiras</p>
           </div>
         </div>
+
+        <ConexoesBancarias @sincronizado="transacoesStore.buscarTransacoes('todas')" />
 
         <TransacoesStats
           class="animar"
