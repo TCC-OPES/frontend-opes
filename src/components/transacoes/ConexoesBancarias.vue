@@ -43,6 +43,7 @@ async function conectar(itemId = null) {
     const { data } = await api.post('/api/openfinance/connect-token/', itemId ? { itemId } : {})
     const widget = new PluggyConnect({
       connectToken: data.accessToken,
+      includeSandbox: import.meta.env.DEV || import.meta.env.VITE_PLUGGY_SANDBOX === 'true',
       ...(itemId ? { updateItem: itemId } : {}),
       onSuccess: async ({ item }) => {
         ocupada.value = true
