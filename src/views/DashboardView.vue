@@ -97,7 +97,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import HeaderComponent from '@/components/HeaderComponent.vue'
 import SideBarComponent from '@/components/SideBarComponent.vue'
 import { useMetasStore } from '@/store/metas'
-import investimentoService from '@/services/investimento'
+import { investimentoService }from '@/services/investimento'
 import api from '@/services/api'
 
 import {

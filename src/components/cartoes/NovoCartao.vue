@@ -1,7 +1,9 @@
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive } from 'vue'
+import { useCartoesStore } from '@/store/cartoes'
 
 const emit = defineEmits(['close', 'success'])
+const cartoesStore = useCartoesStore()
 
 const form = reactive({
   nome: '',
@@ -11,42 +13,13 @@ const form = reactive({
   cor: '#006B2B'
 })
 
-const enviando = ref(false)
-const erro = ref('')
-
 const submitForm = async () => {
-  enviando.value = true
-  erro.value = ''
-
   try {
-    // Busca o token salvo na autenticação
-    const token = localStorage.getItem('token') || localStorage.getItem('access')
-
-    const res = await fetch('/api/cartoes/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        ...form,
-        limite: parseFloat(form.limite)
-      })
-    })
-
-    if (!res.ok) {
-      if (res.status === 401) {
-        throw new Error('Sessão expirada ou usuário não autenticado.')
-      }
-      throw new Error('Erro ao salvar o cartão no servidor.')
-    }
-
-    const novoCartao = await res.json()
+    const novoCartao = await cartoesStore.adicionarCartao(form)
     emit('success', novoCartao)
+    emit('close')
   } catch (err) {
-    erro.value = err.message || 'Erro inesperado.'
-  } finally {
-    enviando.value = false
+    // Trata erro caso a store repasse
   }
 }
 </script>
@@ -59,8 +32,8 @@ const submitForm = async () => {
         <button @click="$emit('close')" class="close-btn">✕</button>
       </div>
 
-      <div v-if="erro" class="error-alert">
-        {{ erro }}
+      <div v-if="cartoesStore.erro" class="error-alert">
+        {{ cartoesStore.erro }}
       </div>
 
       <form @submit.prevent="submitForm" class="modal-form">
@@ -132,10 +105,10 @@ const submitForm = async () => {
           </button>
           <button
             type="submit"
-            :disabled="enviando"
+            :disabled="cartoesStore.carregando"
             class="btn-submit"
           >
-            {{ enviando ? 'Salvando...' : 'Salvar no Backend' }}
+            {{ cartoesStore.carregando ? 'Salvando...' : 'Salvar no Backend' }}
           </button>
         </div>
       </form>

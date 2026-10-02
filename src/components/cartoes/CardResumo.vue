@@ -1,24 +1,7 @@
 <script setup>
-import { computed } from 'vue'
+import { useCartoesStore } from '@/store/cartoes'
 
-const props = defineProps({
-  cartoes: {
-    type: Array,
-    default: () => []
-  }
-})
-
-const totalLimite = computed(() => {
-  return props.cartoes.reduce((acc, card) => acc + (Number(card.limite) || 0), 0)
-})
-
-const totalUtilizado = computed(() => {
-  return props.cartoes.reduce((acc, card) => acc + (Number(card.valor_utilizado) || 0), 0)
-})
-
-const totalDisponivel = computed(() => {
-  return totalLimite.value - totalUtilizado.value
-})
+const cartoesStore = useCartoesStore()
 
 const formatCurrency = (value) => {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }).replace(',00', '')
@@ -32,7 +15,7 @@ const formatCurrency = (value) => {
       <div class="metric-info">
         <span class="metric-label">Limite Total</span>
         <p class="metric-value text-dark">
-          {{ formatCurrency(totalLimite) }}
+          {{ formatCurrency(cartoesStore.totalLimite) }}
         </p>
       </div>
       <span class="metric-icon text-gray">$</span>
@@ -43,7 +26,7 @@ const formatCurrency = (value) => {
       <div class="metric-info">
         <span class="metric-label">Valor Utilizado</span>
         <p class="metric-value text-blue">
-          {{ formatCurrency(totalUtilizado) }}
+          {{ formatCurrency(cartoesStore.totalUtilizado) }}
         </p>
       </div>
       <span class="metric-icon text-blue">↗</span>
@@ -54,7 +37,7 @@ const formatCurrency = (value) => {
       <div class="metric-info">
         <span class="metric-label">Disponível</span>
         <p class="metric-value text-green">
-          {{ formatCurrency(totalDisponivel) }}
+          {{ formatCurrency(cartoesStore.totalDisponivel) }}
         </p>
       </div>
       <span class="metric-icon text-green">🔒</span>

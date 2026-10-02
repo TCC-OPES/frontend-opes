@@ -3,11 +3,12 @@ import { ref } from 'vue'
 import SideBarComponent from '../components/SideBarComponent.vue'
 import HeaderComponent from '../components/HeaderComponent.vue'
 import InvestimentoComponent from '../components/investimentos/InvestimentoComponent.vue'
-import api from '../services/api'
+import { useInvestimentosStore } from '../services/investimento' // Ajuste o caminho da sua store
+
+const investimentosStore = useInvestimentosStore()
 
 const investimentoRef = ref(null)
 const exibeModal = ref(false)
-const salvando = ref(false)
 
 const novoAtivo = ref({
   nome: '',
@@ -29,7 +30,6 @@ const salvarInvestimento = async () => {
   if (!novoAtivo.value.nome || !novoAtivo.value.valor) return
 
   try {
-    salvando.value = true
     const payload = {
       nome: novoAtivo.value.nome,
       valor_investido: Number(novoAtivo.value.valor),
@@ -37,17 +37,16 @@ const salvarInvestimento = async () => {
       cor: novoAtivo.value.cor
     }
 
-    const { data } = await api.post('api/investimentos/', payload)
+    // Chamada delegada para a Store
+    const novoInvestimento = await investimentosStore.criarInvestimento(payload)
 
     if (investimentoRef.value) {
-      investimentoRef.value.adicionarAtivoLocal(data)
+      investimentoRef.value.adicionarAtivoLocal(novoInvestimento)
     }
 
     fecharModal()
   } catch (erro) {
     console.error('Erro ao salvar investimento:', erro)
-  } finally {
-    salvando.value = false
   }
 }
 </script>
@@ -95,8 +94,8 @@ const salvarInvestimento = async () => {
 
             <div class="modal-actions">
               <button type="button" @click="fecharModal" class="btn-secondary">Cancelar</button>
-              <button type="submit" class="btn-primary" :disabled="salvando">
-                {{ salvando ? 'Salvando...' : 'Adicionar' }}
+              <button type="submit" class="btn-primary" :disabled="investimentosStore.carregando">
+                {{ investimentosStore.carregando ? 'Salvando...' : 'Adicionar' }}
               </button>
             </div>
           </form>
