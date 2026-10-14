@@ -41,10 +41,13 @@ async function conectar(itemId = null) {
   avisar('')
   try {
     const { data } = await api.post('/api/openfinance/connect-token/', itemId ? { itemId } : {})
+    const sandbox = import.meta.env.DEV || import.meta.env.VITE_PLUGGY_SANDBOX === 'true'
     const widget = new PluggyConnect({
       connectToken: data.accessToken,
-      includeSandbox: import.meta.env.DEV || import.meta.env.VITE_PLUGGY_SANDBOX === 'true',
-      ...(itemId ? { updateItem: itemId } : {}),
+      includeSandbox: sandbox,
+      ...(itemId
+        ? { updateItem: itemId }
+        : sandbox ? { selectedConnectorId: 2 } : {}),
       onSuccess: async ({ item }) => {
         ocupada.value = true
         try {
