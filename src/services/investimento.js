@@ -11,9 +11,8 @@ export const useInvestimentosStore = defineStore('investimentos', () => {
     carregando.value = true
     erro.value = ''
     try {
-      const response = await api.get('api/investimentos/')
+      const response = await api.get(`api/investimentos/?t=${Date.now()}`)
       investimentos.value = response.data
-      return response.data
     } catch (err) {
       erro.value = err.response?.data?.message || 'Erro ao carregar investimentos.'
       throw err
@@ -27,7 +26,7 @@ export const useInvestimentosStore = defineStore('investimentos', () => {
     erro.value = ''
     try {
       const response = await api.post('api/investimentos/', payload)
-      investimentos.value.push(response.data)
+      investimentos.value.push({ ...response.data })
       return response.data
     } catch (err) {
       erro.value = err.response?.data?.message || 'Erro ao criar investimento.'
@@ -42,7 +41,7 @@ export const useInvestimentosStore = defineStore('investimentos', () => {
     erro.value = ''
     try {
       await api.delete(`api/investimentos/${id}/`)
-      investimentos.value = investimentos.value.filter(item => item.id !== id)
+      investimentos.value = investimentos.value.filter((item) => item.id !== id)
     } catch (err) {
       erro.value = err.response?.data?.message || 'Erro ao deletar investimento.'
       throw err
@@ -57,6 +56,6 @@ export const useInvestimentosStore = defineStore('investimentos', () => {
     erro,
     carregarInvestimentos,
     criarInvestimento,
-    deletarInvestimento
+    deletarInvestimento,
   }
 })

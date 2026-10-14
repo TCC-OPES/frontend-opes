@@ -7,18 +7,19 @@ import { useInvestimentosStore } from '../services/investimento' // Ajuste o cam
 
 const investimentosStore = useInvestimentosStore()
 
-const investimentoRef = ref(null)
 const exibeModal = ref(false)
 
-const novoAtivo = ref({
+const novoAtivoInicial = {
   nome: '',
-  valor: '',
-  rendimento: '',
-  cor: '#2563EB'
-})
+  valor_investido: 0.0,
+  rentabilidade: 0.0,
+  cor: '#2563EB',
+}
+
+const novoAtivo = ref({ ...novoAtivoInicial })
 
 const abrirModal = () => {
-  novoAtivo.value = { nome: '', valor: '', rendimento: '', cor: '#2563EB' }
+  novoAtivo.value = { ...novoAtivoInicial }
   exibeModal.value = true
 }
 
@@ -27,23 +28,10 @@ const fecharModal = () => {
 }
 
 const salvarInvestimento = async () => {
-  if (!novoAtivo.value.nome || !novoAtivo.value.valor) return
+  if (!novoAtivo.value.nome || !novoAtivo.value.valor_investido) return
 
   try {
-    const payload = {
-      nome: novoAtivo.value.nome,
-      valor_investido: Number(novoAtivo.value.valor),
-      rentabilidade: Number(novoAtivo.value.rendimento) || 0,
-      cor: novoAtivo.value.cor
-    }
-
-    // Chamada delegada para a Store
-    const novoInvestimento = await investimentosStore.criarInvestimento(payload)
-
-    if (investimentoRef.value) {
-      investimentoRef.value.adicionarAtivoLocal(novoInvestimento)
-    }
-
+    await investimentosStore.criarInvestimento(novoAtivo.value)
     fecharModal()
   } catch (erro) {
     console.error('Erro ao salvar investimento:', erro)
@@ -74,17 +62,34 @@ const salvarInvestimento = async () => {
           <form @submit.prevent="salvarInvestimento">
             <div class="form-group">
               <label>Nome do Ativo</label>
-              <input v-model="novoAtivo.nome" type="text" placeholder="Ex: Tesouro Direto" required />
+              <input
+                v-model="novoAtivo.nome"
+                type="text"
+                placeholder="Ex: Tesouro Direto"
+                required
+              />
             </div>
 
             <div class="form-group">
               <label>Valor Investido (R$)</label>
-              <input v-model.number="novoAtivo.valor" type="number" step="0.01" placeholder="1000.00" required />
+              <input
+                v-model.number="novoAtivo.valor_investido"
+                type="number"
+                step="0.01"
+                placeholder="1000.00"
+                required
+              />
             </div>
 
             <div class="form-group">
               <label>Rendimento (%)</label>
-              <input v-model.number="novoAtivo.rendimento" type="number" step="0.1" placeholder="10.5" required />
+              <input
+                v-model.number="novoAtivo.rentabilidade"
+                type="number"
+                step="0.1"
+                placeholder="10.5"
+                required
+              />
             </div>
 
             <div class="form-group">
@@ -161,7 +166,9 @@ const salvarInvestimento = async () => {
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   z-index: 99;
-  transition: transform 0.2s, background-color 0.2s;
+  transition:
+    transform 0.2s,
+    background-color 0.2s;
 }
 
 .fab-button:hover {
@@ -237,7 +244,8 @@ const salvarInvestimento = async () => {
   margin-top: 1.75rem;
 }
 
-.btn-primary, .btn-secondary {
+.btn-primary,
+.btn-secondary {
   flex: 1;
   padding: 0.875rem;
   border-radius: 10px;
@@ -247,8 +255,14 @@ const salvarInvestimento = async () => {
   cursor: pointer;
 }
 
-.btn-primary { background: #0f766e; color: white; }
-.btn-secondary { background: #f1f5f9; color: #475569; }
+.btn-primary {
+  background: #0f766e;
+  color: white;
+}
+.btn-secondary {
+  background: #f1f5f9;
+  color: #475569;
+}
 
 @media (min-width: 640px) {
   .main-content {

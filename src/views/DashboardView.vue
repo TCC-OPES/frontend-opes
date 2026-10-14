@@ -97,7 +97,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import HeaderComponent from '@/components/HeaderComponent.vue'
 import SideBarComponent from '@/components/SideBarComponent.vue'
 import { useMetasStore } from '@/store/metas'
-import { investimentoService }from '@/services/investimento'
+import { useInvestimentosStore }from '@/services/investimento'
 import api from '@/services/api'
 
 import {
@@ -255,7 +255,7 @@ const carregarDadosDashboard = async () => {
 
     metasStore.carregarMetas()
 
-    const resInvestimentos = await investimentoService.buscarInvestimentos().catch(() => null)
+    const resInvestimentos = await useInvestimentosStore.buscarInvestimentos().catch(() => null)
     if (resInvestimentos?.data) {
       totalInvestidoStore.value = resInvestimentos.data.reduce((acc, item) => {
         const val = Number(item.valor_investido ?? item.valor ?? 0)

@@ -1,34 +1,25 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import api from '../../services/api'
+import { useInvestimentosStore } from '@/services/investimento'
 
-const ativos = ref([])
+const investimentosStore = useInvestimentosStore()
+
+// const ativos = ref([])
 const carregando = ref(true)
 
-const carregarDados = async () => {
-  try {
-    carregando.value = true
-    const { data } = await api.get(`api/investimentos/?t=${Date.now()}`)
-    ativos.value = data.map(item => ({
-      ...item,
-      valor: item.valor_investido ?? item.valor ?? 0,
-      rendimento: item.rentabilidade ?? item.rendimento ?? 0,
-      cor: item.cor || '#2563EB'
-    }))
-  } catch (erro) {
-    console.error('Erro ao carregar investimentos:', erro)
-  } finally {
-    carregando.value = false
-  }
-}
-
 const totalInvestido = computed(() => {
-  return ativos.value.reduce((acc, item) => acc + Number(item.valor), 0)
+  return investimentosStore.investimentos.reduce(
+    (acc, item) => acc + Number(item.valor_investido),
+    0,
+  )
 })
 
 const lucroEstimado = computed(() => {
-  return ativos.value
-    .reduce((acc, item) => acc + (Number(item.valor) * (Number(item.rendimento) / 100)), 0)
+  return investimentosStore.investimentos
+    .reduce(
+      (acc, item) => acc + Number(item.valor_investido) * (Number(item.rentabilidade) / 100),
+      0,
+    )
     .toFixed(2)
 })
 
@@ -41,8 +32,8 @@ const segmentosGrafico = computed(() => {
   let acumulado = 0
   const total = totalInvestido.value || 1
 
-  return ativos.value.map((ativo) => {
-    const percentual = (Number(ativo.valor) / total) * 100
+  return investimentosStore.investimentos.map((ativo) => {
+    const percentual = (Number(ativo.valor_investido) / total) * 100
     const offset = 25 - acumulado
     acumulado += percentual
 
@@ -50,37 +41,43 @@ const segmentosGrafico = computed(() => {
       ...ativo,
       cor: ativo.cor || '#2563EB',
       dashArray: `${percentual} ${100 - percentual}`,
-      dashOffset: offset
+      dashOffset: offset,
     }
   })
 })
 
 const formatarMoeda = (valor) => {
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(valor || 0)
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    maximumFractionDigits: 0,
+  }).format(valor || 0)
 }
 
 const removerInvestimento = async (id) => {
   try {
-    await api.delete(`api/investimentos/${id}/`)
-    ativos.value = ativos.value.filter(item => item.id !== id)
-  } catch (erro) {
-    console.error('Erro ao deletar investimento:', erro)
+    await investimentosStore.deletarInvestimento(id)
+  } catch (err) {
+    console.error('Erro ao deletar investimento:', err)
+    alert('Ocorreu um erro ao excluir o investimento')
   }
 }
 
 const adicionarAtivoLocal = (novoItem) => {
-  ativos.value.push({
+  investimentosStore.investimentos.push({
     ...novoItem,
     valor: novoItem.valor_investido ?? novoItem.valor ?? 0,
     rendimento: novoItem.rentabilidade ?? novoItem.rendimento ?? 0,
-    cor: novoItem.cor || '#2563EB'
+    cor: novoItem.cor || '#2563EB',
   })
 }
 
 defineExpose({ adicionarAtivoLocal })
 
-onMounted(() => {
-  carregarDados()
+onMounted(async () => {
+  carregando.value = true
+  await investimentosStore.carregarInvestimentos()
+  carregando.value = false
 })
 </script>
 
@@ -91,9 +88,7 @@ onMounted(() => {
       <p>Acompanhe sua carteira de investimentos</p>
     </header>
 
-    <div v-if="carregando" class="loading-state">
-      Carregando carteira...
-    </div>
+    <div v-if="carregando" class="loading-state">Carregando carteira...</div>
 
     <template v-else>
       <section class="cards-grid">
@@ -125,7 +120,7 @@ onMounted(() => {
       <section class="content-grid">
         <div class="content-card">
           <h3>Distribuição de Ativos</h3>
-          <div v-if="ativos.length" class="chart-wrapper">
+          <div v-if="investimentosStore.investimentos.length" class="chart-wrapper">
             <svg viewBox="0 0 36 36" class="donut-chart">
               <circle
                 v-for="segmento in segmentosGrafico"
@@ -142,25 +137,29 @@ onMounted(() => {
               ></circle>
             </svg>
           </div>
-          <div v-else class="empty-state">
-            Nenhum ativo cadastrado para exibir no gráfico.
-          </div>
+          <div v-else class="empty-state">Nenhum ativo cadastrado para exibir no gráfico.</div>
         </div>
 
         <div class="content-card">
           <h3>Meus Investimentos</h3>
-          <ul v-if="ativos.length" class="investments-list">
-            <li v-for="ativo in ativos" :key="ativo.id" class="investment-item">
+          <ul v-if="investimentosStore.investimentos.length" class="investments-list">
+            <li
+              v-for="ativo in investimentosStore.investimentos"
+              :key="ativo.id"
+              class="investment-item"
+            >
               <div class="item-info">
                 <span class="color-dot" :style="{ backgroundColor: ativo.cor }"></span>
                 <span class="item-name">{{ ativo.nome }}</span>
               </div>
               <div class="item-actions">
                 <div class="item-values">
-                  <span class="item-amount">{{ formatarMoeda(ativo.valor) }}</span>
-                  <span class="item-return text-green">+{{ ativo.rendimento }}%</span>
+                  <span class="item-amount">{{ formatarMoeda(ativo.valor_investido) }}</span>
+                  <span class="item-return text-green">+{{ ativo.rentabilidade }}%</span>
                 </div>
-                <button @click="removerInvestimento(ativo.id)" class="btn-delete" title="Excluir">✕</button>
+                <button @click="removerInvestimento(ativo.id)" class="btn-delete" title="Excluir">
+                  ✕
+                </button>
               </div>
             </li>
           </ul>
@@ -243,9 +242,15 @@ onMounted(() => {
   letter-spacing: -0.02em;
 }
 
-.text-green { color: #16a34a; }
-.text-blue { color: #2563eb; }
-.main-value { color: #0f172a; }
+.text-green {
+  color: #16a34a;
+}
+.text-blue {
+  color: #2563eb;
+}
+.main-value {
+  color: #0f172a;
+}
 
 .content-card h3 {
   font-size: 1.125rem;
@@ -261,13 +266,15 @@ onMounted(() => {
 }
 
 .donut-chart {
-  width: 210px;
-  height: 210px;
+  width: 220px;
+  height: 200px;
   transform: rotate(-90deg);
 }
 
 .donut-segment {
-  transition: stroke-dasharray 0.3s ease, stroke 0.3s ease;
+  transition:
+    stroke-dasharray 0.3s ease,
+    stroke 0.3s ease;
 }
 
 .investments-list {
@@ -339,10 +346,16 @@ onMounted(() => {
   transition: opacity 0.2s ease;
 }
 
-.btn-delete:hover { opacity: 1; }
+.btn-delete:hover {
+  opacity: 1;
+}
 
 @media (max-width: 900px) {
-  .cards-grid { grid-template-columns: 1fr; }
-  .content-grid { grid-template-columns: 1fr; }
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
