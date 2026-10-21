@@ -79,7 +79,6 @@ onUnmounted(() => {
             <div>
               <strong>{{ item.titulo }}</strong>
               <small>{{ item.categoria }}</small>
-              <small v-if="item.origem === 'banco'"> · {{ item.instituicao_nome || 'Banco' }}</small>
             </div>
           </div>
 
