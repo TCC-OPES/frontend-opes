@@ -11,9 +11,10 @@ const transacoes = ref([])
 const ocorrencias = ref([])
 const carregando = ref(false)
 const erro = ref('')
+const hojeLocal = () => { const d=new Date(); return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-') }
 const moeda = v => Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})
 const valorValido = computed(()=>Number(valor.value)>0&&Number.isInteger(Number(parcelas.value))&&Number(parcelas.value)>0&&dataCompra.value)
-const saldoAtual = computed(()=>transacoes.value.reduce((s,t)=>s+(t.tipo==='receita'?1:-1)*Number(t.valor),0))
+const saldoAtual = computed(()=>transacoes.value.filter(t=>t.data?.slice(0,10)<=hojeLocal()).reduce((s,t)=>s+(t.tipo==='receita'?1:-1)*Number(t.valor),0))
 function adicionarMes(data,i){
   const [a,m,d]=data.split('-').map(Number)
   const base=new Date(a,m-1+i,1)
@@ -26,7 +27,7 @@ const resultado = computed(()=>{
   const centavos=Math.round(Number(valor.value)*100)
   const minimo=Math.floor(centavos/quantidade)
   let saldo=saldoAtual.value
-  const hoje=new Date().toLocaleDateString('en-CA')
+  const hoje=hojeLocal()
   const projecao=[]
   const recorrenciasFuturas=ocorrencias.value.filter(e=>!e.confirmada_em && e.vencimento>=hoje)
   const fim=adicionarMes(dataCompra.value, quantidade-1)
@@ -47,8 +48,8 @@ async function carregar(){
     const [t,o]=await Promise.all([
       api.get('/api/transacoes/'),
       api.get('/api/recorrencias/ocorrencias/',{params:{
-        inicio:new Date().toLocaleDateString('en-CA'),
-        fim:new Date(Date.now()+365*86400000).toLocaleDateString('en-CA')
+        inicio:hojeLocal(),
+        fim:(()=>{const d=new Date();d.setDate(d.getDate()+365);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')})()
       }})
     ])
     transacoes.value=Array.isArray(t.data)?t.data:t.data.results||[]
