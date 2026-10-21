@@ -22,6 +22,10 @@
           <i class="fas fa-credit-card"></i>
           <span>Cartões</span>
         </router-link>
+        <router-link to="/simulador" class="menu-item">
+          <i class="fas fa-calculator"></i>
+          <span>Simulador</span>
+        </router-link>
         <router-link to="/metas" class="menu-item">
           <i class="fas fa-bullseye"></i>
           <span>Metas</span>
