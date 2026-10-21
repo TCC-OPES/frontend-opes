@@ -1,77 +1,167 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import api from '@/services/api'
 import SideBarComponent from '@/components/SideBarComponent.vue'
 import HeaderComponent from '@/components/HeaderComponent.vue'
 
+const modelo = () => ({ titulo: '', categoria: '', tipo: 'despesa', valor: '', frequencia: 'mensal', primeiro_vencimento: '', data_fim: null })
+const formulario = ref(modelo())
 const lista = ref([])
-const loading = ref(false)
+const ocorrencias = ref([])
+const carregando = ref(false)
+const salvando = ref(false)
 const erro = ref('')
 const mensagem = ref('')
-const formulario = ref({ titulo: '', categoria: '', tipo: 'despesa', valor: '', frequencia: 'mensal', primeiro_vencimento: '' })
-const moeda = v => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-const ativas = computed(() => lista.value.filter(x => x.ativa))
+const edicao = ref(null)
+const hoje = new Date()
+const ano = ref(hoje.getFullYear())
+const mes = ref(hoje.getMonth())
+const ativas = computed(() => lista.value.filter(item => item.ativa).length)
+const formatarMoeda = v => Number(v).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'})
+const dataISO = dia => [ano.value, String(mes.value + 1).padStart(2, '0'), String(dia).padStart(2, '0')].join('-')
+const periodo = computed(() => ({
+  inicio: dataISO(1),
+  fim: dataISO(new Date(ano.value, mes.value + 1, 0).getDate()),
+}))
+const tituloPeriodo = computed(() => new Date(ano.value, mes.value, 1).toLocaleDateString('pt-BR', {month: 'long', year: 'numeric'}))
+const totais = computed(() => ocorrencias.value.reduce((s, o) => {
+  s[o.tipo === 'receita' ? 'receitas' : 'despesas'] += Number(o.valor)
+  return s
+}, { receitas: 0, despesas: 0 }))
 
-async function carregar() {
-  loading.value = true
-  erro.value = ''
-  try {
-    const { data } = await api.get('/api/recorrencias/')
-    lista.value = Array.isArray(data) ? data : (data.results || [])
-  } catch {
-    erro.value = 'Não foi possível carregar as contas recorrentes.'
-  } finally {
-    loading.value = false
-  }
+function normalizar(data) { return Array.isArray(data) ? data : (data.results || []) }
+function erroAPI(error) {
+  const dado = error.response?.data
+  if (typeof dado?.detail === 'string') return dado.detail
+  if (dado && typeof dado === 'object') return Object.values(dado).flat().join(' ')
+  return 'Não foi possível concluir a operação.'
 }
-async function salvar() {
+async function carregar() {
+  carregando.value = true
   erro.value = ''
-  mensagem.value = ''
   try {
-    await api.post('/api/recorrencias/', formulario.value)
-    mensagem.value = 'Conta recorrente cadastrada!'
-    formulario.value = { titulo: '', categoria: '', tipo: 'despesa', valor: '', frequencia: 'mensal', primeiro_vencimento: '' }
-    await carregar()
-  } catch (e) {
-    erro.value = JSON.stringify(e.response?.data || 'Erro ao cadastrar.')
+    const [r, o] = await Promise.all([
+      api.get('/api/recorrencias/'),
+      api.get('/api/recorrencias/ocorrencias/', {params: periodo.value}),
+    ])
+    lista.value = normalizar(r.data)
+    ocorrencias.value = normalizar(o.data)
+  } catch (e) { erro.value = erroAPI(e) }
+  finally { carregando.value = false }
+}
+function editar(item) {
+  edicao.value = item.id
+  formulario.value = {
+    titulo: item.titulo, categoria: item.categoria, tipo: item.tipo,
+    valor: item.valor, frequencia: item.frequencia,
+    primeiro_vencimento: item.primeiro_vencimento, data_fim: item.data_fim,
   }
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+function cancelarEdicao() { edicao.value = null; formulario.value = modelo() }
+async function salvar() {
+  salvando.value = true
+  erro.value = ''; mensagem.value = ''
+  try {
+    const payload = {...formulario.value, data_fim: formulario.value.data_fim || null}
+    if (edicao.value) await api.patch('/api/recorrencias/' + edicao.value + '/', payload)
+    else await api.post('/api/recorrencias/', payload)
+    mensagem.value = edicao.value ? 'Recorrência atualizada.' : 'Recorrência cadastrada.'
+    cancelarEdicao()
+    await carregar()
+  } catch (e) { erro.value = erroAPI(e) }
+  finally { salvando.value = false }
 }
 async function alternar(item) {
+  erro.value = ''
   try {
-    await api.patch('/api/recorrencias/' + item.id + '/', { ativa: !item.ativa })
+    await api.patch('/api/recorrencias/' + item.id + '/', {ativa: !item.ativa})
     await carregar()
-  } catch {
-    erro.value = 'Erro ao atualizar a recorrência.'
-  }
+  } catch (e) { erro.value = erroAPI(e) }
+}
+async function encerrar(item) {
+  if (!window.confirm('Encerrar essa recorrência? Os pagamentos já confirmados serão preservados.')) return
+  erro.value = ''
+  try {
+    await api.delete('/api/recorrencias/' + item.id + '/')
+    await carregar()
+  } catch (e) { erro.value = erroAPI(e) }
+}
+async function confirmar(item) {
+  if (!window.confirm('Confirmar ' + (item.tipo === 'receita' ? 'recebimento' : 'pagamento') + ' de ' + formatarMoeda(item.valor) + '?')) return
+  erro.value = ''; mensagem.value = ''
+  try {
+    await api.post('/api/recorrencias/ocorrencias/' + item.id + '/confirmar/')
+    mensagem.value = 'Lançamento confirmado e registrado nas transações.'
+    await carregar()
+  } catch (e) { erro.value = erroAPI(e) }
+}
+async function mudarMes(direcao) {
+  const data = new Date(ano.value, mes.value + direcao, 1)
+  ano.value = data.getFullYear()
+  mes.value = data.getMonth()
+  await carregar()
 }
 onMounted(carregar)
 </script>
 
 <template>
-  <div class="layout"><SideBarComponent /><div class="principal"><HeaderComponent />
-    <main class="conteudo"><h1>Contas recorrentes</h1><p>Gerencie seus compromissos e recebimentos fixos.</p>
-      <p v-if="erro" role="alert" class="erro">{{ erro }}</p><p v-if="mensagem" role="status" class="sucesso">{{ mensagem }}</p>
-      <form class="painel formulario" @submit.prevent="salvar">
-        <h2>Nova recorrência</h2>
-        <label>Descrição <input v-model.trim="formulario.titulo" required maxlength="255" placeholder="Ex.: Internet" /></label>
-        <label>Categoria <input v-model.trim="formulario.categoria" required maxlength="100" placeholder="Ex.: Moradia" /></label>
-        <label>Tipo <select v-model="formulario.tipo"><option value="despesa">Despesa</option><option value="receita">Receita</option></select></label>
-        <label>Valor (R$) <input v-model="formulario.valor" type="number" step="0.01" min="0.01" required /></label>
-        <label>Frequência <select v-model="formulario.frequencia"><option value="mensal">Mensal</option><option value="semanal">Semanal</option><option value="anual">Anual</option></select></label>
-        <label>Primeiro vencimento <input v-model="formulario.primeiro_vencimento" type="date" required /></label>
-        <button type="submit">Cadastrar conta</button>
-      </form>
-      <section class="painel"><h2>Suas recorrências ({{ ativas.length }} ativas)</h2>
-        <p v-if="loading">Carregando...</p><p v-else-if="!lista.length">Nenhuma conta recorrente cadastrada.</p>
-        <div v-for="item in lista" :key="item.id" class="item">
-          <div><strong>{{ item.titulo }}</strong><p>{{ item.categoria }} · {{ item.frequencia }} · início {{ item.primeiro_vencimento }}</p></div>
-          <div><strong>{{ moeda(item.valor) }}</strong><p>{{ item.ativa ? 'Ativa' : 'Pausada' }}</p>
-            <button type="button" @click="alternar(item)">{{ item.ativa ? 'Pausar' : 'Reativar' }}</button></div>
-        </div>
-      </section>
-    </main></div></div>
+  <div class="layout">
+    <SideBarComponent class="sidebar" />
+    <div class="principal">
+      <HeaderComponent />
+      <main class="conteudo">
+        <header><h1>Contas recorrentes</h1><p>Controle despesas e receitas que se repetem.</p></header>
+        <p v-if="erro" role="alert" class="alerta erro">{{ erro }}</p>
+        <p v-if="mensagem" role="status" class="alerta sucesso">{{ mensagem }}</p>
+
+        <form class="painel formulario" @submit.prevent="salvar">
+          <h2>{{ edicao ? 'Editar recorrência' : 'Nova recorrência' }}</h2>
+          <p v-if="edicao" class="nota">Depois de gerar vencimentos, os dados financeiros ficam bloqueados para preservar o histórico. Você ainda pode pausar ou definir uma data de término.</p>
+          <label>Descrição <input v-model.trim="formulario.titulo" required maxlength="255" placeholder="Ex.: Internet" /></label>
+          <label>Categoria <input v-model.trim="formulario.categoria" required maxlength="100" placeholder="Ex.: Moradia" /></label>
+          <label>Tipo <select v-model="formulario.tipo"><option value="despesa">Despesa</option><option value="receita">Receita</option></select></label>
+          <label>Valor (R$) <input v-model="formulario.valor" type="number" step="0.01" min="0.01" required /></label>
+          <label>Frequência <select v-model="formulario.frequencia"><option value="mensal">Mensal</option><option value="semanal">Semanal</option><option value="anual">Anual</option></select></label>
+          <label>Primeiro vencimento <input v-model="formulario.primeiro_vencimento" type="date" required /></label>
+          <label>Último vencimento (opcional) <input v-model="formulario.data_fim" type="date" /></label>
+          <div class="acoes"><button :disabled="salvando" type="submit">{{ salvando ? 'Salvando...' : edicao ? 'Salvar alterações' : 'Cadastrar' }}</button>
+            <button v-if="edicao" type="button" class="secundario" @click="cancelarEdicao">Cancelar</button></div>
+        </form>
+
+        <section class="painel">
+          <h2>Minhas recorrências <span class="contagem">{{ ativas }} ativas</span></h2>
+          <p v-if="carregando">Carregando...</p>
+          <p v-else-if="!lista.length">Nenhuma recorrência cadastrada.</p>
+          <article v-for="item in lista" :key="item.id" class="item">
+            <div><strong>{{ item.titulo }}</strong><p>{{ item.categoria }} · {{ item.frequencia }} · início {{ item.primeiro_vencimento }}</p>
+              <span :class="['status', item.ativa ? 'ativo' : 'inativo']">{{ item.ativa ? 'Ativa' : 'Pausada / encerrada' }}</span></div>
+            <div class="direita"><strong>{{ formatarMoeda(item.valor) }}</strong>
+              <div class="botoes"><button type="button" class="secundario" @click="editar(item)">Editar</button>
+                <button type="button" class="secundario" @click="alternar(item)">{{ item.ativa ? 'Pausar' : 'Reativar' }}</button>
+                <button v-if="item.ativa" type="button" class="perigo" @click="encerrar(item)">Encerrar</button></div></div>
+          </article>
+        </section>
+
+        <section class="painel">
+          <div class="navegar"><h2>Vencimentos — {{ tituloPeriodo }}</h2>
+            <div class="botoes"><button type="button" class="secundario" @click="mudarMes(-1)" aria-label="Mês anterior">‹</button>
+            <button type="button" class="secundario" @click="mudarMes(1)" aria-label="Próximo mês">›</button></div></div>
+          <p class="nota">Previstos: receitas {{ formatarMoeda(totais.receitas) }} · despesas {{ formatarMoeda(totais.despesas) }}. A previsão não altera o saldo até a confirmação.</p>
+          <p v-if="!carregando && !ocorrencias.length">Nenhum vencimento neste mês.</p>
+          <article v-for="item in ocorrencias" :key="item.id" class="item">
+            <div><strong>{{ item.titulo }}</strong><p>{{ item.vencimento }} · {{ item.tipo }} · {{ item.categoria }}</p>
+              <span :class="['status', item.status === 'confirmada' ? 'ativo' : 'inativo']">{{ item.status }}</span></div>
+            <div class="direita"><strong>{{ formatarMoeda(item.valor) }}</strong>
+              <button v-if="!item.confirmada_em" type="button" @click="confirmar(item)">
+                {{ item.tipo === 'receita' ? 'Confirmar recebimento' : 'Confirmar pagamento' }}</button></div>
+          </article>
+        </section>
+      </main>
+    </div>
+  </div>
 </template>
 
 <style scoped>
-.layout{display:flex;min-height:100vh;background:#f8fafc}.principal{flex:1;min-width:0}.conteudo{max-width:1100px;margin:auto;padding:32px 24px 100px;color:#1e293b}h1{font-size:28px}h2{font-size:20px;margin-bottom:16px}.painel{background:white;border:1px solid #e2e8f0;border-radius:14px;padding:24px;margin-top:24px}.formulario{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}.formulario h2{grid-column:1/-1}label{display:flex;flex-direction:column;gap:6px;font-size:14px}input,select{padding:12px;border:1px solid #cbd5e1;border-radius:8px;background:white}button{background:#0f766e;color:white;border:0;border-radius:8px;padding:11px 16px;cursor:pointer}.item{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:16px 0;border-top:1px solid #e2e8f0}.item p{color:#64748b;margin:6px 0}.erro{color:#b91c1c}.sucesso{color:#047857}@media(max-width:800px){.layout{display:block}.conteudo{padding:20px 16px 100px}}
+.layout{display:flex;min-height:100vh;background:#f8fafc}.principal{flex:1;min-width:0}.conteudo{max-width:1140px;margin:auto;padding:32px 24px 110px;color:#1e293b}h1{font-size:28px;margin:0 0 6px}h2{font-size:20px;margin:0 0 16px}header p,.nota,.item p{color:#64748b;font-size:14px}.nota{grid-column:1/-1;margin:0 0 12px}.painel{background:white;border:1px solid #e2e8f0;border-radius:14px;padding:24px;margin-top:24px}.formulario{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}.formulario h2{grid-column:1/-1}.acoes{grid-column:1/-1;display:flex;gap:8px}label{display:flex;flex-direction:column;gap:6px;font-size:14px}input,select{padding:12px;border:1px solid #cbd5e1;border-radius:8px;background:white;min-width:0}button{background:#0f766e;color:white;border:0;border-radius:8px;padding:10px 14px;cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}.secundario{background:#e2e8f0;color:#334155}.perigo{background:#fee2e2;color:#991b1b}.item{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:16px 0;border-top:1px solid #e2e8f0}.item p{margin:6px 0}.direita{text-align:right}.botoes{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:10px}.status{font-size:12px;border-radius:20px;padding:3px 9px}.ativo{background:#d1fae5;color:#065f46}.inativo{background:#f1f5f9;color:#475569}.contagem{font-size:13px;font-weight:normal;color:#64748b}.navegar{display:flex;align-items:center;justify-content:space-between}.navegar h2{text-transform:capitalize;margin:0}.alerta{padding:12px;border-radius:8px}.erro{color:#991b1b;background:#fee2e2}.sucesso{color:#065f46;background:#d1fae5}@media(max-width:800px){.layout{display:block}.conteudo{padding:20px 14px 110px}.item{align-items:flex-start;flex-direction:column}.direita{text-align:left}.botoes{justify-content:flex-start}}
 </style>
