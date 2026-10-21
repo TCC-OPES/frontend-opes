@@ -22,6 +22,10 @@
           <i class="fas fa-credit-card"></i>
           <span>Cartões</span>
         </router-link>
+        <router-link to="/calendario" class="menu-item">
+          <i class="fas fa-calendar-alt"></i>
+          <span>Calendário</span>
+        </router-link>
         <router-link to="/metas" class="menu-item">
           <i class="fas fa-bullseye"></i>
           <span>Metas</span>
