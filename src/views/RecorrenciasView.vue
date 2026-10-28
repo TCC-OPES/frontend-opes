@@ -98,7 +98,7 @@ async function encerrar(item) {
   } catch (e) { erro.value = erroAPI(e) }
 }
 async function confirmar(item) {
-  if (!window.confirm('Confirmar ' + (item.tipo === 'receita' ? 'recebimento' : 'pagamento') + ' de ' + formatarMoeda(item.valor) + '?'))) return
+  if (!(await confirmAction('Confirmar lançamento financeiro?'))) return
   erro.value = ''; mensagem.value = ''
   try {
     await api.post('/api/recorrencias/ocorrencias/' + item.id + '/confirmar/')
