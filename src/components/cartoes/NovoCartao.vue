@@ -1,4 +1,5 @@
 <script setup>
+import { notify } from '@/services/toast'
 import { reactive, ref } from 'vue'
 
 const emit = defineEmits(['close', 'success'])
@@ -19,7 +20,7 @@ const submitForm = async () => {
   erro.value = ''
 
   try {
-    // Busca o token salvo na autenticação
+
     const token = localStorage.getItem('token') || localStorage.getItem('access')
 
     const res = await fetch('/api/cartoes/', {
@@ -45,6 +46,7 @@ const submitForm = async () => {
     emit('success', novoCartao)
   } catch (err) {
     erro.value = err.message || 'Erro inesperado.'
+    notify.error(erro.value)
   } finally {
     enviando.value = false
   }
@@ -59,9 +61,7 @@ const submitForm = async () => {
         <button @click="$emit('close')" class="close-btn">✕</button>
       </div>
 
-      <div v-if="erro" class="error-alert">
-        {{ erro }}
-      </div>
+      
 
       <form @submit.prevent="submitForm" class="modal-form">
         <div class="form-group">
@@ -157,13 +157,13 @@ const submitForm = async () => {
 }
 
 .modal-container {
-  background-color: #ffffff;
+  background-color: var(--opes-paper);
   border-radius: 1rem;
   max-width: 28rem;
   width: 100%;
   padding: 1.5rem;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  border: 1px solid #f3f4f6;
+  border: 1px solid var(--opes-cream);
 }
 
 .modal-header {
@@ -176,11 +176,11 @@ const submitForm = async () => {
 .modal-title {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--opes-ink);
 }
 
 .close-btn {
-  color: #9ca3af;
+  color: var(--opes-muted);
   font-size: 1.125rem;
   font-weight: 700;
   background: none;
@@ -189,17 +189,17 @@ const submitForm = async () => {
 }
 
 .close-btn:hover {
-  color: #4b5563;
+  color: var(--opes-forest);
 }
 
 .error-alert {
   margin-bottom: 1rem;
   padding: 0.75rem;
-  background-color: #fef2f2;
-  color: #dc2626;
+  background-color: var(--opes-paper);
+  color: var(--opes-danger);
   font-size: 0.75rem;
   border-radius: 0.5rem;
-  border: 1px solid #fecaca;
+  border: 1px solid var(--opes-cream);
 }
 
 .modal-form {
@@ -222,13 +222,13 @@ const submitForm = async () => {
 .form-label {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--opes-ink);
   margin-bottom: 0.375rem;
 }
 
 .form-input {
   width: 100%;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--opes-cream);
   border-radius: 0.75rem;
   padding: 0.75rem;
   font-size: 0.875rem;
@@ -239,7 +239,7 @@ const submitForm = async () => {
 
 .form-input:focus {
   border-color: transparent;
-  box-shadow: 0 0 0 2px #00875a;
+  box-shadow: 0 0 0 2px var(--opes-forest);
 }
 
 .color-picker-wrapper {
@@ -251,16 +251,16 @@ const submitForm = async () => {
 .color-input {
   width: 3rem;
   height: 2.5rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--opes-cream);
   border-radius: 0.75rem;
   cursor: pointer;
   padding: 0.25rem;
-  background-color: #ffffff;
+  background-color: var(--opes-paper);
 }
 
 .color-value {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--opes-forest);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
@@ -273,25 +273,25 @@ const submitForm = async () => {
 .btn-cancel {
   flex: 1;
   padding: 0.75rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--opes-cream);
   border-radius: 0.75rem;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--opes-ink);
   background-color: transparent;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
 .btn-cancel:hover {
-  background-color: #f9fafb;
+  background-color: var(--opes-paper);
 }
 
 .btn-submit {
   flex: 1;
   padding: 0.75rem;
-  background-color: #00875a;
-  color: #ffffff;
+  background-color: var(--opes-forest);
+  color: var(--opes-paper);
   border: none;
   border-radius: 0.75rem;
   font-size: 0.875rem;
@@ -301,7 +301,7 @@ const submitForm = async () => {
 }
 
 .btn-submit:hover {
-  background-color: #006b2b;
+  background-color: var(--opes-forest);
 }
 
 .btn-submit:disabled {

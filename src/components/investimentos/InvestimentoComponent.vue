@@ -181,12 +181,12 @@ onMounted(() => {
 .page-header h1 {
   font-size: 1.75rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--opes-ink);
   margin: 0 0 0.25rem 0;
 }
 
 .page-header p {
-  color: #64748b;
+  color: var(--opes-forest);
   font-size: 0.938rem;
   margin: 0 0 1.5rem 0;
 }
@@ -195,7 +195,7 @@ onMounted(() => {
 .empty-state {
   text-align: center;
   padding: 3rem 1rem;
-  color: #94a3b8;
+  color: var(--opes-muted);
   font-size: 0.875rem;
 }
 
@@ -215,10 +215,10 @@ onMounted(() => {
 
 .card,
 .content-card {
-  background: #ffffff;
+  background: var(--opes-paper);
   border-radius: 16px;
   padding: 1.5rem;
-  border: 1px solid #f1f5f9;
+  border: 1px solid var(--opes-paper);
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03);
 }
 
@@ -226,14 +226,14 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: #64748b;
+  color: var(--opes-forest);
   font-size: 0.875rem;
   font-weight: 500;
 }
 
 .card-icon {
   font-size: 1.1rem;
-  color: #94a3b8;
+  color: var(--opes-muted);
 }
 
 .card-value {
@@ -243,14 +243,14 @@ onMounted(() => {
   letter-spacing: -0.02em;
 }
 
-.text-green { color: #16a34a; }
-.text-blue { color: #2563eb; }
-.main-value { color: #0f172a; }
+.text-green { color: var(--opes-forest); }
+.text-blue { color: var(--opes-forest); }
+.main-value { color: var(--opes-ink); }
 
 .content-card h3 {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--opes-ink);
   margin: 0 0 1.25rem 0;
 }
 
@@ -281,7 +281,7 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 1rem 0;
-  border-bottom: 1px solid #f8fafc;
+  border-bottom: 1px solid var(--opes-paper);
 }
 
 .investment-item:last-child {
@@ -302,7 +302,7 @@ onMounted(() => {
 
 .item-name {
   font-weight: 600;
-  color: #1e293b;
+  color: var(--opes-ink);
   font-size: 0.938rem;
 }
 
@@ -321,7 +321,7 @@ onMounted(() => {
 .item-amount {
   font-size: 0.938rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--opes-ink);
 }
 
 .item-return {
@@ -332,7 +332,7 @@ onMounted(() => {
 .btn-delete {
   background: none;
   border: none;
-  color: #ef4444;
+  color: var(--opes-caramel);
   cursor: pointer;
   font-size: 0.875rem;
   opacity: 0.4;

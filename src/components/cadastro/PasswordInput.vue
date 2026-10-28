@@ -8,7 +8,6 @@ defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
-// Estado que controla se a senha está visível ou oculta
 const mostrarSenha = ref(false)
 </script>
 
@@ -56,29 +55,29 @@ const mostrarSenha = ref(false)
 .eye-toggle {
   position: absolute;
   left: 14px;
-  color: #9ca3af;
+  color: var(--opes-muted);
   cursor: pointer;
   z-index: 10;
   display: flex;
   align-items: center;
   height: 100%;
 
-  /* Evita que o usuário selecione o ícone como texto ao clicar rápido */
+  
   user-select: none;
 }
 
 input {
   width: 100%;
-  padding: 14px 10px 14px 45px; /* Espaço na esquerda (45px) para não cobrir o ícone */
+  padding: 14px 10px 14px 45px; 
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  background-color: #f9fafb;
+  border: 1px solid var(--opes-cream);
+  background-color: var(--opes-paper);
   font-size: 16px;
   box-sizing: border-box;
   outline: none;
 }
 
 input:focus {
-  border-color: #3b82f6;
+  border-color: var(--opes-caramel);
 }
 </style>

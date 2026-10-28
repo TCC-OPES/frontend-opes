@@ -41,13 +41,11 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // NOVA FUNÇÃO DE CADASTRO COM AUTO-LOGIN
   async function cadastrar(dadosCadastro) {
     loading.value = true
     try {
       const response = await api.post('api/cadastro/', dadosCadastro)
 
-      // Se o backend já retorna o token no cadastro, salvamos e logamos direto
       if (response.data && response.data.access) {
         const accessToken = response.data.access
         const refreshToken = response.data.refresh
@@ -64,7 +62,7 @@ export const useAuthStore = defineStore('auth', () => {
           await buscarPerfil()
         }
       } else {
-        // Caso o backend não retorne o token no cadastro, fazemos o login automático logo em seguida
+
         await realizarLogin(dadosCadastro.cpf, dadosCadastro.password)
       }
 

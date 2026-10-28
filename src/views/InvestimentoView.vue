@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue'
 import SideBarComponent from '../components/SideBarComponent.vue'
-import HeaderComponent from '../components/HeaderComponent.vue'
 import InvestimentoComponent from '../components/investimentos/InvestimentoComponent.vue'
 import api from '../services/api'
 
@@ -57,7 +56,7 @@ const salvarInvestimento = async () => {
     <SideBarComponent />
 
     <div class="main-wrapper">
-      <HeaderComponent />
+      
 
       <main class="main-content">
         <div class="conteudo-interno">
@@ -111,7 +110,7 @@ const salvarInvestimento = async () => {
   display: flex;
   height: 100vh;
   width: 100vw;
-  background-color: #ffffff;
+  background-color: var(--opes-paper);
   overflow: hidden;
   margin: 0;
   border: none;
@@ -128,7 +127,7 @@ const salvarInvestimento = async () => {
   height: 100vh;
   position: relative;
   overflow: hidden;
-  background-color: #ffffff;
+  background-color: var(--opes-paper);
 }
 
 .main-content {
@@ -137,7 +136,7 @@ const salvarInvestimento = async () => {
   padding: 1rem 1rem 100px 1rem;
   width: 100%;
   box-sizing: border-box;
-  background-color: #f8fafc;
+  background-color: var(--opes-paper);
 }
 
 .conteudo-interno {
@@ -151,7 +150,7 @@ const salvarInvestimento = async () => {
   right: 20px;
   width: 48px;
   height: 48px;
-  background-color: #0f766e;
+  background-color: var(--opes-forest);
   color: white;
   border: none;
   border-radius: 50%;
@@ -166,7 +165,7 @@ const salvarInvestimento = async () => {
 }
 
 .fab-button:hover {
-  background-color: #0d9488;
+  background-color: var(--opes-forest);
   transform: scale(1.05);
 }
 
@@ -197,7 +196,7 @@ const salvarInvestimento = async () => {
   margin: 0 0 1.25rem 0;
   font-size: 1.25rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--opes-ink);
 }
 
 .form-group {
@@ -209,13 +208,13 @@ const salvarInvestimento = async () => {
 
 .form-group label {
   font-size: 0.813rem;
-  color: #475569;
+  color: var(--opes-forest);
   font-weight: 600;
 }
 
 .form-group input {
   padding: 0.75rem 1rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--opes-cream);
   border-radius: 10px;
   font-size: 0.938rem;
   outline: none;
@@ -223,7 +222,7 @@ const salvarInvestimento = async () => {
 }
 
 .form-group input:focus {
-  border-color: #2563eb;
+  border-color: var(--opes-forest);
 }
 
 .input-color {
@@ -248,8 +247,8 @@ const salvarInvestimento = async () => {
   cursor: pointer;
 }
 
-.btn-primary { background: #0f766e; color: white; }
-.btn-secondary { background: #f1f5f9; color: #475569; }
+.btn-primary { background: var(--opes-forest); color: white; }
+.btn-secondary { background: var(--opes-paper); color: var(--opes-forest); }
 
 @media (min-width: 640px) {
   .main-content {
@@ -259,7 +258,7 @@ const salvarInvestimento = async () => {
 
 @media (min-width: 1024px) {
   .app-layout {
-    background-color: #f4f6f9;
+    background-color: var(--opes-paper);
   }
   .app-layout :deep(.desktop-sidebar) {
     display: flex !important;
@@ -267,12 +266,12 @@ const salvarInvestimento = async () => {
   .main-wrapper {
     height: 100vh;
     overflow: hidden;
-    background-color: #f4f6f9;
+    background-color: var(--opes-paper);
   }
   .main-content {
     padding: 32px 40px;
     overflow-y: auto;
-    background-color: #f4f6f9;
+    background-color: var(--opes-paper);
   }
   .fab-button {
     bottom: 20px;

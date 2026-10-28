@@ -44,25 +44,25 @@ function formatarMoeda(valor) {
   padding: 24px;
   border-radius: 16px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--opes-cream);
 }
 
 .card-metrica span {
   font-size: 14px;
-  color: #64748b;
+  color: var(--opes-forest);
 }
 
 .card-metrica h2 {
   font-size: 28px;
   margin: 10px 0 6px 0;
-  color: #0f172a;
+  color: var(--opes-ink);
 }
 
 .card-metrica small {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--opes-muted);
 }
 
-.texto-verde { color: #16a34a !important; }
-.texto-vermelho { color: #dc2626 !important; }
+.texto-verde { color: var(--opes-forest) !important; }
+.texto-vermelho { color: var(--opes-danger) !important; }
 </style>

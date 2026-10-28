@@ -1,10 +1,10 @@
 <script setup>
+import { confirmAction } from '@/services/toast'
 import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { Plus, Target } from '@lucide/vue'
 import { useMetasStore } from '@/store/metas'
 
 import Sidebar from '@/components/SideBarComponent.vue'
-import Header from '@/components/HeaderComponent.vue'
 
 import MetasResumoCards from '@/components/metas/MetasResumoCard.vue'
 import CardMetaItem from '@/components/metas/CardMetaItem.vue'
@@ -63,7 +63,7 @@ async function salvarMeta(dados) {
 }
 
 async function deletarMeta(id) {
-  if (confirm('Tem certeza que deseja excluir esta meta?')) {
+  if (await confirmAction('Tem certeza que deseja excluir esta meta?')) {
     await metasStore.deletarMeta(id)
   }
 }
@@ -74,7 +74,7 @@ async function deletarMeta(id) {
     <Sidebar />
 
     <div class="main-container">
-      <Header />
+      
 
       <main class="dashboard-content">
         <div class="metas-container">
@@ -158,7 +158,7 @@ async function deletarMeta(id) {
   display: flex;
   height: 100vh;
   width: 100vw;
-  background-color: #ffffff;
+  background-color: var(--opes-paper);
   overflow: hidden;
   margin: 0;
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -175,7 +175,7 @@ async function deletarMeta(id) {
   height: 100vh;
   position: relative;
   overflow: hidden;
-  background-color: #ffffff;
+  background-color: var(--opes-paper);
 }
 
 .dashboard-content {
@@ -187,7 +187,7 @@ async function deletarMeta(id) {
   width: 100%;
   box-sizing: border-box;
   overflow-y: auto;
-  background-color: #f4f6f9;
+  background-color: var(--opes-paper);
 }
 
 .metas-container {
@@ -210,13 +210,13 @@ async function deletarMeta(id) {
 .metas-header h1 {
   font-size: 1.6rem;
   font-weight: 800;
-  color: #1e293b;
+  color: var(--opes-ink);
   margin: 0;
 }
 
 .metas-header p {
   font-size: 0.95rem;
-  color: #64748b;
+  color: var(--opes-forest);
   margin: 2px 0 0 0;
 }
 
@@ -225,8 +225,8 @@ async function deletarMeta(id) {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background-color: #006400;
-  color: #ffffff;
+  background-color: var(--opes-forest);
+  color: var(--opes-paper);
   padding: 12px 20px;
   border-radius: 12px;
   font-size: 0.875rem;
@@ -239,7 +239,7 @@ async function deletarMeta(id) {
 }
 
 .btn-add-meta:hover {
-  background-color: #228b22;
+  background-color: var(--opes-forest);
 }
 
 .icon-plus {
@@ -250,16 +250,16 @@ async function deletarMeta(id) {
 .loading-state {
   text-align: center;
   padding: 40px 0;
-  color: #94a3b8;
+  color: var(--opes-muted);
   font-size: 0.875rem;
 }
 
 .empty-state {
-  background-color: #ffffff;
+  background-color: var(--opes-paper);
   padding: 24px 16px;
   border-radius: 16px;
   text-align: center;
-  border: 1px dashed #cbd5e1;
+  border: 1px dashed var(--opes-sand);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -269,30 +269,30 @@ async function deletarMeta(id) {
 .empty-icon-bg {
   width: 48px;
   height: 48px;
-  background-color: #f1f5f9;
+  background-color: var(--opes-paper);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #94a3b8;
+  color: var(--opes-muted);
 }
 
 .empty-state h3 {
   font-size: 1rem;
   font-weight: 700;
-  color: #334155;
+  color: var(--opes-ink);
   margin: 0;
 }
 
 .empty-state p {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--opes-muted);
   margin: 4px 0 0 0;
 }
 
 .btn-add-empty {
-  background-color: #006400;
-  color: #ffffff;
+  background-color: var(--opes-forest);
+  color: var(--opes-paper);
   font-size: 0.75rem;
   font-weight: 700;
   padding: 8px 16px;
@@ -302,7 +302,7 @@ async function deletarMeta(id) {
 }
 
 .btn-add-empty:hover {
-  background-color: #228b22;
+  background-color: var(--opes-forest);
 }
 
 .goals-grid {
@@ -330,7 +330,7 @@ async function deletarMeta(id) {
 
 @media (min-width: 1024px) {
   .dashboard-layout {
-    background-color: #f4f6f9;
+    background-color: var(--opes-paper);
   }
   .dashboard-layout :deep(.desktop-sidebar) {
     display: flex !important;
@@ -338,12 +338,12 @@ async function deletarMeta(id) {
   .main-container {
     height: 100vh;
     overflow: hidden;
-    background-color: #f4f6f9;
+    background-color: var(--opes-paper);
   }
   .dashboard-content {
     padding: 32px 40px;
     overflow-y: auto;
-    background-color: #f4f6f9;
+    background-color: var(--opes-paper);
   }
   .goals-grid {
     grid-template-columns: repeat(2, 1fr);

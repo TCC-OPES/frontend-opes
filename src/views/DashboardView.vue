@@ -3,7 +3,7 @@
     <SideBarComponent />
 
     <div class="main-container">
-      <HeaderComponent />
+      
 
       <main class="dashboard-content">
         <section class="welcome-section animar">
@@ -85,16 +85,12 @@
         </section>
       </main>
 
-      <button class="fab-button" title="Nova Transação">
-        <i class="fas fa-plus"></i>
-      </button>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import HeaderComponent from '@/components/HeaderComponent.vue'
 import SideBarComponent from '@/components/SideBarComponent.vue'
 import { useMetasStore } from '@/store/metas'
 import investimentoService from '@/services/investimento'
@@ -326,7 +322,7 @@ const obterCorProgresso = (porcentagem) => {
   display: flex;
   height: 100vh;
   width: 100vw;
-  background-color: #ffffff;
+  background-color: var(--opes-paper);
   overflow: hidden;
   margin: 0;
 }
@@ -342,7 +338,7 @@ const obterCorProgresso = (porcentagem) => {
   height: 100vh;
   position: relative;
   overflow: hidden;
-  background-color: #ffffff;
+  background-color: var(--opes-paper);
 }
 
 .dashboard-content {
@@ -353,23 +349,23 @@ const obterCorProgresso = (porcentagem) => {
   gap: 20px;
   width: 100%;
   box-sizing: border-box;
-  overflow-y: auto; /* <-- AQUI É O SEGREDO: Rola apenas o conteúdo interno no mobile */
-  background-color: #ffffff;
+  overflow-y: auto; 
+  background-color: var(--opes-paper);
 }
 
 .welcome-section h2 {
   font-size: 1.4rem;
-  color: #1e293b;
+  color: var(--opes-ink);
   font-weight: 700;
 }
 .welcome-section p {
-  color: #64748b;
+  color: var(--opes-forest);
   font-size: 0.875rem;
   margin-top: 2px;
 }
 
 .balance-gradient-card {
-  background: linear-gradient(135deg, #0d5c63 0%, #115e59 45%, #1e40af 100%);
+  background: linear-gradient(135deg, var(--opes-forest) 0%, var(--opes-forest) 45%, var(--opes-forest) 100%);
   border-radius: 16px;
   padding: 20px;
   color: white;
@@ -423,8 +419,8 @@ const obterCorProgresso = (porcentagem) => {
   font-weight: 600;
   word-break: break-all;
 }
-.icon-receita { color: #34d399; }
-.icon-despesa { color: #f87171; }
+.icon-receita { color: var(--opes-forest); }
+.icon-despesa { color: var(--opes-caramel); }
 
 .analytics-grid,
 .bottom-grid {
@@ -448,7 +444,7 @@ const obterCorProgresso = (porcentagem) => {
 .chart-card h3,
 .card-section h3 {
   font-size: 1rem;
-  color: #1e293b;
+  color: var(--opes-ink);
   margin-bottom: 12px;
   font-weight: 600;
 }
@@ -471,26 +467,26 @@ const obterCorProgresso = (porcentagem) => {
   justify-content: space-between;
   align-items: center;
   padding: 12px;
-  background-color: #f8fafc;
+  background-color: var(--opes-paper);
   border-radius: 12px;
 }
 
 .conta-info h4 {
   font-size: 0.875rem;
-  color: #1e293b;
+  color: var(--opes-ink);
   margin: 0;
   font-weight: 600;
 }
 
 .conta-info p {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--opes-muted);
   margin: 2px 0 0 0;
 }
 
 .conta-valor {
   font-weight: 700;
-  color: #1e293b;
+  color: var(--opes-ink);
   font-size: 0.875rem;
 }
 
@@ -499,19 +495,19 @@ const obterCorProgresso = (porcentagem) => {
   justify-content: space-between;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #334155;
+  color: var(--opes-ink);
   margin-bottom: 6px;
 }
 
 .meta-percent {
-  color: #64748b;
+  color: var(--opes-forest);
   font-weight: 500;
 }
 
 .progress-bar {
   width: 100%;
   height: 8px;
-  background-color: #e2e8f0;
+  background-color: var(--opes-cream);
   border-radius: 10px;
   overflow: hidden;
 }
@@ -522,40 +518,17 @@ const obterCorProgresso = (porcentagem) => {
   transition: width 0.3s ease;
 }
 
-.progress-fill.green { background-color: #15803d; }
-.progress-fill.blue { background-color: #2563eb; }
-.progress-fill.gray { background-color: #64748b; }
+.progress-fill.green { background-color: var(--opes-forest); }
+.progress-fill.blue { background-color: var(--opes-forest); }
+.progress-fill.gray { background-color: var(--opes-forest); }
 
 .empty-msg {
-  color: #94a3b8;
+  color: var(--opes-muted);
   font-size: 0.85rem;
   margin: 0;
 }
 
-.fab-button {
-  position: fixed;
-  bottom: 80px;
-  right: 20px;
-  width: 48px;
-  height: 48px;
-  background-color: #0f766e;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  z-index: 99;
-  transition: transform 0.2s, background-color 0.2s;
-}
 
-.fab-button:hover {
-  background-color: #0d9488;
-  transform: scale(1.05);
-}
 
 @media (min-width: 640px) {
   .dashboard-content { padding: 24px 24px 90px 24px; }
@@ -565,7 +538,7 @@ const obterCorProgresso = (porcentagem) => {
 
 @media (min-width: 1024px) {
   .dashboard-layout {
-    background-color: #f4f6f9;
+    background-color: var(--opes-paper);
   }
   .dashboard-layout :deep(.desktop-sidebar) {
     display: flex !important;
@@ -573,17 +546,15 @@ const obterCorProgresso = (porcentagem) => {
   .main-container {
     height: 100vh;
     overflow: hidden;
-    background-color: #f4f6f9;
+    background-color: var(--opes-paper);
   }
   .dashboard-content {
     padding: 32px 40px;
-    overflow-y: auto; /* <-- NO DESKTOP: Trava a tela e faz apenas este miolo rolar com a barra interna */
-    background-color: #f4f6f9;
+    overflow-y: auto; 
+    background-color: var(--opes-paper);
   }
-  .fab-button {
-    bottom: 20px;
-  }
-  .welcome-section h2 { font-size: 1.8rem; }
+
+.welcome-section h2 { font-size: 1.8rem; }
   .balance-gradient-card {
     flex-direction: row;
     justify-content: space-between;

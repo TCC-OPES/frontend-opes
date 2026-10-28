@@ -1,8 +1,9 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { notify, confirmAction } from '@/services/toast'
+
+import { ref, computed, onMounted, watch } from 'vue'
 import api from '@/services/api'
 import SideBarComponent from '@/components/SideBarComponent.vue'
-import HeaderComponent from '@/components/HeaderComponent.vue'
 
 const modelo = () => ({ titulo: '', categoria: '', tipo: 'despesa', valor: '', frequencia: 'mensal', primeiro_vencimento: '', data_fim: null })
 const formulario = ref(modelo())
@@ -12,6 +13,8 @@ const carregando = ref(false)
 const salvando = ref(false)
 const erro = ref('')
 const mensagem = ref('')
+watch(erro, v => { if (v) notify.error(v) })
+watch(mensagem, v => { if (v) notify.success(v) })
 const edicao = ref(null)
 const hoje = new Date()
 const ano = ref(hoje.getFullYear())
@@ -86,7 +89,7 @@ async function alternar(item) {
   } catch (e) { erro.value = erroAPI(e) }
 }
 async function encerrar(item) {
-  if (!window.confirm('Encerrar essa recorrência? Os pagamentos já confirmados serão preservados.')) return
+  if (!(await confirmAction('Encerrar essa recorrência? Os pagamentos já confirmados serão preservados.'))) return
   erro.value = ''
   try {
     await api.delete('/api/recorrencias/' + item.id + '/')
@@ -94,7 +97,7 @@ async function encerrar(item) {
   } catch (e) { erro.value = erroAPI(e) }
 }
 async function confirmar(item) {
-  if (!window.confirm('Confirmar ' + (item.tipo === 'receita' ? 'recebimento' : 'pagamento') + ' de ' + formatarMoeda(item.valor) + '?')) return
+  if (!(await confirmAction('Confirmar lançamento financeiro?'))) return
   erro.value = ''; mensagem.value = ''
   try {
     await api.post('/api/recorrencias/ocorrencias/' + item.id + '/confirmar/')
@@ -115,11 +118,9 @@ onMounted(carregar)
   <div class="layout">
     <SideBarComponent class="sidebar" />
     <div class="principal">
-      <HeaderComponent />
+      
       <main class="conteudo">
         <header><h1>Contas recorrentes</h1><p>Controle despesas e receitas que se repetem.</p></header>
-        <p v-if="erro" role="alert" class="alerta erro">{{ erro }}</p>
-        <p v-if="mensagem" role="status" class="alerta sucesso">{{ mensagem }}</p>
 
         <form class="painel formulario" @submit.prevent="salvar">
           <h2>{{ edicao ? 'Editar recorrência' : 'Nova recorrência' }}</h2>
@@ -169,5 +170,5 @@ onMounted(carregar)
 </template>
 
 <style scoped>
-.layout{display:flex;min-height:100vh;background:#f8fafc}.principal{flex:1;min-width:0}.conteudo{max-width:1140px;margin:auto;padding:32px 24px 110px;color:#1e293b}h1{font-size:28px;margin:0 0 6px}h2{font-size:20px;margin:0 0 16px}header p,.nota,.item p{color:#64748b;font-size:14px}.nota{grid-column:1/-1;margin:0 0 12px}.painel{background:white;border:1px solid #e2e8f0;border-radius:14px;padding:24px;margin-top:24px}.formulario{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}.formulario h2{grid-column:1/-1}.acoes{grid-column:1/-1;display:flex;gap:8px}label{display:flex;flex-direction:column;gap:6px;font-size:14px}input,select{padding:12px;border:1px solid #cbd5e1;border-radius:8px;background:white;min-width:0}button{background:#0f766e;color:white;border:0;border-radius:8px;padding:10px 14px;cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}.secundario{background:#e2e8f0;color:#334155}.perigo{background:#fee2e2;color:#991b1b}.item{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:16px 0;border-top:1px solid #e2e8f0}.item p{margin:6px 0}.direita{text-align:right}.botoes{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:10px}.status{font-size:12px;border-radius:20px;padding:3px 9px}.ativo{background:#d1fae5;color:#065f46}.inativo{background:#f1f5f9;color:#475569}.contagem{font-size:13px;font-weight:normal;color:#64748b}.navegar{display:flex;align-items:center;justify-content:space-between}.navegar h2{text-transform:capitalize;margin:0}.alerta{padding:12px;border-radius:8px}.erro{color:#991b1b;background:#fee2e2}.sucesso{color:#065f46;background:#d1fae5}@media(max-width:800px){.layout{display:block}.conteudo{padding:20px 14px 110px}.item{align-items:flex-start;flex-direction:column}.direita{text-align:left}.botoes{justify-content:flex-start}}
+.layout{display:flex;min-height:100vh;height:auto;overflow:visible;background:var(--opes-paper)}.principal{flex:1;min-width:0;min-height:100vh;height:auto;overflow:visible}.conteudo{max-width:1140px;margin:auto;padding:32px 24px 160px;color:var(--opes-ink)}h1{font-size:28px;margin:0 0 6px}h2{font-size:20px;margin:0 0 16px}header p,.nota,.item p{color:var(--opes-forest);font-size:14px}.nota{grid-column:1/-1;margin:0 0 12px}.painel{background:white;border:1px solid var(--opes-cream);border-radius:14px;padding:24px;margin-top:24px}.formulario{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}.formulario h2{grid-column:1/-1}.acoes{grid-column:1/-1;display:flex;gap:8px}label{display:flex;flex-direction:column;gap:6px;font-size:14px}input,select{padding:12px;border:1px solid var(--opes-sand);border-radius:8px;background:white;min-width:0}button{background:var(--opes-forest);color:white;border:0;border-radius:8px;padding:10px 14px;cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}.secundario{background:var(--opes-cream);color:var(--opes-ink)}.perigo{background:var(--opes-cream);color:var(--opes-danger)}.item{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:16px 0;border-top:1px solid var(--opes-cream)}.item p{margin:6px 0}.direita{text-align:right}.botoes{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:10px}.status{font-size:12px;border-radius:20px;padding:3px 9px}.ativo{background:var(--opes-cream);color:var(--opes-forest)}.inativo{background:var(--opes-paper);color:var(--opes-forest)}.contagem{font-size:13px;font-weight:normal;color:var(--opes-forest)}.navegar{display:flex;align-items:center;justify-content:space-between}.navegar h2{text-transform:capitalize;margin:0}.alerta{padding:12px;border-radius:8px}.erro{color:var(--opes-danger);background:var(--opes-cream)}.sucesso{color:var(--opes-forest);background:var(--opes-cream)}@media(max-width:800px){.layout{display:block;min-height:100vh;height:auto}.conteudo{padding:20px 14px 140px;min-height:calc(100vh - 100px)}.item{align-items:flex-start;flex-direction:column}.direita{text-align:left}.botoes{justify-content:flex-start}}
 </style>

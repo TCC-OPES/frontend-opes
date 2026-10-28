@@ -52,17 +52,17 @@ label {
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
-  color: #1f2937;
+  color: var(--opes-ink);
 }
 
 .input-wrapper {
   display: flex;
   align-items: center;
-  border: 1px solid #ddd;
+  border: 1px solid var(--opes-cream);
   border-radius: 14px;
   padding: 14px 16px;
   gap: 12px;
-  background: #fff;
+  background: var(--opes-paper);
 }
 
 input {
@@ -76,7 +76,7 @@ input {
 .eye-toggle {
   cursor: pointer;
   user-select: none;
-  color: #9ca3af;
+  color: var(--opes-muted);
   width: 20px;
   text-align: center;
 }
