@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
-import api from '@/services/api'
+import { carregarCalendario, confirmarVencimento } from '@/services/calendario'
 import SideBarComponent from '@/components/SideBarComponent.vue'
 import HeaderComponent from '@/components/HeaderComponent.vue'
 
@@ -35,15 +35,7 @@ async function carregar() {
   const inicio = diaISO(1)
   const fim = diaISO(new Date(ano.value, mes.value + 1, 0).getDate())
   try {
-    const [transacoes, ocorrencias] = await Promise.all([
-      api.get('/api/transacoes/'),
-      api.get('/api/recorrencias/ocorrencias/', {params:{inicio,fim}})
-    ])
-    const realizados = (Array.isArray(transacoes.data) ? transacoes.data : transacoes.data.results || [])
-      .filter(t => t.data?.slice(0,10) >= inicio && t.data?.slice(0,10) <= fim)
-    const agendados = (Array.isArray(ocorrencias.data) ? ocorrencias.data : ocorrencias.data.results || [])
-    const jaLançados = new Set(agendados.map(o=>o.transacao).filter(Boolean).map(String))
-    eventos.value = [...realizados.filter(t=>!jaLançados.has(String(t.id))), ...agendados]
+    eventos.value = await carregarCalendario(inicio, fim)
     selecionado.value = inicio
   } catch {
     erro.value='Não foi possível carregar o calendário. Verifique se a API de recorrências da FEAT-52 já foi integrada.'
@@ -55,7 +47,7 @@ function navegar(n) {
 }
 async function confirmar(e) {
   if (!e.recorrencia || e.confirmada_em) return
-  try { await api.post('/api/recorrencias/ocorrencias/'+e.id+'/confirmar/'); await carregar(); selecionado.value=e.vencimento }
+  try { await confirmarVencimento(e.id); await carregar(); selecionado.value=e.vencimento }
   catch { erro.value='Falha ao confirmar o pagamento.' }
 }
 watch([ano,mes], carregar,{immediate:true})
@@ -63,7 +55,7 @@ watch([ano,mes], carregar,{immediate:true})
 <template>
   <div class="layout"><SideBarComponent /><div class="principal"><HeaderComponent /><main class="conteudo">
     <h1>Calendário financeiro</h1><p>Visualize vencimentos e movimentações do mês.</p>
-    <div class="resumo"><span>Receitas: <strong>{{ formatar(totais.receitas) }}</strong></span><span>Despesas: <strong>{{ formatar(totais.despesas) }}</strong></span></div>
+    <div class="resumo"><span>Receitas (previstas + realizadas): <strong>{{ formatar(totais.receitas) }}</strong></span><span>Despesas (previstas + realizadas): <strong>{{ formatar(totais.despesas) }}</strong></span></div>
     <p v-if="erro" role="alert" class="erro">{{ erro }}</p><p v-if="carregando">Carregando...</p>
     <section class="painel"><div class="cabecalho"><button @click="navegar(-1)" aria-label="Mês anterior">‹</button><h2>{{ titulo }}</h2><button @click="navegar(1)" aria-label="Próximo mês">›</button></div>
       <div class="dias"><strong v-for="d in ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb']" :key="d">{{ d }}</strong></div>
