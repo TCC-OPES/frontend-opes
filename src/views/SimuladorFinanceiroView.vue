@@ -2,7 +2,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { carregarDadosSimulador } from '@/services/simulador'
 import SideBarComponent from '@/components/SideBarComponent.vue'
-import HeaderComponent from '@/components/HeaderComponent.vue'
 
 const hojeLocal = () => {
   const d = new Date()
@@ -58,7 +57,6 @@ const resultado = computed(() => {
       eventos.push({ data: o.vencimento, titulo: o.titulo, valor: (o.tipo === 'receita' ? 1 : -1) * Number(o.valor) })
     }
   }
-  // Transações futuras já cadastradas e não vinculadas a uma ocorrência confirmada.
   const idsConfirmados = new Set(ocorrencias.value.filter(o => o.confirmada_em && o.transacao).map(o => String(o.transacao)))
   for (const t of transacoes.value) {
     const d = t.data?.slice(0, 10)
@@ -98,7 +96,7 @@ async function carregar() {
 onMounted(carregar)
 </script>
 <template>
-<div class="layout"><SideBarComponent /><div class="principal"><HeaderComponent /><main class="conteudo">
+<div class="layout"><SideBarComponent /><div class="principal"><main class="conteudo">
   <h1>Posso comprar?</h1><p>Simule uma compra sem alterar suas transações ou seu saldo.</p>
   <p class="aviso">Estimativa baseada nas transações registradas e recorrências conhecidas. As receitas previstas são incertas. Não inclui movimentações não cadastradas, juros nem rendimentos. A projeção não movimenta dinheiro.</p>
   <p v-if="erro" role="alert" class="erro">{{ erro }}</p><p v-if="carregando">Carregando dados financeiros...</p>
