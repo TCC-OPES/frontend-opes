@@ -8,8 +8,8 @@ import '@fortawesome/fontawesome-free/css/all.min.css'
 import App from './App.vue'
 import router from './router'
 
-const app = inicializarTema()
-createApp(App)
+inicializarTema()
+const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
