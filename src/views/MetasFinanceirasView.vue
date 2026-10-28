@@ -1,5 +1,5 @@
 <script setup>
-import { confirmAction } from '@/services/toast'
+import { confirmAction, notify } from '@/services/toast'
 import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { Plus, Target } from '@lucide/vue'
 import { useMetasStore } from '@/store/metas'
@@ -55,16 +55,20 @@ function abrirModalEdicao(meta) {
 }
 
 async function salvarMeta(dados) {
-  if (metaEmEdicao.value) {
-    await metasStore.editarMeta(metaEmEdicao.value.id, dados)
-  } else {
-    await metasStore.adicionarMeta(dados)
+  try {
+    if (metaEmEdicao.value) await metasStore.editarMeta(metaEmEdicao.value.id, dados)
+    else await metasStore.adicionarMeta(dados)
+    modalAberto.value = false
+    notify.success('Meta salva com sucesso.')
+  } catch {
+    notify.error('Não foi possível salvar a meta. Confira os dados informados.')
   }
 }
 
 async function deletarMeta(id) {
   if (await confirmAction('Tem certeza que deseja excluir esta meta?')) {
-    await metasStore.deletarMeta(id)
+    try { await metasStore.deletarMeta(id); notify.success('Meta excluída.') }
+    catch { notify.error('Não foi possível excluir a meta.') }
   }
 }
 </script>
