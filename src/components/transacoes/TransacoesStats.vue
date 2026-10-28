@@ -40,11 +40,11 @@ function formatarMoeda(valor) {
 }
 
 .card-metrica {
-  background: white;
+  background: var(--opes-paper);
   padding: 24px;
   border-radius: 16px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  border: 1px solid var(--opes-cream);
+  border: 1px solid var(--opes-border);
 }
 
 .card-metrica span {
