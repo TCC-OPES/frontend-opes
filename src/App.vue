@@ -20,6 +20,4 @@ html, body, #app { min-height: 100%; overflow-x: clip; }
     box-sizing: border-box;
   }
 }
-
-
 </style>
