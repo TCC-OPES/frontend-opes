@@ -103,17 +103,17 @@ img { max-width: 100%; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }
 
 :root[data-theme="dark"] {
-  --opes-forest: #a5cdb5;
+  --opes-forest: #a3cdb4;
   --opes-forest-dark: #e2f1e7;
   --opes-forest-soft: #29483b;
-  --opes-cream: #15231e;
-  --opes-paper: #203129;
+  --opes-cream: #111e19;
+  --opes-paper: #1b2d25;
   --opes-sand: #3b5143;
   --opes-caramel: #dfab82;
   --opes-caramel-dark: #efbe97;
-  --opes-ink: #f1f5ef;
+  --opes-ink: #edf5ee;
   --opes-muted: #b7c6bd;
-  --opes-border: #455b4c;
+  --opes-border: #3a5144;
   --opes-danger: #f9a79e;
   --opes-danger-soft: #532e30;
   color-scheme: dark;
@@ -181,3 +181,28 @@ img { max-width: 100%; }
   background: var(--opes-sand);
   color: var(--opes-ink);
 }
+
+:root[data-theme="dark"] #app .cartao-perfil,
+:root[data-theme="dark"] #app .transacoes-stats,
+:root[data-theme="dark"] #app .transacao-item,
+:root[data-theme="dark"] #app .stat-card,
+:root[data-theme="dark"] #app .resumo-card,
+:root[data-theme="dark"] #app .cartao,
+:root[data-theme="dark"] #app .card,
+:root[data-theme="dark"] #app .resumo > div:not(.resumo-principal) {
+  background: var(--opes-paper) !important;
+  color: var(--opes-ink) !important;
+  border-color: var(--opes-border) !important;
+}
+:root[data-theme="dark"] #app .cartao-perfil h2,
+:root[data-theme="dark"] #app .titulo-secao,
+:root[data-theme="dark"] #app .transacao-item strong,
+:root[data-theme="dark"] #app .transacao-item span,
+:root[data-theme="dark"] #app .resumo strong { color: var(--opes-ink); }
+:root[data-theme="dark"] #app .resumo-principal,
+:root[data-theme="dark"] #app .dashboard-layout .resumo-principal { background:#244235 !important; color:#edf5ee !important; }
+:root[data-theme="dark"] #app .resumo-principal * { color:#edf5ee !important; }
+:root[data-theme="dark"] #app .campo input:disabled { background:#14251d !important; color:#e1eee4 !important; opacity:1; }
+:root[data-theme="dark"] #app .btn-foto { background:#2c493a; color:#edf5ee; }
+:root[data-theme="dark"] #app .sidebar-container .menu-item.router-link-active { color:#11251b !important; }
+:root[data-theme="dark"] #app .sidebar-container .theme-toggle { color:#edf5ee !important; }
