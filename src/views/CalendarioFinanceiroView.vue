@@ -38,7 +38,7 @@ async function carregar() {
     eventos.value = await carregarCalendario(inicio, fim)
     selecionado.value = inicio
   } catch {
-    erro.value='Não foi possível carregar o calendário. Verifique se a API de recorrências da FEAT-52 já foi integrada.'
+    erro.value='Falha ao carregar o calendário. Se a API retornou 404, confira se o backend publicado já contém as rotas de recorrências.'
   } finally { carregando.value=false }
 }
 function navegar(n) {
