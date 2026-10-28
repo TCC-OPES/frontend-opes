@@ -142,11 +142,11 @@ watch([ano,mes], carregar, { immediate:true })
 .rodape-dia{margin:10px 2px 0}
 @media(max-width:520px){.modal-dia{padding:18px}.linha-evento{padding:12px;gap:9px}.evento-montante{font-size:13px}}
 
-:root[data-theme="dark"] .modal-dia .linha-evento{background:#263d32!important;border-color:#476452!important;color:#edf5ee!important}
-:root[data-theme="dark"] .modal-dia .linha-evento:hover{background:#304c3d!important;border-color:#a3cdb4!important}
-:root[data-theme="dark"] .modal-dia .evento-info strong{color:#edf5ee!important}
-:root[data-theme="dark"] .modal-dia .evento-info small{color:#bdd3c4!important}
-:root[data-theme="dark"] .modal-dia .evento-montante.entrada{color:#a5e1bd!important}
-:root[data-theme="dark"] .modal-dia .evento-montante.saida{color:#ffaaa1!important}
-:root[data-theme="dark"] .modal-dia .fechar-dia{background:#344d3e!important;color:#f1f5ef!important;border-color:#52715d!important}
+:global(:root[data-theme="dark"]) .modal-dia .linha-evento{background:#263d32!important;border-color:#476452!important;color:#edf5ee!important}
+:global(:root[data-theme="dark"]) .modal-dia .linha-evento:hover{background:#304c3d!important;border-color:#a3cdb4!important}
+:global(:root[data-theme="dark"]) .modal-dia .evento-info strong{color:#edf5ee!important}
+:global(:root[data-theme="dark"]) .modal-dia .evento-info small{color:#bdd3c4!important}
+:global(:root[data-theme="dark"]) .modal-dia .evento-montante.entrada{color:#a5e1bd!important}
+:global(:root[data-theme="dark"]) .modal-dia .evento-montante.saida{color:#ffaaa1!important}
+:global(:root[data-theme="dark"]) .modal-dia .fechar-dia{background:#344d3e!important;color:#f1f5ef!important;border-color:#52715d!important}
 </style>
