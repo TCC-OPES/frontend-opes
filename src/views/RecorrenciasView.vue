@@ -98,15 +98,6 @@ async function encerrar(item) {
     await carregar()
   } catch (e) { erro.value = erroAPI(e) }
 }
-async function confirmar(item) {
-  if (!(await confirmAction('Confirmar lançamento financeiro?'))) return
-  erro.value = ''; mensagem.value = ''
-  try {
-    await api.post('/api/recorrencias/ocorrencias/' + item.id + '/confirmar/')
-    mensagem.value = 'Lançamento confirmado e registrado nas transações.'
-    await carregar()
-  } catch (e) { erro.value = erroAPI(e) }
-}
 async function mudarMes(direcao) {
   const data = new Date(ano.value, mes.value + direcao, 1)
   ano.value = data.getFullYear()
@@ -163,14 +154,13 @@ onMounted(async () => {
           <div class="navegar"><h2>Vencimentos — {{ tituloPeriodo }}</h2>
             <div class="botoes"><button type="button" class="secundario" @click="mudarMes(-1)" aria-label="Mês anterior">‹</button>
             <button type="button" class="secundario" @click="mudarMes(1)" aria-label="Próximo mês">›</button></div></div>
-          <p class="nota">Previstos: receitas {{ formatarMoeda(totais.receitas) }} · despesas {{ formatarMoeda(totais.despesas) }}. A previsão não altera o saldo até a confirmação.</p>
+          <p class="nota">Previstos: receitas {{ formatarMoeda(totais.receitas) }} · despesas {{ formatarMoeda(totais.despesas) }}. As contas são previsões; registre manualmente as movimentações na tela Transações.</p>
           <p v-if="!carregando && !ocorrencias.length">Nenhum vencimento neste mês.</p>
           <article v-for="item in ocorrencias" :key="item.id" class="item">
             <div><strong>{{ item.titulo }}</strong><p>{{ item.vencimento }} · {{ item.tipo }} · {{ item.categoria }}</p>
               <span :class="['status', item.status === 'confirmada' ? 'ativo' : 'inativo']">{{ item.status }}</span></div>
             <div class="direita"><strong>{{ formatarMoeda(item.valor) }}</strong>
-              <button v-if="!item.confirmada_em" type="button" @click="confirmar(item)">
-                {{ item.tipo === 'receita' ? 'Confirmar recebimento' : 'Confirmar pagamento' }}</button></div>
+              </div>
           </article>
         </section>
       </main>
