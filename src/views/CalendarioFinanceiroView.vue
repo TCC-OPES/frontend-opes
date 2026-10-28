@@ -2,7 +2,6 @@
 import { ref, computed, watch } from 'vue'
 import { carregarCalendario, confirmarVencimento } from '@/services/calendario'
 import SideBarComponent from '@/components/SideBarComponent.vue'
-import HeaderComponent from '@/components/HeaderComponent.vue'
 
 const agora = new Date()
 const ano = ref(agora.getFullYear())
@@ -53,7 +52,7 @@ async function confirmar(e) {
 watch([ano,mes], carregar,{immediate:true})
 </script>
 <template>
-  <div class="layout"><SideBarComponent /><div class="principal"><HeaderComponent /><main class="conteudo">
+  <div class="layout"><SideBarComponent /><div class="principal"><main class="conteudo">
     <h1>Calendário financeiro</h1><p>Visualize vencimentos e movimentações do mês.</p>
     <div class="resumo"><span>Receitas (previstas + realizadas): <strong>{{ formatar(totais.receitas) }}</strong></span><span>Despesas (previstas + realizadas): <strong>{{ formatar(totais.despesas) }}</strong></span></div>
     <p v-if="erro" role="alert" class="erro">{{ erro }}</p><p v-if="carregando">Carregando...</p>
