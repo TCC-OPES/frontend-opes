@@ -3,11 +3,7 @@ import ToastHost from '@/components/ToastHost.vue'
 </script>
 <template>
   <div id="app-layout">
-    
-    <SidebarComponent />
-
-    
-    <main class="conteudo-principal">
+<main class="conteudo-principal">
       <router-view />
     </main>
     <ToastHost />
