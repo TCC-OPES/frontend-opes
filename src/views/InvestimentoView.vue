@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import SideBarComponent from '../components/SideBarComponent.vue'
 import InvestimentoComponent from '../components/investimentos/InvestimentoComponent.vue'
 import api from '../services/api'
+import { notify } from '@/services/toast'
 
 const investimentoRef = ref(null)
 const exibeModal = ref(false)
@@ -12,7 +13,7 @@ const novoAtivo = ref({
   nome: '',
   valor: '',
   rendimento: '',
-  cor: '#2563EB'
+  cor: '#b7835d'
 })
 
 const abrirModal = () => {
@@ -43,8 +44,9 @@ const salvarInvestimento = async () => {
     }
 
     fecharModal()
+    notify.success('Investimento registrado.')
   } catch (erro) {
-    console.error('Erro ao salvar investimento:', erro)
+    notify.error('Não foi possível salvar o investimento.')
   } finally {
     salvando.value = false
   }
@@ -79,7 +81,7 @@ const salvarInvestimento = async () => {
 
             <div class="form-group">
               <label>Valor Investido (R$)</label>
-              <input v-model.number="novoAtivo.valor" type="number" step="0.01" placeholder="1000.00" required />
+              <input v-model.number="novoAtivo.valor" type="number" min="0.01" step="0.01" placeholder="1000.00" required />
             </div>
 
             <div class="form-group">
