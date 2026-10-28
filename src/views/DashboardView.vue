@@ -3,7 +3,7 @@
     <SideBarComponent />
 
     <div class="main-container">
-      <HeaderComponent />
+      
 
       <main class="dashboard-content">
         <section class="welcome-section animar">
@@ -85,16 +85,12 @@
         </section>
       </main>
 
-      <button class="fab-button" title="Nova Transação">
-        <i class="fas fa-plus"></i>
-      </button>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import HeaderComponent from '@/components/HeaderComponent.vue'
 import SideBarComponent from '@/components/SideBarComponent.vue'
 import { useMetasStore } from '@/store/metas'
 import investimentoService from '@/services/investimento'
@@ -353,7 +349,7 @@ const obterCorProgresso = (porcentagem) => {
   gap: 20px;
   width: 100%;
   box-sizing: border-box;
-  overflow-y: auto; /* <-- AQUI É O SEGREDO: Rola apenas o conteúdo interno no mobile */
+  overflow-y: auto; 
   background-color: #ffffff;
 }
 
@@ -532,30 +528,7 @@ const obterCorProgresso = (porcentagem) => {
   margin: 0;
 }
 
-.fab-button {
-  position: fixed;
-  bottom: 80px;
-  right: 20px;
-  width: 48px;
-  height: 48px;
-  background-color: #0f766e;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  z-index: 99;
-  transition: transform 0.2s, background-color 0.2s;
-}
 
-.fab-button:hover {
-  background-color: #0d9488;
-  transform: scale(1.05);
-}
 
 @media (min-width: 640px) {
   .dashboard-content { padding: 24px 24px 90px 24px; }
@@ -577,13 +550,11 @@ const obterCorProgresso = (porcentagem) => {
   }
   .dashboard-content {
     padding: 32px 40px;
-    overflow-y: auto; /* <-- NO DESKTOP: Trava a tela e faz apenas este miolo rolar com a barra interna */
+    overflow-y: auto; 
     background-color: #f4f6f9;
   }
-  .fab-button {
-    bottom: 20px;
-  }
-  .welcome-section h2 { font-size: 1.8rem; }
+
+.welcome-section h2 { font-size: 1.8rem; }
   .balance-gradient-card {
     flex-direction: row;
     justify-content: space-between;

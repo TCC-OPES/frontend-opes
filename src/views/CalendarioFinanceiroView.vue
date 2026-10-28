@@ -3,7 +3,6 @@ import { ref, computed, watch } from 'vue'
 import { notify } from '@/services/toast'
 import { carregarCalendario, confirmarVencimento } from '@/services/calendario'
 import SideBarComponent from '@/components/SideBarComponent.vue'
-import HeaderComponent from '@/components/HeaderComponent.vue'
 
 const agora = new Date()
 const ano = ref(agora.getFullYear())
@@ -66,7 +65,7 @@ watch([ano,mes], carregar, { immediate:true })
 </script>
 
 <template>
-<div class="layout"><SideBarComponent /><div class="principal"><HeaderComponent /><main class="conteudo">
+<div class="layout"><SideBarComponent /><div class="principal"><main class="conteudo">
   <div class="titulo"><div><span class="sobretitulo">PLANEJAMENTO FINANCEIRO</span><h1>Calendário financeiro</h1><p>Seus compromissos e movimentações, organizados por dia.</p></div></div>
   <div class="resumo">
     <div class="resumo-card"><span>Receitas do mês</span><strong class="verde">{{ moeda(total.receitas) }}</strong><small>Previstas e realizadas</small></div>

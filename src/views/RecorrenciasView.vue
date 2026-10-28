@@ -4,7 +4,6 @@ import { notify, confirmAction } from '@/services/toast'
 import { ref, computed, onMounted, watch } from 'vue'
 import api from '@/services/api'
 import SideBarComponent from '@/components/SideBarComponent.vue'
-import HeaderComponent from '@/components/HeaderComponent.vue'
 
 const modelo = () => ({ titulo: '', categoria: '', tipo: 'despesa', valor: '', frequencia: 'mensal', primeiro_vencimento: '', data_fim: null })
 const formulario = ref(modelo())
@@ -119,7 +118,7 @@ onMounted(carregar)
   <div class="layout">
     <SideBarComponent class="sidebar" />
     <div class="principal">
-      <HeaderComponent />
+      
       <main class="conteudo">
         <header><h1>Contas recorrentes</h1><p>Controle despesas e receitas que se repetem.</p></header>
 

@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue'
 import SideBarComponent from '../components/SideBarComponent.vue'
-import HeaderComponent from '../components/HeaderComponent.vue'
 import InvestimentoComponent from '../components/investimentos/InvestimentoComponent.vue'
 import api from '../services/api'
 
@@ -57,7 +56,7 @@ const salvarInvestimento = async () => {
     <SideBarComponent />
 
     <div class="main-wrapper">
-      <HeaderComponent />
+      
 
       <main class="main-content">
         <div class="conteudo-interno">

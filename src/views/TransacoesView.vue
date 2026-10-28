@@ -2,7 +2,6 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useTransacoesStore } from '@/store/transacoes'
 import SideBarComponent from '@/components/SideBarComponent.vue'
-import HeaderComponent from '@/components/HeaderComponent.vue'
 import TransacoesStats from '@/components/transacoes/TransacoesStats.vue'
 import TransacoesLista from '@/components/transacoes/TransacoesLista.vue'
 import TransacaoModal from '@/components/transacoes/TransacaoModal.vue'
@@ -32,13 +31,13 @@ onUnmounted(() => {
 
 <template>
   <div class="layout-app">
-    <!-- Barra Lateral (Sidebar) -->
+    
     <SideBarComponent class="sidebar" />
 
-    <!-- Conteúdo Principal -->
+    
     <div class="main-wrapper">
-      <!-- Header Superior -->
-      <HeaderComponent />
+      
+      
 
       <main class="transacoes-container">
         <div class="header-pagina animar">
@@ -63,7 +62,7 @@ onUnmounted(() => {
           @abrir-modal="modalAberta = true"
         />
 
-        <!-- Modal de Criação -->
+        
         <TransacaoModal
           v-if="modalAberta"
           @fechar="modalAberta = false"
@@ -85,7 +84,7 @@ onUnmounted(() => {
   transform: translateY(0);
 }
 
-/* Trava a tela inteira para evitar scroll global indesejado */
+
 .layout-app {
   display: flex;
   flex-direction: column;
@@ -96,7 +95,7 @@ onUnmounted(() => {
   margin: 0;
 }
 
-/* Esconde a barra lateral padrão em mobile se necessário, mantendo o comportamento das outras abas */
+
 .layout-app :deep(.desktop-sidebar) {
   display: none !important;
 }
@@ -111,7 +110,7 @@ onUnmounted(() => {
   width: 100%;
 }
 
-/* O SEGREDO: Rola apenas este container interno no mobile e desktop */
+
 .transacoes-container {
   flex: 1;
   padding: 16px 16px 90px 16px;
@@ -138,10 +137,10 @@ onUnmounted(() => {
   font-size: 13px;
 }
 
-/* Responsividade para Desktop (A partir de 1024px) */
+
 @media (min-width: 1024px) {
   .layout-app {
-    flex-direction: row; /* Coloca a sidebar lado a lado */
+    flex-direction: row; 
   }
 
   .layout-app :deep(.desktop-sidebar) {
