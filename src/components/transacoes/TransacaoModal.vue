@@ -35,7 +35,7 @@ async function submeterFormulario() {
   <div class="modal-overlay">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>{{ transacao ? 'Editar transação' : 'Nova transação' }}</h2>
+        <h2>{{ transacao ? 'Editar Transação' : 'Nova Transação' }}</h2>
         <button type="button" class="btn-fechar" aria-label="Fechar formulário" @click="emit('fechar')">&times;</button>
       </div>
 
@@ -71,7 +71,7 @@ async function submeterFormulario() {
         <div class="modal-footer">
           <button class="btn-secundario" type="button" @click="emit('fechar')">Cancelar</button>
           <button class="btn-primario" type="submit" :disabled="carregandoSalvar">
-            {{ carregandoSalvar ? 'Salvando...' : (transacao ? 'Salvar alterações' : 'Salvar transação') }}
+            {{ carregandoSalvar ? 'Salvando...' : (transacao ? 'Salvar alterações' : 'Salvar Transação') }}
           </button>
         </div>
       </form>
