@@ -91,6 +91,7 @@ onUnmounted(() => {
         </div>
       </div>
     </div>
+    <Teleport to="body">
     <div v-if="exclusaoPendente" class="overlay-exclusao" @click.self="exclusaoPendente = null">
       <section class="confirmacao-exclusao" role="dialog" aria-modal="true" aria-labelledby="titulo-exclusao">
         <h3 id="titulo-exclusao">Excluir transação?</h3>
@@ -101,6 +102,7 @@ onUnmounted(() => {
         </div>
       </section>
     </div>
+    </Teleport>
   </div>
 </template>
 
@@ -283,7 +285,7 @@ onUnmounted(() => {
 .acoes-transacao{display:flex;align-items:center;gap:16px}
 .btn-excluir{background:transparent!important;color:var(--opes-danger)!important;border:1px solid var(--opes-border)!important;border-radius:9px;padding:8px 10px;font-size:12px;font-weight:700}
 .btn-excluir:hover{background:var(--opes-danger-soft)!important}
-.overlay-exclusao{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;padding:16px;z-index:3200}
+.overlay-exclusao{position:fixed;inset:0;background:rgba(6,18,13,.45);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:16px;z-index:3200}
 .confirmacao-exclusao{width:100%;max-width:430px;padding:24px;background:var(--opes-paper);border:1px solid var(--opes-border);border-radius:16px;color:var(--opes-ink)}
 .confirmacao-exclusao h3{margin:0 0 12px;color:var(--opes-ink)}
 .confirmacao-exclusao p{color:var(--opes-muted);line-height:1.5}
