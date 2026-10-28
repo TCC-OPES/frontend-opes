@@ -54,19 +54,26 @@ async function carregar() {
   carregando.value = true
   erro.value = ''
   try {
-    const [dados] = await Promise.all([
-      api.get('/api/dashboard/'),
-      metasStore.carregarMetas(),
-    ])
+    const dados = await api.get('/api/dashboard/')
     resumo.value = dados.data.resumo
     serie.value = dados.data.serie_mensal || []
     gastos.value = dados.data.gastos_semanais || []
     proximas.value = dados.data.proximas || []
-  } catch {
-    erro.value = 'Não foi possível carregar o resumo financeiro. Confira a conexão com a API.'
+  } catch (falha) {
+    const codigo = falha.response?.status
+    erro.value = codigo === 404
+      ? 'Resumo financeiro indisponível nesta versão da API. Atualize o backend.'
+      : codigo === 401 ? 'Sua sessão expirou. Entre novamente.'
+      : codigo >= 500 ? 'O servidor não conseguiu gerar o resumo financeiro.'
+      : 'Não foi possível carregar o resumo financeiro. Confira a conexão com a API.'
     notify.error(erro.value)
   } finally {
     carregando.value = false
+  }
+  try {
+    await metasStore.carregarMetas()
+  } catch (falhaMetas) {
+    console.error('Erro ao carregar metas:', falhaMetas)
   }
 }
 onMounted(() => {
@@ -89,6 +96,7 @@ onMounted(() => {
         <p>Resumo dos seus lançamentos financeiros cadastrados.</p></div>
         <button type="button" class="atualizar" :disabled="carregando" @click="carregar">Atualizar</button>
       </header>
+      <p v-if="erro" class="estado" role="alert">{{ erro }}</p>
       <p v-if="carregando" class="estado">Carregando dados financeiros...</p>
       <section class="resumo" aria-label="Resumo financeiro">
         <div class="resumo-principal">
