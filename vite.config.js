@@ -42,7 +42,7 @@ export default defineConfig({
           },
         ],
       },
-      workbox: { navigateFallbackDenylist: [/^\\/api\\//] },
+      workbox: { navigateFallbackDenylist: [new RegExp('^/api/')] },
       devOptions: {
         enabled: true,
       },
