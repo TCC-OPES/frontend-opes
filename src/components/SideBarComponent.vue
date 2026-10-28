@@ -220,7 +220,12 @@ const irParaInvestimentos = () => {
 @media (min-width: 1024px) {
   .sidebar-container {
     width: 260px;
+    height: 100vh;
+    height: 100dvh;
     flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
   }
 
   .mobile-bottom-nav {
@@ -238,10 +243,11 @@ const irParaInvestimentos = () => {
     flex-direction: column;
     justify-content: space-between;
     border-right: 1px solid #e2e8f0;
-    height: 100vh;
-    position: sticky;
-    top: 0;
+    height: 100%;
+    position: relative;
+    top: auto;
     flex-shrink: 0;
+    overflow: hidden;
   }
 
   .logo {
@@ -264,7 +270,11 @@ const irParaInvestimentos = () => {
     margin-top: 40px;
     flex-grow: 1;
     width: 100%;
-    flex-shrink: 0;
+    min-height: 0;
+    flex-shrink: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
   }
 
   .menu-item {
