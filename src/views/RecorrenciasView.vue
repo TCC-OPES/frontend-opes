@@ -2,10 +2,12 @@
 import { notify, confirmAction } from '@/services/toast'
 
 import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import api from '@/services/api'
 import SideBarComponent from '@/components/SideBarComponent.vue'
 
-const modelo = () => ({ titulo: '', categoria: '', tipo: 'despesa', valor: '', frequencia: 'mensal', primeiro_vencimento: '', data_fim: null })
+const modelo = () => ({ titulo: '', categoria: '', tipo: 'despesa', valor: '', frequencia: 'mensal', primeiro_vencimento: '', data_fim: null, numero_parcelas: null })
+const route = useRoute()
 const formulario = ref(modelo())
 const lista = ref([])
 const ocorrencias = ref([])
@@ -20,6 +22,14 @@ const hoje = new Date()
 const ano = ref(hoje.getFullYear())
 const mes = ref(hoje.getMonth())
 const ativas = computed(() => lista.value.filter(item => item.ativa).length)
+const vencimentoFinal = computed(() => {
+  const quantidade = Number(formulario.value.numero_parcelas)
+  if (!quantidade || !formulario.value.primeiro_vencimento || formulario.value.frequencia !== 'mensal') return ''
+  const [anoInicial, mesInicial, diaInicial] = formulario.value.primeiro_vencimento.split('-').map(Number)
+  const base = new Date(anoInicial, mesInicial - 1 + quantidade - 1, 1)
+  const ultimo = Math.min(diaInicial, new Date(base.getFullYear(), base.getMonth()+1, 0).getDate())
+  return [String(ultimo).padStart(2, '0'), String(base.getMonth()+1).padStart(2, '0'), base.getFullYear()].join('/')
+})
 const formatarMoeda = v => Number(v).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'})
 const dataISO = dia => [ano.value, String(mes.value + 1).padStart(2, '0'), String(dia).padStart(2, '0')].join('-')
 const periodo = computed(() => ({
@@ -63,7 +73,7 @@ function editar(item) {
   formulario.value = {
     titulo: item.titulo, categoria: item.categoria, tipo: item.tipo,
     valor: item.valor, frequencia: item.frequencia,
-    primeiro_vencimento: item.primeiro_vencimento, data_fim: item.data_fim,
+    primeiro_vencimento: item.primeiro_vencimento, data_fim: item.data_fim, numero_parcelas: item.numero_parcelas,
   }
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
@@ -72,7 +82,7 @@ async function salvar() {
   salvando.value = true
   erro.value = ''; mensagem.value = ''
   try {
-    const payload = {...formulario.value, data_fim: formulario.value.data_fim || null}
+    const payload = {...formulario.value, data_fim: formulario.value.numero_parcelas ? null : formulario.value.data_fim || null, numero_parcelas: formulario.value.numero_parcelas ? Number(formulario.value.numero_parcelas) : null}
     if (edicao.value) await api.patch('/api/recorrencias/' + edicao.value + '/', payload)
     else await api.post('/api/recorrencias/', payload)
     mensagem.value = edicao.value ? 'Recorrência atualizada.' : 'Recorrência cadastrada.'
@@ -96,22 +106,20 @@ async function encerrar(item) {
     await carregar()
   } catch (e) { erro.value = erroAPI(e) }
 }
-async function confirmar(item) {
-  if (!(await confirmAction('Confirmar lançamento financeiro?'))) return
-  erro.value = ''; mensagem.value = ''
-  try {
-    await api.post('/api/recorrencias/ocorrencias/' + item.id + '/confirmar/')
-    mensagem.value = 'Lançamento confirmado e registrado nas transações.'
-    await carregar()
-  } catch (e) { erro.value = erroAPI(e) }
-}
 async function mudarMes(direcao) {
   const data = new Date(ano.value, mes.value + direcao, 1)
   ano.value = data.getFullYear()
   mes.value = data.getMonth()
   await carregar()
 }
-onMounted(carregar)
+onMounted(async () => {
+  await carregar()
+  if (route.query.editar) {
+    const item = lista.value.find(r => String(r.id) === String(route.query.editar))
+    if (item) editar(item)
+    else notify.warning('Esta recorrência não está disponível para edição.')
+  }
+})
 </script>
 
 <template>
@@ -131,7 +139,9 @@ onMounted(carregar)
           <label>Valor (R$) <input v-model="formulario.valor" type="number" step="0.01" min="0.01" required /></label>
           <label>Frequência <select v-model="formulario.frequencia"><option value="mensal">Mensal</option><option value="semanal">Semanal</option><option value="anual">Anual</option></select></label>
           <label>Primeiro vencimento <input v-model="formulario.primeiro_vencimento" type="date" required /></label>
-          <label>Último vencimento (opcional) <input v-model="formulario.data_fim" type="date" /></label>
+          <label>Último vencimento (opcional) <input v-model="formulario.data_fim" type="date" :disabled="!!formulario.numero_parcelas" /></label>
+          <label v-if="formulario.frequencia==='mensal'">Quantidade de parcelas (opcional) <input v-model.number="formulario.numero_parcelas" type="number" min="1" max="360" step="1" placeholder="Ex.: 12" /></label>
+          <p v-if="vencimentoFinal" class="nota">Última parcela prevista para {{ vencimentoFinal }}. Nenhuma cobrança será realizada pelo OPES.</p>
           <div class="acoes"><button :disabled="salvando" type="submit">{{ salvando ? 'Salvando...' : edicao ? 'Salvar alterações' : 'Cadastrar' }}</button>
             <button v-if="edicao" type="button" class="secundario" @click="cancelarEdicao">Cancelar</button></div>
         </form>
@@ -141,7 +151,7 @@ onMounted(carregar)
           <p v-if="carregando">Carregando...</p>
           <p v-else-if="!lista.length">Nenhuma recorrência cadastrada.</p>
           <article v-for="item in lista" :key="item.id" class="item">
-            <div><strong>{{ item.titulo }}</strong><p>{{ item.categoria }} · {{ item.frequencia }} · início {{ item.primeiro_vencimento }}</p>
+            <div><strong>{{ item.titulo }}</strong><p>{{ item.categoria }} · {{ item.frequencia }} · início {{ item.primeiro_vencimento }} · {{ item.numero_parcelas ? item.numero_parcelas + ' parcelas' : 'sem parcelamento' }}</p>
               <span :class="['status', item.ativa ? 'ativo' : 'inativo']">{{ item.ativa ? 'Ativa' : 'Pausada / encerrada' }}</span></div>
             <div class="direita"><strong>{{ formatarMoeda(item.valor) }}</strong>
               <div class="botoes"><button type="button" class="secundario" @click="editar(item)">Editar</button>
@@ -154,14 +164,13 @@ onMounted(carregar)
           <div class="navegar"><h2>Vencimentos — {{ tituloPeriodo }}</h2>
             <div class="botoes"><button type="button" class="secundario" @click="mudarMes(-1)" aria-label="Mês anterior">‹</button>
             <button type="button" class="secundario" @click="mudarMes(1)" aria-label="Próximo mês">›</button></div></div>
-          <p class="nota">Previstos: receitas {{ formatarMoeda(totais.receitas) }} · despesas {{ formatarMoeda(totais.despesas) }}. A previsão não altera o saldo até a confirmação.</p>
+          <p class="nota">Previstos: receitas {{ formatarMoeda(totais.receitas) }} · despesas {{ formatarMoeda(totais.despesas) }}. As contas são previsões; registre manualmente as movimentações na tela Transações.</p>
           <p v-if="!carregando && !ocorrencias.length">Nenhum vencimento neste mês.</p>
           <article v-for="item in ocorrencias" :key="item.id" class="item">
-            <div><strong>{{ item.titulo }}</strong><p>{{ item.vencimento }} · {{ item.tipo }} · {{ item.categoria }}</p>
+            <div><strong>{{ item.titulo }}</strong><p>{{ item.vencimento }} · {{ item.tipo }} · {{ item.categoria }} <span v-if="item.numero_parcelas">· parcela {{ item.parcela_atual }}/{{ item.numero_parcelas }}</span></p>
               <span :class="['status', item.status === 'confirmada' ? 'ativo' : 'inativo']">{{ item.status }}</span></div>
             <div class="direita"><strong>{{ formatarMoeda(item.valor) }}</strong>
-              <button v-if="!item.confirmada_em" type="button" @click="confirmar(item)">
-                {{ item.tipo === 'receita' ? 'Confirmar recebimento' : 'Confirmar pagamento' }}</button></div>
+              </div>
           </article>
         </section>
       </main>

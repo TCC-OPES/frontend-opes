@@ -10,4 +10,3 @@ export const carregarCalendario = async (inicio, fim) => {
   const confirmados = new Set(agendados.map(o => o.transacao).filter(Boolean).map(String))
   return [...realizados.filter(t => !confirmados.has(String(t.id))), ...agendados]
 }
-export const confirmarVencimento = id => api.post('/api/recorrencias/ocorrencias/' + id + '/confirmar/')

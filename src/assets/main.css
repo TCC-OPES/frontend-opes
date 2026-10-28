@@ -101,3 +101,83 @@ img { max-width: 100%; }
   #app .item, #app .linha { min-width: 0; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+
+:root[data-theme="dark"] {
+  --opes-forest: #a5cdb5;
+  --opes-forest-dark: #e2f1e7;
+  --opes-forest-soft: #29483b;
+  --opes-cream: #15231e;
+  --opes-paper: #203129;
+  --opes-sand: #3b5143;
+  --opes-caramel: #dfab82;
+  --opes-caramel-dark: #efbe97;
+  --opes-ink: #f1f5ef;
+  --opes-muted: #b7c6bd;
+  --opes-border: #455b4c;
+  --opes-danger: #f9a79e;
+  --opes-danger-soft: #532e30;
+  color-scheme: dark;
+}
+:root[data-theme="dark"] #app .painel,
+:root[data-theme="dark"] #app .card,
+:root[data-theme="dark"] #app .card-section,
+:root[data-theme="dark"] #app .chart-card,
+:root[data-theme="dark"] #app .resumo-card,
+:root[data-theme="dark"] #app .content-card,
+:root[data-theme="dark"] #app .modal,
+:root[data-theme="dark"] #app .dialog-box,
+:root[data-theme="dark"] #app .toast-item,
+:root[data-theme="dark"] #app .form-card,
+:root[data-theme="dark"] #app .summary-card,
+:root[data-theme="dark"] #app .stat-card,
+:root[data-theme="dark"] #app .card-resumo,
+:root[data-theme="dark"] #app .evento-preview,
+:root[data-theme="dark"] #app .linha,
+:root[data-theme="dark"] #app .item,
+:root[data-theme="dark"] #app .celula,
+:root[data-theme="dark"] #app .lista .linha {
+  background-color: var(--opes-paper);
+  border-color: var(--opes-border);
+  color: var(--opes-ink);
+}
+:root[data-theme="dark"] #app .evento-preview.entrada,
+:root[data-theme="dark"] #app .celula.hoje,
+:root[data-theme="dark"] #app .celula.selecionada,
+:root[data-theme="dark"] #app .ativo {
+  background-color: var(--opes-forest-soft);
+  color: var(--opes-ink);
+}
+:root[data-theme="dark"] #app .evento-preview.saida { background-color: #493629; }
+:root[data-theme="dark"] #app .celula.fora { background-color: var(--opes-cream); }
+:root[data-theme="dark"] #app input:not([type='checkbox']):not([type='radio']),
+:root[data-theme="dark"] #app select,
+:root[data-theme="dark"] #app textarea {
+  background-color: #263b30;
+  color: var(--opes-ink);
+  border-color: var(--opes-border);
+}
+:root[data-theme="dark"] #app button:not(.evento-preview):not(.menu-item):not(.mobile-nav-item):not(.secundario):not(.perigo) {
+  color: var(--opes-cream);
+}
+:root[data-theme="dark"] #app .secundario,
+:root[data-theme="dark"] #app .fechar-dia,
+:root[data-theme="dark"] #app .controles button,
+:root[data-theme="dark"] #app .cancel {
+  background-color: var(--opes-sand);
+  color: var(--opes-ink);
+}
+:root[data-theme="dark"] #app .balance-gradient-card,
+:root[data-theme="dark"] #app .dashboard-layout .balance-gradient-card {
+  background: linear-gradient(120deg,#102e27,#244f3c) !important;
+  color: #fff !important;
+}
+:root[data-theme="dark"] #app .balance-gradient-card h1,
+:root[data-theme="dark"] #app .balance-gradient-card h2,
+:root[data-theme="dark"] #app .balance-gradient-card h3,
+:root[data-theme="dark"] #app .balance-gradient-card p {
+  color: #fff !important;
+}
+:root[data-theme="dark"] #app .sidebar-container .theme-toggle {
+  background: var(--opes-sand);
+  color: var(--opes-ink);
+}
