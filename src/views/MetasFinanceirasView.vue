@@ -4,7 +4,6 @@ import { Plus, Target } from '@lucide/vue'
 import { useMetasStore } from '@/store/metas'
 
 import Sidebar from '@/components/SideBarComponent.vue'
-import Header from '@/components/HeaderComponent.vue'
 
 import MetasResumoCards from '@/components/metas/MetasResumoCard.vue'
 import CardMetaItem from '@/components/metas/CardMetaItem.vue'
@@ -74,7 +73,6 @@ async function deletarMeta(id) {
     <Sidebar />
 
     <div class="main-container">
-      <Header />
 
       <main class="dashboard-content">
         <div class="metas-container">
