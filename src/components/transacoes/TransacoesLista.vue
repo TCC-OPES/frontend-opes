@@ -13,7 +13,7 @@ defineProps({
   }
 })
 
-const emit = defineEmits(['filtrar', 'exportar', 'abrir-modal', 'excluir'])
+const emit = defineEmits(['filtrar', 'exportar', 'abrir-modal', 'excluir', 'editar'])
 const exclusaoPendente = ref(null)
 const filtroAtivo = ref('todas')
 let observer = null
@@ -87,7 +87,7 @@ onUnmounted(() => {
               {{ item.tipo === 'receita' ? '+' : '-' }} {{ formatarMoeda(item.valor) }}
             </span>
             <small>{{ formatarData(item.data) }}</small>
-          </div><button type="button" class="btn-excluir" :aria-label="'Excluir transação '+item.titulo" title="Excluir transação" @click="exclusaoPendente = item">Excluir</button></div>
+          </div><button type="button" class="btn-editar" @click="emit('editar', item)">Editar</button><button type="button" class="btn-excluir" :aria-label="'Excluir transação '+item.titulo" title="Excluir transação" @click="exclusaoPendente = item">Excluir</button></div>
         </div>
       </div>
     </div>
@@ -292,4 +292,6 @@ onUnmounted(() => {
 .cancelar-exclusao{background:var(--opes-cream);color:var(--opes-ink)}
 .confirmar-exclusao{background:var(--opes-danger);border-color:var(--opes-danger);color:#fff}
 @media(max-width:520px){.item-transacao{gap:10px;padding:12px}.acoes-transacao{gap:8px}.btn-excluir{font-size:11px;padding:6px}}
+.btn-editar{background:var(--opes-forest-soft)!important;color:var(--opes-ink)!important;border:1px solid var(--opes-border)!important;border-radius:9px;padding:8px 10px;font-size:12px;font-weight:700}
+.btn-editar:hover{filter:brightness(1.1)}
 </style>
