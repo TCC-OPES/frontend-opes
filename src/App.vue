@@ -21,16 +21,5 @@ html, body, #app { min-height: 100%; overflow-x: clip; }
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .conteudo-principal > .layout,
-  .conteudo-principal > .layout-app,
-  .conteudo-principal > .dashboard-layout,
-  .conteudo-principal > .main-wrapper {
-    animation: opes-entrada .28s ease-out both;
-  }
-  @keyframes opes-entrada {
-    from { opacity: .65; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-}
+
 </style>
