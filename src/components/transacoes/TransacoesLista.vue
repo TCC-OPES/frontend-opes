@@ -28,8 +28,7 @@ function formatarMoeda(valor) {
 
 function formatarData(dataIso) {
   if (!dataIso) return ''
-  const data = new Date(dataIso)
-  return data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  return dataIso.slice(0,10).split('-').reverse().join('/')
 }
 
 onMounted(() => {

@@ -11,7 +11,7 @@ const formulario = ref({
   categoria: '',
   tipo: 'receita',
   valor: '',
-  data: new Date().toISOString().split('T')[0]
+  data: new Date().toLocaleDateString('sv-SE')
 })
 
 const carregandoSalvar = ref(false)
@@ -56,7 +56,7 @@ async function submeterFormulario() {
 
         <div class="grupo-input">
           <label>Valor (R$)</label>
-          <input type="number" step="0.01" v-model="formulario.valor" placeholder="0.00" required />
+          <input type="number" step="0.01" min="0.01" v-model="formulario.valor" placeholder="0.00" required />
         </div>
 
         <div class="grupo-input">
@@ -65,7 +65,7 @@ async function submeterFormulario() {
         </div>
 
         <div class="modal-footer">
-          <type class="btn-secundario" type="button" @click="emit('fechar')">Cancelar</type>
+          <button class="btn-secundario" type="button" @click="emit('fechar')">Cancelar</button>
           <button class="btn-primario" type="submit" :disabled="carregandoSalvar">
             {{ carregandoSalvar ? 'Salvando...' : 'Salvar Transação' }}
           </button>

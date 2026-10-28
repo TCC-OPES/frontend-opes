@@ -1,4 +1,4 @@
-import api from './api' // sua instância do Axios
+import api from './api'
 
 export default {
   buscarInvestimentos() {

@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import api from '@/services/api'
+import { notify } from '@/services/toast'
 
 export const useTransacoesStore = defineStore('transacoes', () => {
-  const transacoes = ref([])          // Lista exibida na tabela (filtrada)
-  const transacoesGeral = ref([])     // Lista completa para manter os cards do topo fixos
+  const transacoes = ref([])
+  const transacoesGeral = ref([])
   const carregando = ref(false)
 
   const resumo = computed(() => {
@@ -42,7 +43,7 @@ export const useTransacoesStore = defineStore('transacoes', () => {
       }
 
     } catch (error) {
-      console.error('Erro ao buscar transações do backend:', error)
+      notify.error('Não foi possível carregar suas transações.')
     } finally {
       carregando.value = false
     }
@@ -53,17 +54,17 @@ export const useTransacoesStore = defineStore('transacoes', () => {
       const response = await api.post('/api/transacoes/', novaTransacaoData)
       transacoesGeral.value.unshift(response.data)
       transacoes.value.unshift(response.data)
+      notify.success('Transação registrada com sucesso.')
       return true
     } catch (error) {
-      console.error('Erro ao criar transação:', error)
-      alert('Erro ao salvar a transação. Verifique os campos.')
+      notify.error('Erro ao salvar a transação. Verifique os campos.')
       return false
     }
   }
 
   function exportarTransacoes() {
     if (transacoes.value.length === 0) {
-      alert('Não há transações para exportar.')
+      notify.warning('Não há transações para exportar.')
       return
     }
 
