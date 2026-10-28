@@ -109,7 +109,7 @@ watch([ano,mes], carregar, { immediate:true })
   </div>
   <div v-if="detalhe" class="overlay overlay-detalhe" @click.self="fechar">
     <section class="modal" role="dialog" aria-modal="true" aria-label="Detalhes do lançamento" @keydown.esc="fechar">
-      <div class="cabecalho"><span class="sobretitulo">DETALHES DO EVENTO</span><button class="fechar-dia" @click="fechar" aria-label="Fechar detalhes">✕</button></div>
+      <div class="cabecalho"><span class="sobretitulo">DETALHES DO EVENTO</span><button class="fechar-dia fechar-detalhe" @click="fechar" aria-label="Fechar detalhes">✕</button></div>
       <h2>{{ detalhe.titulo }}</h2><strong :class="['valor-detalhe',classe(detalhe)]">{{ moeda(detalhe.valor) }}</strong>
       <dl><div><dt>Data</dt><dd>{{ formatarData(detalhe.vencimento || detalhe.data?.slice(0,10)) }}</dd></div>
         <div><dt>Tipo</dt><dd>{{ detalhe.tipo==='receita'?'Receita':'Despesa' }}</dd></div>
@@ -149,4 +149,6 @@ watch([ano,mes], carregar, { immediate:true })
 :global(:root[data-theme="dark"]) .modal-dia .evento-montante.entrada{color:#a5e1bd!important}
 :global(:root[data-theme="dark"]) .modal-dia .evento-montante.saida{color:#ffaaa1!important}
 :global(:root[data-theme="dark"]) .modal-dia .fechar-dia{background:#344d3e!important;color:#f1f5ef!important;border-color:#52715d!important}
+
+.fechar-detalhe{background:transparent!important;border:0!important;box-shadow:none!important;color:var(--opes-ink)!important;font-size:20px;padding:4px 8px!important}
 </style>
