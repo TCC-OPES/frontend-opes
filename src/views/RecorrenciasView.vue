@@ -2,10 +2,12 @@
 import { notify, confirmAction } from '@/services/toast'
 
 import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import api from '@/services/api'
 import SideBarComponent from '@/components/SideBarComponent.vue'
 
 const modelo = () => ({ titulo: '', categoria: '', tipo: 'despesa', valor: '', frequencia: 'mensal', primeiro_vencimento: '', data_fim: null })
+const route = useRoute()
 const formulario = ref(modelo())
 const lista = ref([])
 const ocorrencias = ref([])
@@ -111,7 +113,14 @@ async function mudarMes(direcao) {
   mes.value = data.getMonth()
   await carregar()
 }
-onMounted(carregar)
+onMounted(async () => {
+  await carregar()
+  if (route.query.editar) {
+    const item = lista.value.find(r => String(r.id) === String(route.query.editar))
+    if (item) editar(item)
+    else notify.warning('Esta recorrência não está disponível para edição.')
+  }
+})
 </script>
 
 <template>
