@@ -44,7 +44,7 @@ export default defineConfig({
       },
       workbox: { navigateFallbackDenylist: [new RegExp('^/api/')] },
       devOptions: {
-        enabled: false,
+        enabled: true,
       },
     }),
     vueDevTools(),
