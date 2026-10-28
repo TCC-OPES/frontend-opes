@@ -566,19 +566,20 @@ h1 {
 }
 
 .btn-fechar {
+  appearance: none;
   position: absolute;
   top: -15px;
   right: -15px;
-  background: var(--opes-paper);
-  border: none;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
   border-radius: 50%;
   width: 36px;
   height: 36px;
   font-size: 1.1rem;
   font-weight: bold;
   cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  color: var(--opes-ink);
+  color: var(--opes-ink) !important;
 }
 
 .carregando {
