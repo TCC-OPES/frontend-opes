@@ -108,6 +108,7 @@
 </template>
 
 <script setup>
+import { notify } from '@/services/toast'
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import SideBarComponent from '@/components/SideBarComponent.vue'
 import api from '@/services/api.js'
@@ -235,10 +236,10 @@ const salvarPerfil = async () => {
     sincronizarEstadoLocal(data.data || data)
     
     editando.value = false
-    alert('Perfil atualizado com sucesso!')
+    notify.success('Perfil atualizado com sucesso!')
   } catch (err) {
     console.error('Erro ao salvar perfil:', err)
-    alert('Não foi possível salvar as alterações.')
+    notify.error('Não foi possível salvar as alterações.')
   } finally {
     salvando.value = false
   }
@@ -261,10 +262,10 @@ const aoSelecionarFoto = async (e) => {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
     sincronizarEstadoLocal(data.data || data)
-    alert('Foto atualizada com sucesso!')
+    notify.success('Foto atualizada com sucesso!')
   } catch (err) {
     console.error('Erro ao subir foto:', err)
-    alert('Erro ao enviar foto.')
+    notify.error('Erro ao enviar foto.')
   }
 }
 
