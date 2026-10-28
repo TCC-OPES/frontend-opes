@@ -16,7 +16,7 @@ import ToastHost from '@/components/ToastHost.vue'
 
 <style>
 /* Adicione isso no seu estilo global ou no App.vue */
-html, body, #app { min-height: 100%; overflow-x: hidden; }
+html, body, #app { min-height: 100%; overflow-x: clip; }
 #app-layout, .conteudo-principal { min-height: 100vh; height: auto; overflow: visible; }
 @media (max-width: 1023px) {
   .conteudo-principal, #app-layout, .app-container {
