@@ -348,7 +348,7 @@ const obterCorProgresso = (porcentagem) => {
   gap: 20px;
   width: 100%;
   box-sizing: border-box;
-  overflow-y: auto; /* <-- AQUI É O SEGREDO: Rola apenas o conteúdo interno no mobile */
+  overflow-y: auto; 
   background-color: #ffffff;
 }
 
@@ -547,7 +547,7 @@ const obterCorProgresso = (porcentagem) => {
   }
   .dashboard-content {
     padding: 32px 40px;
-    overflow-y: auto; /* <-- NO DESKTOP: Trava a tela e faz apenas este miolo rolar com a barra interna */
+    overflow-y: auto; 
     background-color: #f4f6f9;
   }
   .welcome-section h2 { font-size: 1.8rem; }
