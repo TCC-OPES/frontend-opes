@@ -206,3 +206,20 @@ img { max-width: 100%; }
 :root[data-theme="dark"] #app .btn-foto { background:#2c493a; color:#edf5ee; }
 :root[data-theme="dark"] #app .sidebar-container .menu-item.router-link-active { color:#11251b !important; }
 :root[data-theme="dark"] #app .sidebar-container .theme-toggle { color:#edf5ee !important; }
+
+@media (prefers-reduced-motion: no-preference) {
+  #app .dashboard-content > *,
+  #app .container-perfil > *,
+  #app .transacoes-container > *,
+  #app .conteudo > .titulo,
+  #app .conteudo > .resumo,
+  #app .conteudo > .painel,
+  #app .main-content > *,
+  #app .dashboard-main > * {
+    animation: opes-suave-entrada .35s ease-out both;
+  }
+  @keyframes opes-suave-entrada {
+    from { opacity: .35; translate: 0 9px; }
+    to { opacity: 1; translate: 0 0; }
+  }
+}
