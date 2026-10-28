@@ -3,7 +3,6 @@
     <SideBarComponent />
 
     <div class="main-container">
-      <HeaderComponent />
 
       <main class="dashboard-content">
         <section class="welcome-section animar">
@@ -91,7 +90,6 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import HeaderComponent from '@/components/HeaderComponent.vue'
 import SideBarComponent from '@/components/SideBarComponent.vue'
 import { useMetasStore } from '@/store/metas'
 import investimentoService from '@/services/investimento'
