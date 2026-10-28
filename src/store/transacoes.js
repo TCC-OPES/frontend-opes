@@ -61,6 +61,18 @@ export const useTransacoesStore = defineStore('transacoes', () => {
     }
   }
 
+  async function editarTransacao(id, dados) {
+    try {
+      await api.patch(`/api/transacoes/${id}/`, dados)
+      await buscarTransacoes()
+      notify.success('Transação atualizada com sucesso.')
+      return true
+    } catch {
+      notify.error('Não foi possível atualizar a transação.')
+      return false
+    }
+  }
+
   async function excluirTransacao(id) {
     try {
       await api.delete(`/api/transacoes/${id}/`)
@@ -101,6 +113,7 @@ export const useTransacoesStore = defineStore('transacoes', () => {
     carregando,
     buscarTransacoes,
     criarTransacao,
+    editarTransacao,
     excluirTransacao,
     exportarTransacoes
   }

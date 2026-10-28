@@ -2,23 +2,27 @@
 import { ref } from 'vue'
 import { useTransacoesStore } from '@/store/transacoes'
 
+const props = defineProps({ transacao: { type: Object, default: null } })
 const emit = defineEmits(['fechar'])
 const transacoesStore = useTransacoesStore()
 
 
 const formulario = ref({
-  titulo: '',
-  categoria: '',
-  tipo: 'receita',
-  valor: '',
-  data: new Date().toLocaleDateString('sv-SE')
+  titulo: props.transacao?.titulo || '',
+  categoria: props.transacao?.categoria || '',
+  tipo: props.transacao?.tipo || 'receita',
+  valor: props.transacao?.valor || '',
+  data: props.transacao?.data?.slice(0, 10) || new Date().toLocaleDateString('sv-SE')
 })
 
 const carregandoSalvar = ref(false)
 
 async function submeterFormulario() {
+  if (carregandoSalvar.value) return
   carregandoSalvar.value = true
-  const sucesso = await transacoesStore.criarTransacao(formulario.value)
+  const sucesso = props.transacao
+    ? await transacoesStore.editarTransacao(props.transacao.id, formulario.value)
+    : await transacoesStore.criarTransacao(formulario.value)
   carregandoSalvar.value = false
 
   if (sucesso) {
@@ -31,7 +35,7 @@ async function submeterFormulario() {
   <div class="modal-overlay">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>Nova Transação</h2>
+        <h2>{{ transacao ? 'Editar transação' : 'Nova transação' }}</h2>
         <button class="btn-fechar" @click="emit('fechar')">&times;</button>
       </div>
 
@@ -67,7 +71,7 @@ async function submeterFormulario() {
         <div class="modal-footer">
           <button class="btn-secundario" type="button" @click="emit('fechar')">Cancelar</button>
           <button class="btn-primario" type="submit" :disabled="carregandoSalvar">
-            {{ carregandoSalvar ? 'Salvando...' : 'Salvar Transação' }}
+            {{ carregandoSalvar ? 'Salvando...' : (transacao ? 'Salvar alterações' : 'Salvar transação') }}
           </button>
         </div>
       </form>
@@ -90,7 +94,8 @@ async function submeterFormulario() {
 }
 
 .modal-content {
-  background: white;
+  background: var(--opes-paper);
+  color: var(--opes-ink);
   padding: 30px;
   border-radius: 16px;
   width: 100%;
