@@ -16,9 +16,6 @@ body,
 
 body {
   min-height: 100vh;
-}
-
-body {
   background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
   font-family: Arial, sans-serif;
 }
