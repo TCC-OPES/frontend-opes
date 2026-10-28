@@ -27,6 +27,27 @@ for (const viewport of viewports) {
   })
 }
 
+test('home exibe conteúdo e não fica encoberta por sobreposição', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('http://127.0.0.1:5173/', { waitUntil: 'networkidle' })
+  const header = page.locator('.pagina-inicial .barra-navegacao')
+  const heading = page.getByRole('heading', { name: /Transforme sua/i })
+  const primaryLink = page.locator('.pagina-inicial .barra-navegacao a[href="/cadastro"]')
+  await expect(header).toBeVisible()
+  await expect(heading).toBeVisible()
+  await expect(primaryLink).toBeVisible()
+  await expect.poll(async () => page.evaluate(() => {
+    const heading = document.querySelector('.secao-hero h1')
+    if (!heading) return false
+    const style = getComputedStyle(heading)
+    const rect = heading.getBoundingClientRect()
+    const x = Math.round(rect.left + rect.width / 2)
+    const y = Math.round(rect.top + rect.height / 2)
+    const top = document.elementFromPoint(x, y)
+    return style.visibility === 'visible' && Number(style.opacity) > 0 && rect.width > 0 && rect.height > 0 && !!top && (top === heading || heading.contains(top) || top.contains(heading))
+  })).toBeTruthy()
+})
+
 test('desktop sidebar permanece visível ao rolar', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('http://127.0.0.1:5173/recorrencias', { waitUntil: 'domcontentloaded' })
