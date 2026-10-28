@@ -1,8 +1,11 @@
 import axios from 'axios'
 
 // Em produção, nunca deixar o Axios enviar requisições financeiras ao domínio da Vercel.
-const API_ORIGIN = (import.meta.env.VITE_API_URL || 'https://opes.class.fabricadesoftware.ifc.edu.br')
-  .trim().replace(/\/+$/, '').replace(/\/api$/, '')
+const DEFAULT_API = 'https://opes.class.fabricadesoftware.ifc.edu.br'
+const configuredApi = (import.meta.env.VITE_API_URL || '').trim()
+const API_ORIGIN = /^https?:\/\//i.test(configuredApi)
+  ? configuredApi.replace(/\/+$/, '').replace(/\/api$/, '')
+  : DEFAULT_API
 
 const api = axios.create({
   baseURL: API_ORIGIN,
