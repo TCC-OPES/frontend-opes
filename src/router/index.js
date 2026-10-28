@@ -9,9 +9,12 @@ import CartoesView from '../views/CartoesView.vue'
 import MetasFinanceirasView from '@/views/MetasFinanceirasView.vue'
 import TransacoesView from '@/views/TransacoesView.vue'
 
+import RecorrenciasView from '@/views/RecorrenciasView.vue'
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    { path: '/recorrencias', name: 'RecorrenciasView', component: RecorrenciasView },
     {
       path: '/',
       name: 'home',
