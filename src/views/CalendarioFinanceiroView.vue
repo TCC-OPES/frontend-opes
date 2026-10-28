@@ -131,7 +131,7 @@ watch([ano,mes], carregar, { immediate:true })
 .modal-dia .cabecalho{margin-bottom:12px;align-items:flex-start}
 .modal-dia h2{margin-top:7px}
 .lista-eventos{overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:2px}
-.linha-evento{display:flex;justify-content:space-between;align-items:center;gap:16px;text-align:left;padding:16px;border:1px solid var(--opes-border);border-radius:12px;background:var(--opes-cream);color:var(--opes-ink);cursor:pointer}
+.linha-evento{display:flex;justify-content:space-between;align-items:center;gap:16px;text-align:left;padding:16px;border:1px solid var(--opes-border);border-radius:12px;background:var(--opes-paper);color:var(--opes-ink);cursor:pointer}
 .linha-evento:hover{border-color:var(--opes-forest)}
 .evento-info{display:flex;flex-direction:column;gap:5px;min-width:0}
 .evento-info strong{overflow-wrap:anywhere}
@@ -141,4 +141,12 @@ watch([ano,mes], carregar, { immediate:true })
 .evento-montante.saida{color:var(--opes-danger)}
 .rodape-dia{margin:10px 2px 0}
 @media(max-width:520px){.modal-dia{padding:18px}.linha-evento{padding:12px;gap:9px}.evento-montante{font-size:13px}}
+
+:global(:root[data-theme="dark"]) .modal-dia .linha-evento{background:#263d32!important;border-color:#476452!important;color:#edf5ee!important}
+:global(:root[data-theme="dark"]) .modal-dia .linha-evento:hover{background:#304c3d!important;border-color:#a3cdb4!important}
+:global(:root[data-theme="dark"]) .modal-dia .evento-info strong{color:#edf5ee!important}
+:global(:root[data-theme="dark"]) .modal-dia .evento-info small{color:#bdd3c4!important}
+:global(:root[data-theme="dark"]) .modal-dia .evento-montante.entrada{color:#a5e1bd!important}
+:global(:root[data-theme="dark"]) .modal-dia .evento-montante.saida{color:#ffaaa1!important}
+:global(:root[data-theme="dark"]) .modal-dia .fechar-dia{background:#344d3e!important;color:#f1f5ef!important;border-color:#52715d!important}
 </style>
