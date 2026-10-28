@@ -1,575 +1,179 @@
-<template>
-  <div class="dashboard-layout">
-    <SideBarComponent />
-
-    <div class="main-container">
-      
-
-      <main class="dashboard-content">
-        <section class="welcome-section animar">
-          <h2>Bem-vindo, {{ usuario.name || 'Usuário' }}! </h2>
-          <p>Aqui está um resumo completo das suas finanças</p>
-        </section>
-
-        <section class="balance-gradient-card animar">
-          <div class="balance-main">
-            <p class="label">Saldo Total</p>
-            <h1 class="amount">R$ {{ formatarMoeda(saldoTotalGeral) }}</h1>
-            <span class="trending-badge">
-              <i class="fas fa-arrow-up"></i> {{ resumo.porcentagem_mes || '+0%' }} <small>vs mês passado</small>
-            </span>
-          </div>
-
-          <div class="balance-summary-boxes">
-            <div class="summary-box">
-              <p><i class="fas fa-arrow-up icon-receita"></i> Receitas</p>
-              <h3>R$ {{ formatarMoeda(resumo.receitas) }}</h3>
-            </div>
-            <div class="summary-box">
-              <p><i class="fas fa-arrow-down icon-despesa"></i> Despesas</p>
-              <h3>R$ {{ formatarMoeda(resumo.despesas) }}</h3>
-            </div>
-          </div>
-        </section>
-
-        <section class="analytics-grid animar">
-          <div class="chart-card">
-            <h3>Evolução Patrimonial</h3>
-            <div class="chart-wrapper">
-              <Line :data="lineChartData" :options="lineChartOptions" />
-            </div>
-          </div>
-          <div class="chart-card">
-            <h3>Gastos Semanais</h3>
-            <div class="chart-wrapper">
-              <Bar :data="barChartData" :options="barChartOptions" />
-            </div>
-          </div>
-        </section>
-
-        <section class="bottom-grid animar">
-          <div class="card-section">
-            <h3>Próximas Contas</h3>
-            <div class="contas-list" v-if="proximasContas.length > 0">
-              <div v-for="conta in proximasContas" :key="conta.id" class="conta-item">
-                <div class="conta-info">
-                  <h4>{{ conta.descricao }}</h4>
-                  <p>{{ conta.categoria }} • {{ conta.vencimento }}</p>
-                </div>
-                <span class="conta-valor">R$ {{ formatarMoeda(conta.valor) }}</span>
-              </div>
-            </div>
-            <p v-else class="empty-msg">Nenhuma conta com vencimento próximo.</p>
-          </div>
-
-          <div class="card-section">
-            <h3>Minhas Metas</h3>
-            <div class="metas-list" v-if="metasFormatadas.length > 0">
-              <div v-for="meta in metasFormatadas" :key="meta.id" class="meta-item">
-                <div class="meta-header">
-                  <span>{{ meta.titulo }}</span>
-                  <span class="meta-percent">{{ meta.porcentagem }}%</span>
-                </div>
-                <div class="progress-bar">
-                  <div
-                    class="progress-fill"
-                    :class="obterCorProgresso(meta.porcentagem)"
-                    :style="{ width: meta.porcentagem + '%' }"
-                  ></div>
-                </div>
-              </div>
-            </div>
-            <p v-else-if="metasStore.carregando" class="empty-msg">Carregando metas...</p>
-            <p v-else class="empty-msg">Nenhuma meta cadastrada.</p>
-          </div>
-        </section>
-      </main>
-
-    </div>
-  </div>
-</template>
-
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import SideBarComponent from '@/components/SideBarComponent.vue'
-import { useMetasStore } from '@/store/metas'
-import investimentoService from '@/services/investimento'
+import { ref, computed, onMounted } from 'vue'
+import { Bar, Line } from 'vue-chartjs'
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Tooltip, Legend, Filler } from 'chart.js'
 import api from '@/services/api'
+import { notify } from '@/services/toast'
+import { tema } from '@/services/tema'
+import { useMetasStore } from '@/store/metas'
+import SideBarComponent from '@/components/SideBarComponent.vue'
 
-import {
-  Chart as ChartJS,
-  Title,
-  Tooltip,
-  Legend,
-  BarElement,
-  LineElement,
-  PointElement,
-  CategoryScale,
-  LinearScale,
-  Filler
-} from 'chart.js'
-import { Line, Bar } from 'vue-chartjs'
-
-ChartJS.register(
-  Title,
-  Tooltip,
-  Legend,
-  BarElement,
-  LineElement,
-  PointElement,
-  CategoryScale,
-  LinearScale,
-  Filler
-)
+ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Tooltip, Legend, Filler)
 
 const metasStore = useMetasStore()
-let observer = null
-
-const usuario = ref({ name: '' })
-const resumo = ref({
-  saldo_total: 0,
-  receitas: 0,
-  despesas: 0,
-  porcentagem_mes: '+0%'
-})
-const proximasContas = ref([])
-const totalInvestidoStore = ref(0)
-
-const saldoTotalGeral = computed(() => {
-  const saldoBase = Number(resumo.value.saldo_total || 0)
-  return saldoBase + totalInvestidoStore.value
-})
-
-const lineChartData = ref({
-  labels: ['Out', 'Nov', 'Dez', 'Jan', 'Fev', 'Mar'],
+const nome = ref('')
+const carregando = ref(true)
+const resumo = ref({ resultado_registrado: 0, receitas: 0, despesas: 0, total_transacoes: 0, total_investido: 0 })
+const serie = ref([])
+const gastos = ref([])
+const proximas = ref([])
+const erro = ref('')
+const moeda = valor => Number(valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+const exibirGraficos = computed(() => serie.value.some(x => Number(x.receitas) !== 0 || Number(x.despesas) !== 0))
+const exibirGastos = computed(() => gastos.value.some(x => Number(x.valor) !== 0))
+const metas = computed(() => metasStore.metas.map(item => ({
+  id: item.id,
+  titulo: item.titulo,
+  progresso: Math.min(100, Math.max(0, Number(item.valor_objetivo) ? Number(item.valor_atual) / Number(item.valor_objetivo) * 100 : 0)),
+})))
+const cores = computed(() => ({
+  texto: tema.value === 'dark' ? '#b7c6bd' : '#6c756d',
+  grade: tema.value === 'dark' ? '#455b4c' : '#e5e7eb',
+}))
+const mesesData = computed(() => ({
+  labels: serie.value.map(x => x.mes),
   datasets: [
-    {
-      label: 'Patrimônio',
-      data: [8500, 9200, 8900, 9800, 9400, 11500],
-      borderColor: '#15803d',
-      backgroundColor: 'rgba(21, 128, 61, 0.1)',
-      fill: true,
-      tension: 0.4,
-      pointRadius: 3,
-      pointHoverRadius: 6
-    }
-  ]
-})
-
-const lineChartOptions = {
+    { label: 'Receitas', data: serie.value.map(x => Number(x.receitas)), borderColor: '#47866a', backgroundColor: 'rgba(71,134,106,.16)', tension: .25, fill: false },
+    { label: 'Despesas', data: serie.value.map(x => Number(x.despesas)), borderColor: '#b7835d', backgroundColor: 'rgba(183,131,93,.18)', tension: .25, fill: false },
+  ],
+}))
+const gastosData = computed(() => ({
+  labels: gastos.value.map(x => x.dia),
+  datasets: [{ label: 'Despesas registradas', data: gastos.value.map(x => Number(x.valor)), backgroundColor: '#b7835d', borderRadius: 7 }],
+}))
+const options = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
-  plugins: {
-    legend: { display: false },
-    tooltip: {
-      callbacks: {
-        label: (context) => ` R$ ${context.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
-      }
-    }
-  },
+  plugins: { legend: { labels: { color: cores.value.texto } }, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${moeda(c.raw)}` } } },
   scales: {
-    y: {
-      grid: { color: '#f1f5f9' },
-      ticks: {
-        color: '#94a3b8',
-        callback: (value) => `R$ ${value}`
-      }
-    },
-    x: {
-      grid: { display: false },
-      ticks: { color: '#94a3b8' }
-    }
-  }
-}
-
-const barChartData = ref({
-  labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
-  datasets: [
-    {
-      label: 'Gastos',
-      data: [310, 180, 450, 280, 520, 390, 150],
-      backgroundColor: '#2563eb',
-      borderRadius: 6
-    }
-  ]
-})
-
-const barChartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: { display: false },
-    tooltip: {
-      callbacks: {
-        label: (context) => ` R$ ${context.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
-      }
-    }
+    y: { beginAtZero: true, grid: { color: cores.value.grade }, ticks: { color: cores.value.texto, callback: v => moeda(v) } },
+    x: { grid: { display: false }, ticks: { color: cores.value.texto } },
   },
-  scales: {
-    y: {
-      grid: { color: '#f1f5f9' },
-      ticks: {
-        color: '#94a3b8',
-        callback: (value) => `R$ ${value}`
-      }
-    },
-    x: {
-      grid: { display: false },
-      ticks: { color: '#94a3b8' }
-    }
-  }
-}
-
-const metasFormatadas = computed(() => {
-  return metasStore.metas.map((meta) => {
-    const atual = Number(meta.valor_atual || 0)
-    const objetivo = Number(meta.valor_objetivo || 1)
-    const porcentagem = Math.min(Math.round((atual / objetivo) * 100), 100)
-
-    return {
-      id: meta.id,
-      titulo: meta.nome || meta.titulo || 'Meta sem nome',
-      porcentagem
-    }
-  })
-})
-
-const carregarDadosDashboard = async () => {
+}))
+async function carregar() {
+  carregando.value = true
+  erro.value = ''
   try {
-    const userLocal = localStorage.getItem('user')
-
-    if (userLocal) {
-      const parsedUser = JSON.parse(userLocal)
-      const dadosUsuario = parsedUser.data || parsedUser
-      const nomeCompleto = dadosUsuario.name || dadosUsuario.nome || ''
-      const primeiroNome = nomeCompleto.trim().split(' ')[0]
-
-      usuario.value = {
-        name: primeiroNome
-      }
-    }
-
-    metasStore.carregarMetas()
-
-    const resInvestimentos = await investimentoService.buscarInvestimentos().catch(() => null)
-    if (resInvestimentos?.data) {
-      totalInvestidoStore.value = resInvestimentos.data.reduce((acc, item) => {
-        const val = Number(item.valor_investido ?? item.valor ?? 0)
-        return acc + val
-      }, 0)
-    }
-
-    const resResumo = await api.get('api/dashboard/resumo/').catch(() => null)
-    if (resResumo?.data) resumo.value = resResumo.data
-
-    const resContas = await api.get('api/contas/proximas/').catch(() => null)
-    if (resContas?.data) proximasContas.value = resContas.data
-
-    const resGraficos = await api.get('api/dashboard/graficos/').catch(() => null)
-    if (resGraficos?.data) {
-      if (resGraficos.data.evolucao_labels) lineChartData.value.labels = resGraficos.data.evolucao_labels
-      if (resGraficos.data.evolucao_valores) lineChartData.value.datasets[0].data = resGraficos.data.evolucao_valores
-      if (resGraficos.data.gastos_semanais) barChartData.value.datasets[0].data = resGraficos.data.gastos_semanais
-    }
-  } catch (error) {
-    console.error('Erro ao carregar dados do dashboard:', error)
+    const dados = await api.get('/api/dashboard/')
+    resumo.value = dados.data.resumo
+    serie.value = dados.data.serie_mensal || []
+    gastos.value = dados.data.gastos_semanais || []
+    proximas.value = dados.data.proximas || []
+  } catch (falha) {
+    const codigo = falha.response?.status
+    erro.value = codigo === 404
+      ? 'Resumo financeiro indisponível nesta versão da API. Atualize o backend.'
+      : codigo === 401 ? 'Sua sessão expirou. Entre novamente.'
+      : codigo >= 500 ? 'O servidor não conseguiu gerar o resumo financeiro.'
+      : 'Não foi possível carregar o resumo financeiro. Confira a conexão com a API.'
+    notify.error(erro.value)
+  } finally {
+    carregando.value = false
+  }
+  try {
+    await metasStore.carregarMetas()
+  } catch (falhaMetas) {
+    console.error('Erro ao carregar metas:', falhaMetas)
   }
 }
-
-onMounted(async () => {
-  await carregarDadosDashboard()
-
-  observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('exibir')
-      }
-    })
-  }, { threshold: 0.1 })
-
-  document.querySelectorAll('.animar').forEach((el) => observer.observe(el))
+onMounted(() => {
+  try {
+    const salvo = JSON.parse(localStorage.getItem('user') || '{}')
+    const usuario = salvo.data || salvo
+    nome.value = (usuario.name || usuario.nome || '').trim().split(' ')[0]
+  } catch { nome.value = '' }
+  carregar()
 })
-
-onUnmounted(() => {
-  if (observer) observer.disconnect()
-})
-
-const formatarMoeda = (valor) => {
-  if (!valor && valor !== 0) return '0,00'
-  return Number(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-}
-
-const obterCorProgresso = (porcentagem) => {
-  if (porcentagem >= 70) return 'green'
-  if (porcentagem >= 35) return 'blue'
-  return 'gray'
-}
 </script>
 
+<template>
+<div class="dashboard-layout">
+  <SideBarComponent />
+  <div class="main-container">
+    <main class="dashboard-content">
+      <header class="titulo">
+        <div><span class="sobretitulo">VISÃO GERAL</span><h1>Bem-vindo{{ nome ? ', ' + nome : '' }}!</h1>
+        <p>Resumo dos seus lançamentos financeiros cadastrados.</p></div>
+        <button type="button" class="atualizar" :disabled="carregando" @click="carregar">Atualizar</button>
+      </header>
+      <p v-if="erro" class="estado" role="alert">{{ erro }}</p>
+      <p v-if="carregando" class="estado">Carregando dados financeiros...</p>
+      <section class="resumo" aria-label="Resumo financeiro">
+        <div class="resumo-principal">
+          <span>Resultado registrado</span>
+          <strong>{{ moeda(resumo.resultado_registrado) }}</strong>
+          <small>Receitas menos despesas cadastradas. Não representa seu saldo bancário.</small>
+        </div>
+        <div class="resumo-menor"><span>Receitas registradas</span><strong>{{ moeda(resumo.receitas) }}</strong><small>Histórico completo</small></div>
+        <div class="resumo-menor"><span>Despesas registradas</span><strong>{{ moeda(resumo.despesas) }}</strong><small>Histórico completo</small></div>
+        <div class="resumo-menor"><span>Investimentos cadastrados</span><strong>{{ moeda(resumo.total_investido) }}</strong><small>Valor informado, sem atualização de mercado</small></div>
+      </section>
+      <div class="analytics-grid">
+        <section class="cartao">
+          <h2>Receitas e despesas por mês</h2><p>Últimos seis meses · valores registrados</p>
+          <div v-if="!carregando && exibirGraficos" class="grafico"><Line :data="mesesData" :options="options" /></div>
+          <p v-else class="vazio">Ainda não existem lançamentos suficientes para mostrar o gráfico.</p>
+        </section>
+        <section class="cartao">
+          <h2>Gastos desta semana</h2><p>Valores registrados por dia da semana</p>
+          <div v-if="!carregando && exibirGastos" class="grafico"><Bar :data="gastosData" :options="options" /></div>
+          <p v-else class="vazio">Nenhuma despesa registrada nesta semana.</p>
+        </section>
+      </div>
+      <div class="analytics-grid">
+        <section class="cartao">
+          <h2>Próximos vencimentos</h2>
+          <p v-if="!proximas.length" class="vazio">Nenhuma conta prevista para os próximos 30 dias.</p>
+          <div v-for="conta in proximas" :key="conta.id + conta.vencimento" class="linha">
+            <div><strong>{{ conta.titulo }}</strong><small>{{ conta.categoria }} · {{ conta.vencimento.split('-').reverse().join('/') }}</small></div>
+            <strong>{{ moeda(conta.valor) }}</strong>
+          </div>
+          <small class="nota">Vencimentos previstos não são pagamentos realizados.</small>
+        </section>
+        <section class="cartao">
+          <h2>Minhas metas</h2>
+          <p v-if="!metas.length" class="vazio">Nenhuma meta cadastrada.</p>
+          <div v-for="meta in metas" :key="meta.id" class="meta">
+            <div class="meta-info"><strong>{{ meta.titulo }}</strong><span>{{ Math.round(meta.progresso) }}%</span></div>
+            <div class="trilha"><div :style="{ width: meta.progresso + '%' }" /></div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+</template>
+
 <style scoped>
-.animar {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.6s ease-out;
-}
-
-.animar.exibir {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.dashboard-layout {
-  display: flex;
-  height: 100vh;
-  width: 100vw;
-  background-color: var(--opes-paper);
-  overflow: hidden;
-  margin: 0;
-}
-
-.dashboard-layout :deep(.desktop-sidebar) {
-  display: none !important;
-}
-
-.main-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  position: relative;
-  overflow: hidden;
-  background-color: var(--opes-paper);
-}
-
-.dashboard-content {
-  flex: 1;
-  padding: 16px 16px 90px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  width: 100%;
-  box-sizing: border-box;
-  overflow-y: auto; 
-  background-color: var(--opes-paper);
-}
-
-.welcome-section h2 {
-  font-size: 1.4rem;
-  color: var(--opes-ink);
-  font-weight: 700;
-}
-.welcome-section p {
-  color: var(--opes-forest);
-  font-size: 0.875rem;
-  margin-top: 2px;
-}
-
-.balance-gradient-card {
-  background: linear-gradient(135deg, var(--opes-forest) 0%, var(--opes-forest) 45%, var(--opes-forest) 100%);
-  border-radius: 16px;
-  padding: 20px;
-  color: white;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-  box-sizing: border-box;
-  width: 100%;
-}
-
-.balance-main .label {
-  font-size: 0.85rem;
-  opacity: 0.85;
-}
-.balance-main .amount {
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin: 4px 0;
-  word-break: break-all;
-}
-.trending-badge {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.balance-summary-boxes {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.summary-box {
-  background: rgba(255, 255, 255, 0.12);
-  padding: 12px 14px;
-  border-radius: 12px;
-  backdrop-filter: blur(8px);
-  min-width: 0;
-}
-.summary-box p {
-  font-size: 0.75rem;
-  opacity: 0.9;
-  margin-bottom: 2px;
-}
-.summary-box h3 {
-  font-size: 1rem;
-  font-weight: 600;
-  word-break: break-all;
-}
-.icon-receita { color: var(--opes-forest); }
-.icon-despesa { color: var(--opes-caramel); }
-
-.analytics-grid,
-.bottom-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  width: 100%;
-}
-
-.chart-card,
-.card-section {
-  background: white;
-  padding: 16px;
-  border-radius: 16px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
-  min-width: 0;
-  box-sizing: border-box;
-  width: 100%;
-}
-
-.chart-card h3,
-.card-section h3 {
-  font-size: 1rem;
-  color: var(--opes-ink);
-  margin-bottom: 12px;
-  font-weight: 600;
-}
-
-.chart-wrapper {
-  height: 220px;
-  position: relative;
-  width: 100%;
-}
-
-.contas-list,
-.metas-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.conta-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-  background-color: var(--opes-paper);
-  border-radius: 12px;
-}
-
-.conta-info h4 {
-  font-size: 0.875rem;
-  color: var(--opes-ink);
-  margin: 0;
-  font-weight: 600;
-}
-
-.conta-info p {
-  font-size: 0.75rem;
-  color: var(--opes-muted);
-  margin: 2px 0 0 0;
-}
-
-.conta-valor {
-  font-weight: 700;
-  color: var(--opes-ink);
-  font-size: 0.875rem;
-}
-
-.meta-header {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--opes-ink);
-  margin-bottom: 6px;
-}
-
-.meta-percent {
-  color: var(--opes-forest);
-  font-weight: 500;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 8px;
-  background-color: var(--opes-cream);
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  border-radius: 10px;
-  transition: width 0.3s ease;
-}
-
-.progress-fill.green { background-color: var(--opes-forest); }
-.progress-fill.blue { background-color: var(--opes-forest); }
-.progress-fill.gray { background-color: var(--opes-forest); }
-
-.empty-msg {
-  color: var(--opes-muted);
-  font-size: 0.85rem;
-  margin: 0;
-}
-
-
-
-@media (min-width: 640px) {
-  .dashboard-content { padding: 24px 24px 90px 24px; }
-  .balance-gradient-card { padding: 24px; }
-  .balance-main .amount { font-size: 2.2rem; }
-}
-
-@media (min-width: 1024px) {
-  .dashboard-layout {
-    background-color: var(--opes-paper);
-  }
-  .dashboard-layout :deep(.desktop-sidebar) {
-    display: flex !important;
-  }
-  .main-container {
-    height: 100vh;
-    overflow: hidden;
-    background-color: var(--opes-paper);
-  }
-  .dashboard-content {
-    padding: 32px 40px;
-    overflow-y: auto; 
-    background-color: var(--opes-paper);
-  }
-
-.welcome-section h2 { font-size: 1.8rem; }
-  .balance-gradient-card {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    padding: 32px;
-  }
-  .balance-main .amount { font-size: 2.6rem; }
-  .balance-summary-boxes { display: flex; }
-  .summary-box { padding: 16px 24px; min-width: 140px; }
-  .summary-box h3 { font-size: 1.3rem; }
-  .analytics-grid, .bottom-grid {
-    display: grid;
-    grid-template-columns: 1.2fr 0.8fr;
-  }
-  .chart-card, .card-section { padding: 24px; }
-  .chart-wrapper { height: 240px; }
-}
+.dashboard-layout{display:flex;min-height:100dvh;background:var(--opes-cream)}
+.main-container{flex:1;min-width:0}
+.dashboard-content{max-width:1480px;margin:auto;padding:32px 28px 120px;color:var(--opes-ink)}
+.titulo{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px}
+.sobretitulo{font-size:11px;font-weight:800;letter-spacing:1.4px;color:var(--opes-caramel-dark)}
+h1{font-size:29px;margin:7px 0 5px}h2{font-size:18px;margin:0 0 8px}
+p,.nota{color:var(--opes-muted);margin:0}
+.atualizar{border:0;border-radius:10px;background:var(--opes-forest);color:var(--opes-paper);padding:11px 17px}
+.resumo{display:grid;grid-template-columns:1.5fr repeat(3,minmax(0,1fr));gap:14px;margin-bottom:22px}
+.resumo>div{border:1px solid var(--opes-border);border-radius:16px;padding:20px;background:var(--opes-paper);min-width:0}
+.resumo>div{display:flex;flex-direction:column;gap:8px}
+.resumo span{font-size:13px;color:var(--opes-muted)}
+.resumo strong{font-size:clamp(19px,2vw,28px);overflow-wrap:anywhere}
+.resumo small,.nota{font-size:12px;line-height:1.5;color:var(--opes-muted)}
+.resumo-principal{background:var(--opes-forest-dark)!important;color:var(--opes-paper)!important}
+.resumo-principal span,.resumo-principal small,.resumo-principal strong{color:var(--opes-paper)!important}
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:20px 0}
+.cartao{background:var(--opes-paper);border:1px solid var(--opes-border);border-radius:16px;padding:22px;min-width:0}
+.cartao>p:not(.vazio){font-size:13px}
+.grafico{height:260px;margin-top:20px;position:relative}
+.vazio{padding:26px 2px;font-size:14px;color:var(--opes-muted)}
+.linha{display:flex;justify-content:space-between;gap:18px;padding:15px 0;border-top:1px solid var(--opes-border)}
+.linha div{display:flex;flex-direction:column;gap:5px}
+.linha small{color:var(--opes-muted)}
+.nota{display:block;margin-top:14px}
+.meta{margin:18px 0}.meta-info{display:flex;justify-content:space-between;gap:12px;margin-bottom:8px}
+.trilha{height:9px;border-radius:20px;background:var(--opes-sand);overflow:hidden}
+.trilha>div{height:100%;background:var(--opes-caramel);border-radius:20px}
+.estado{padding:10px 0}
+@media(max-width:1100px){.resumo{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:720px){.dashboard-content{padding:20px 14px 125px}.resumo,.analytics-grid{grid-template-columns:1fr}.titulo{align-items:flex-start;flex-wrap:wrap}.cartao{padding:16px}}
 </style>

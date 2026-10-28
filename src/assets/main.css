@@ -101,3 +101,108 @@ img { max-width: 100%; }
   #app .item, #app .linha { min-width: 0; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+
+:root[data-theme="dark"] {
+  --opes-forest: #a3cdb4;
+  --opes-forest-dark: #e2f1e7;
+  --opes-forest-soft: #29483b;
+  --opes-cream: #111e19;
+  --opes-paper: #1b2d25;
+  --opes-sand: #3b5143;
+  --opes-caramel: #dfab82;
+  --opes-caramel-dark: #efbe97;
+  --opes-ink: #edf5ee;
+  --opes-muted: #b7c6bd;
+  --opes-border: #3a5144;
+  --opes-danger: #f9a79e;
+  --opes-danger-soft: #532e30;
+  color-scheme: dark;
+}
+:root[data-theme="dark"] #app .painel,
+:root[data-theme="dark"] #app .card,
+:root[data-theme="dark"] #app .card-section,
+:root[data-theme="dark"] #app .chart-card,
+:root[data-theme="dark"] #app .resumo-card,
+:root[data-theme="dark"] #app .content-card,
+:root[data-theme="dark"] #app .modal,
+:root[data-theme="dark"] #app .dialog-box,
+:root[data-theme="dark"] #app .toast-item,
+:root[data-theme="dark"] #app .form-card,
+:root[data-theme="dark"] #app .summary-card,
+:root[data-theme="dark"] #app .stat-card,
+:root[data-theme="dark"] #app .card-resumo,
+:root[data-theme="dark"] #app .evento-preview,
+:root[data-theme="dark"] #app .linha,
+:root[data-theme="dark"] #app .item,
+:root[data-theme="dark"] #app .celula,
+:root[data-theme="dark"] #app .lista .linha {
+  background-color: var(--opes-paper);
+  border-color: var(--opes-border);
+  color: var(--opes-ink);
+}
+:root[data-theme="dark"] #app .evento-preview.entrada,
+:root[data-theme="dark"] #app .celula.hoje,
+:root[data-theme="dark"] #app .celula.selecionada,
+:root[data-theme="dark"] #app .ativo {
+  background-color: var(--opes-forest-soft);
+  color: var(--opes-ink);
+}
+:root[data-theme="dark"] #app .evento-preview.saida { background-color: #493629; }
+:root[data-theme="dark"] #app .celula.fora { background-color: var(--opes-cream); }
+:root[data-theme="dark"] #app input:not([type='checkbox']):not([type='radio']),
+:root[data-theme="dark"] #app select,
+:root[data-theme="dark"] #app textarea {
+  background-color: #263b30;
+  color: var(--opes-ink);
+  border-color: var(--opes-border);
+}
+:root[data-theme="dark"] #app button:not(.evento-preview):not(.menu-item):not(.mobile-nav-item):not(.secundario):not(.perigo) {
+  color: var(--opes-cream);
+}
+:root[data-theme="dark"] #app .secundario,
+:root[data-theme="dark"] #app .fechar-dia,
+:root[data-theme="dark"] #app .controles button,
+:root[data-theme="dark"] #app .cancel {
+  background-color: var(--opes-sand);
+  color: var(--opes-ink);
+}
+:root[data-theme="dark"] #app .balance-gradient-card,
+:root[data-theme="dark"] #app .dashboard-layout .balance-gradient-card {
+  background: linear-gradient(120deg,#102e27,#244f3c) !important;
+  color: #fff !important;
+}
+:root[data-theme="dark"] #app .balance-gradient-card h1,
+:root[data-theme="dark"] #app .balance-gradient-card h2,
+:root[data-theme="dark"] #app .balance-gradient-card h3,
+:root[data-theme="dark"] #app .balance-gradient-card p {
+  color: #fff !important;
+}
+:root[data-theme="dark"] #app .sidebar-container .theme-toggle {
+  background: var(--opes-sand);
+  color: var(--opes-ink);
+}
+
+:root[data-theme="dark"] #app .cartao-perfil,
+:root[data-theme="dark"] #app .transacoes-stats,
+:root[data-theme="dark"] #app .transacao-item,
+:root[data-theme="dark"] #app .stat-card,
+:root[data-theme="dark"] #app .resumo-card,
+:root[data-theme="dark"] #app .cartao,
+:root[data-theme="dark"] #app .card,
+:root[data-theme="dark"] #app .resumo > div:not(.resumo-principal) {
+  background: var(--opes-paper) !important;
+  color: var(--opes-ink) !important;
+  border-color: var(--opes-border) !important;
+}
+:root[data-theme="dark"] #app .cartao-perfil h2,
+:root[data-theme="dark"] #app .titulo-secao,
+:root[data-theme="dark"] #app .transacao-item strong,
+:root[data-theme="dark"] #app .transacao-item span,
+:root[data-theme="dark"] #app .resumo strong { color: var(--opes-ink); }
+:root[data-theme="dark"] #app .resumo-principal,
+:root[data-theme="dark"] #app .dashboard-layout .resumo-principal { background:#244235 !important; color:#edf5ee !important; }
+:root[data-theme="dark"] #app .resumo-principal * { color:#edf5ee !important; }
+:root[data-theme="dark"] #app .campo input:disabled { background:#14251d !important; color:#e1eee4 !important; opacity:1; }
+:root[data-theme="dark"] #app .btn-foto { background:#2c493a; color:#edf5ee; }
+:root[data-theme="dark"] #app .sidebar-container .menu-item.router-link-active { color:#11251b !important; }
+:root[data-theme="dark"] #app .sidebar-container .theme-toggle { color:#edf5ee !important; }

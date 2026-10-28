@@ -8,6 +8,10 @@ import TransacaoModal from '@/components/transacoes/TransacaoModal.vue'
 
 const transacoesStore = useTransacoesStore()
 const modalAberta = ref(false)
+const transacaoEditando = ref(null)
+function novaTransacao() { transacaoEditando.value = null; modalAberta.value = true }
+function editarTransacao(item) { transacaoEditando.value = item; modalAberta.value = true }
+function fecharModal() { modalAberta.value = false; transacaoEditando.value = null }
 let observer = null
 
 onMounted(async () => {
@@ -59,13 +63,16 @@ onUnmounted(() => {
           :carregando="transacoesStore.carregando"
           @filtrar="(tipo) => transacoesStore.buscarTransacoes(tipo)"
           @exportar="transacoesStore.exportarTransacoes"
-          @abrir-modal="modalAberta = true"
+          @excluir="transacoesStore.excluirTransacao"
+          @abrir-modal="novaTransacao"
+          @editar="editarTransacao"
         />
 
         
         <TransacaoModal
           v-if="modalAberta"
-          @fechar="modalAberta = false"
+          :transacao="transacaoEditando"
+          @fechar="fecharModal"
         />
       </main>
     </div>

@@ -2,23 +2,27 @@
 import { ref } from 'vue'
 import { useTransacoesStore } from '@/store/transacoes'
 
+const props = defineProps({ transacao: { type: Object, default: null } })
 const emit = defineEmits(['fechar'])
 const transacoesStore = useTransacoesStore()
 
 
 const formulario = ref({
-  titulo: '',
-  categoria: '',
-  tipo: 'receita',
-  valor: '',
-  data: new Date().toISOString().split('T')[0]
+  titulo: props.transacao?.titulo || '',
+  categoria: props.transacao?.categoria || '',
+  tipo: props.transacao?.tipo || 'receita',
+  valor: props.transacao?.valor || '',
+  data: props.transacao?.data?.slice(0, 10) || new Date().toLocaleDateString('sv-SE')
 })
 
 const carregandoSalvar = ref(false)
 
 async function submeterFormulario() {
+  if (carregandoSalvar.value) return
   carregandoSalvar.value = true
-  const sucesso = await transacoesStore.criarTransacao(formulario.value)
+  const sucesso = props.transacao
+    ? await transacoesStore.editarTransacao(props.transacao.id, formulario.value)
+    : await transacoesStore.criarTransacao(formulario.value)
   carregandoSalvar.value = false
 
   if (sucesso) {
@@ -31,8 +35,8 @@ async function submeterFormulario() {
   <div class="modal-overlay">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>Nova Transação</h2>
-        <button class="btn-fechar" @click="emit('fechar')">&times;</button>
+        <h2>{{ transacao ? 'Editar Transação' : 'Nova Transação' }}</h2>
+        <button type="button" class="btn-fechar" aria-label="Fechar formulário" @click="emit('fechar')">&times;</button>
       </div>
 
       <form @submit.prevent="submeterFormulario" class="formulario">
@@ -56,7 +60,7 @@ async function submeterFormulario() {
 
         <div class="grupo-input">
           <label>Valor (R$)</label>
-          <input type="number" step="0.01" v-model="formulario.valor" placeholder="0.00" required />
+          <input type="number" step="0.01" min="0.01" v-model="formulario.valor" placeholder="0.00" required />
         </div>
 
         <div class="grupo-input">
@@ -65,9 +69,9 @@ async function submeterFormulario() {
         </div>
 
         <div class="modal-footer">
-          <type class="btn-secundario" type="button" @click="emit('fechar')">Cancelar</type>
+          <button class="btn-secundario" type="button" @click="emit('fechar')">Cancelar</button>
           <button class="btn-primario" type="submit" :disabled="carregandoSalvar">
-            {{ carregandoSalvar ? 'Salvando...' : 'Salvar Transação' }}
+            {{ carregandoSalvar ? 'Salvando...' : (transacao ? 'Salvar alterações' : 'Salvar Transação') }}
           </button>
         </div>
       </form>
@@ -90,7 +94,8 @@ async function submeterFormulario() {
 }
 
 .modal-content {
-  background: white;
+  background: var(--opes-paper);
+  color: var(--opes-ink);
   padding: 30px;
   border-radius: 16px;
   width: 100%;
@@ -111,11 +116,19 @@ async function submeterFormulario() {
 }
 
 .btn-fechar {
-  background: transparent;
-  border: none;
+  appearance: none;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 24px;
   cursor: pointer;
-  color: var(--opes-forest);
+  color: var(--opes-ink) !important;
 }
 
 .formulario {

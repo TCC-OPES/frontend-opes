@@ -13,7 +13,8 @@ defineProps({
   }
 })
 
-const emit = defineEmits(['filtrar', 'exportar', 'abrir-modal'])
+const emit = defineEmits(['filtrar', 'exportar', 'abrir-modal', 'excluir', 'editar'])
+const exclusaoPendente = ref(null)
 const filtroAtivo = ref('todas')
 let observer = null
 
@@ -28,8 +29,7 @@ function formatarMoeda(valor) {
 
 function formatarData(dataIso) {
   if (!dataIso) return ''
-  const data = new Date(dataIso)
-  return data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  return dataIso.slice(0,10).split('-').reverse().join('/')
 }
 
 onMounted(() => {
@@ -82,15 +82,27 @@ onUnmounted(() => {
             </div>
           </div>
 
-          <div class="info-direita">
+          <div class="acoes-transacao"><div class="info-direita">
             <span :class="item.tipo === 'receita' ? 'texto-verde' : 'texto-vermelho'">
               {{ item.tipo === 'receita' ? '+' : '-' }} {{ formatarMoeda(item.valor) }}
             </span>
             <small>{{ formatarData(item.data) }}</small>
-          </div>
+          </div><button type="button" class="btn-editar" @click="emit('editar', item)">Editar</button><button type="button" class="btn-excluir" :aria-label="'Excluir transação '+item.titulo" title="Excluir transação" @click="exclusaoPendente = item">Excluir</button></div>
         </div>
       </div>
     </div>
+    <Teleport to="body">
+    <div v-if="exclusaoPendente" class="overlay-exclusao" @click.self="exclusaoPendente = null">
+      <section class="confirmacao-exclusao" role="dialog" aria-modal="true" aria-labelledby="titulo-exclusao">
+        <h3 id="titulo-exclusao">Excluir transação?</h3>
+        <p>Deseja excluir "{{ exclusaoPendente.titulo }}"? Essa ação não pode ser desfeita.</p>
+        <div class="acoes-confirmacao">
+          <button type="button" class="cancelar-exclusao" @click="exclusaoPendente = null">Cancelar</button>
+          <button type="button" class="confirmar-exclusao" @click="emit('excluir', exclusaoPendente.id); exclusaoPendente = null">Excluir transação</button>
+        </div>
+      </section>
+    </div>
+    </Teleport>
   </div>
 </template>
 
@@ -136,7 +148,7 @@ onUnmounted(() => {
 }
 
 .filtros-abas button.ativo {
-  background: white;
+  background: var(--opes-forest-soft);
   color: var(--opes-ink);
   box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
@@ -149,7 +161,7 @@ onUnmounted(() => {
 
 .btn-acao {
   flex: 1;
-  background: white;
+  background: var(--opes-paper);
   border: 1px solid var(--opes-sand);
   padding: 10px 16px;
   border-radius: 10px;
@@ -184,13 +196,14 @@ onUnmounted(() => {
 }
 
 .item-transacao {
-  background: white;
+  background: var(--opes-paper);
   padding: 16px 20px;
   border-radius: 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid var(--opes-cream);
+  border: 1px solid var(--opes-border);
+  color: var(--opes-ink);
 }
 
 .info-esquerda {
@@ -206,7 +219,8 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--opes-paper);
+  background: var(--opes-forest-soft);
+  color: var(--opes-ink);
   font-weight: bold;
 }
 
@@ -243,9 +257,9 @@ onUnmounted(() => {
   text-align: center;
   padding: 40px;
   color: var(--opes-forest);
-  background: white;
+  background: var(--opes-paper);
   border-radius: 14px;
-  border: 1px solid var(--opes-cream);
+  border: 1px solid var(--opes-border);
 }
 
 @media (min-width: 768px) {
@@ -267,4 +281,19 @@ onUnmounted(() => {
     flex: initial;
   }
 }
+
+.acoes-transacao{display:flex;align-items:center;gap:16px}
+.btn-excluir{background:transparent!important;color:var(--opes-danger)!important;border:1px solid var(--opes-border)!important;border-radius:9px;padding:8px 10px;font-size:12px;font-weight:700}
+.btn-excluir:hover{background:var(--opes-danger-soft)!important}
+.overlay-exclusao{position:fixed;inset:0;background:rgba(6,18,13,.45);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:16px;z-index:3200}
+.confirmacao-exclusao{width:100%;max-width:430px;padding:24px;background:var(--opes-paper);border:1px solid var(--opes-border);border-radius:16px;color:var(--opes-ink)}
+.confirmacao-exclusao h3{margin:0 0 12px;color:var(--opes-ink)}
+.confirmacao-exclusao p{color:var(--opes-muted);line-height:1.5}
+.acoes-confirmacao{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:22px}
+.cancelar-exclusao,.confirmar-exclusao{border-radius:9px;padding:10px 14px;font-weight:700;border:1px solid var(--opes-border)}
+.cancelar-exclusao{background:var(--opes-cream);color:var(--opes-ink)}
+.confirmar-exclusao{background:var(--opes-danger);border-color:var(--opes-danger);color:#fff}
+@media(max-width:520px){.item-transacao{gap:10px;padding:12px}.acoes-transacao{gap:8px}.btn-excluir{font-size:11px;padding:6px}}
+.btn-editar{background:var(--opes-forest-soft)!important;color:var(--opes-ink)!important;border:1px solid var(--opes-border)!important;border-radius:9px;padding:8px 10px;font-size:12px;font-weight:700}
+.btn-editar:hover{filter:brightness(1.1)}
 </style>

@@ -32,7 +32,7 @@
                     <span v-else>{{ obterIniciais(dadosUsuario.nome) }}</span>
                   </div>
 
-                  <button v-if="editando" class="btn-foto" @click="abrirSeletorArquivo" title="Alterar Foto">📷</button>
+                  <button v-if="editando" class="btn-foto" @click="abrirSeletorArquivo" title="Alterar foto" aria-label="Alterar foto"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 4h-4l-2 3H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg></button>
                   
                   <input 
                     type="file" 
@@ -50,7 +50,7 @@
 
             <section class="coluna-principal animar">
               <div class="cartao-perfil">
-                <h3 class="titulo-secao">👤 Informações Pessoais</h3>
+                <h3 class="titulo-secao">Informações pessoais</h3>
                 <div class="grade-inputs">
                   
                   <div class="campo">
@@ -411,15 +411,15 @@ h1 {
 
 .layout-grid {
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: minmax(245px, 295px) minmax(0, 1fr);
   gap: 30px;
 }
 
 .cartao-perfil {
-  background: white;
-  border-radius: 24px;
-  padding: 30px;
-  border: 1px solid var(--opes-paper);
+  background: var(--opes-paper);
+  border-radius: 20px;
+  padding: 32px;
+  border: 1px solid var(--opes-border);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
 
@@ -437,7 +437,7 @@ h1 {
   width: 110px;
   height: 110px;
   background: linear-gradient(135deg, var(--opes-forest), var(--opes-forest));
-  color: white;
+  color: var(--opes-paper);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -457,8 +457,9 @@ h1 {
   position: absolute;
   bottom: 0;
   right: 0;
-  background: white;
-  border: 1px solid var(--opes-cream);
+  background: var(--opes-forest-soft);
+  color: var(--opes-ink);
+  border: 1px solid var(--opes-border);
   border-radius: 50%;
   width: 32px;
   height: 32px;
@@ -565,19 +566,20 @@ h1 {
 }
 
 .btn-fechar {
+  appearance: none;
   position: absolute;
   top: -15px;
   right: -15px;
-  background: var(--opes-paper);
-  border: none;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
   border-radius: 50%;
   width: 36px;
   height: 36px;
   font-size: 1.1rem;
   font-weight: bold;
   cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  color: var(--opes-ink);
+  color: var(--opes-ink) !important;
 }
 
 .carregando {
@@ -636,4 +638,14 @@ h1 {
     background-color: var(--opes-paper);
   }
 }
+
+.cartao-perfil { box-shadow: 0 14px 36px rgba(0,0,0,.07); }
+.centro { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:290px; background: linear-gradient(155deg,var(--opes-forest-soft),var(--opes-paper) 70%); }
+.centro h2 { line-height:1.35; overflow-wrap:anywhere; }
+.avatar-circulo { border:4px solid var(--opes-paper); box-shadow:0 8px 30px rgba(0,0,0,.15); }
+.titulo-secao { padding-bottom:18px; border-bottom:1px solid var(--opes-border); }
+.campo input:disabled { opacity:1; background:var(--opes-cream); border-color:var(--opes-border); cursor:default; }
+.campo input:not(:disabled):focus { outline:2px solid var(--opes-caramel); outline-offset:1px; }
+.header-perfil { margin-bottom:28px; }
+@media(max-width:850px){ .centro { min-height:230px; } }
 </style>
