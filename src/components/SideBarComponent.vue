@@ -42,6 +42,10 @@
         </router-link>
       </nav>
 
+      <button type="button" class="theme-toggle" @click="alternarTema" :aria-label="tema === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'">
+        <i :class="tema === 'dark' ? 'fas fa-sun' : 'fas fa-moon'"></i>
+        <span>{{ tema === 'dark' ? 'Modo claro' : 'Modo escuro' }}</span>
+      </button>
       <button @click="irParaPerfil" class="user-profile-btn" aria-label="Acessar perfil">
         <div class="avatar">
           <img v-if="usuario.fotoUrl" :src="usuario.fotoUrl" alt="Foto de perfil" class="foto-sidebar" />
@@ -81,6 +85,10 @@
         <i class="fas fa-users"></i>
         <span>Família</span>
       </router-link>
+      <button type="button" class="mobile-nav-item" @click="alternarTema" :aria-label="tema === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'">
+        <i :class="tema === 'dark' ? 'fas fa-sun' : 'fas fa-moon'"></i>
+        <span>Tema</span>
+      </button>
       <button @click="irParaPerfil" class="mobile-nav-item mobile-profile-btn">
         <div class="avatar avatar-mobile">
           <img v-if="usuario.fotoUrl" :src="usuario.fotoUrl" alt="Foto de perfil" class="foto-sidebar" />
@@ -95,6 +103,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { tema, alternarTema } from '@/services/tema'
 
 const router = useRouter()
 const usuario = ref({ nome: 'Usuário', fotoUrl: '' })
@@ -172,7 +181,7 @@ const irParaInvestimentos = () => {
   background: none;
   border: none;
   padding: 6px 0;
-  width: 16.66%;
+  width: 14.285%;
   cursor: pointer;
   transition: color 0.2s ease;
 }
@@ -370,4 +379,7 @@ const irParaInvestimentos = () => {
     flex-shrink: 0;
   }
 }
+.theme-toggle { display:flex;align-items:center;gap:12px;margin:8px 0 12px;width:100%;padding:12px 14px;border:1px solid var(--opes-border);border-radius:10px;background:var(--opes-cream);color:var(--opes-ink);font-size:14px;font-weight:650 }
+.theme-toggle i { width:20px;text-align:center }
+@media(max-width:1023px){.theme-toggle{display:none}}
 </style>
