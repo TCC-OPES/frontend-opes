@@ -92,7 +92,7 @@ async function carregar() {
     metas.value = dados.metas
     carregado.value = true
   } catch {
-    erro.value = 'Não foi possível obter os dados financeiros para a simulação.'
+    erro.value = 'Não foi possível carregar os dados. Se houve erro 404, confirme o deploy das APIs financeiras e a URL configurada no frontend.'
   } finally { carregando.value = false }
 }
 onMounted(carregar)
