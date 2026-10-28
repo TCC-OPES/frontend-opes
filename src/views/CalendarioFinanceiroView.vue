@@ -29,10 +29,14 @@ const porDia = computed(() => eventos.value.reduce((acc, e) => {
   if (d) (acc[d] ||= []).push(e)
   return acc
 }, {}))
-const total = computed(() => eventos.value.reduce((s,e) => {
-  s[e.tipo === 'receita' ? 'receitas' : 'despesas'] += Number(e.valor)||0
+const total = computed(() => eventos.value.reduce((s, e) => {
+  if (e.recorrencia && !e.confirmada_em) {
+    s[e.tipo === 'receita' ? 'receitasPrevistas' : 'despesasPrevistas'] += Number(e.valor) || 0
+  } else {
+    s.registrados += 1
+  }
   return s
-}, { receitas:0, despesas:0 }))
+}, { receitasPrevistas: 0, despesasPrevistas: 0, registrados: 0 }))
 const status = e => e.status || (e.confirmada_em ? 'confirmada' : 'realizada')
 const classe = e => e.tipo === 'receita' ? 'entrada' : 'saida'
 async function carregar() {
@@ -64,9 +68,9 @@ watch([ano,mes], carregar, { immediate:true })
 <div class="layout"><SideBarComponent /><div class="principal"><main class="conteudo">
   <div class="titulo"><div><span class="sobretitulo">PLANEJAMENTO FINANCEIRO</span><h1>Calendário financeiro</h1><p>Seus compromissos e movimentações, organizados por dia.</p></div></div>
   <div class="resumo">
-    <div class="resumo-card"><span>Receitas do mês</span><strong class="verde">{{ moeda(total.receitas) }}</strong><small>Previstas e realizadas</small></div>
-    <div class="resumo-card"><span>Despesas do mês</span><strong class="vermelho">{{ moeda(total.despesas) }}</strong><small>Previstas e realizadas</small></div>
-    <div class="resumo-card"><span>Lançamentos no mês</span><strong>{{ eventos.length }}</strong><small>Selecione um evento para ver detalhes</small></div>
+    <div class="resumo-card"><span>Receitas previstas</span><strong class="verde">{{ moeda(total.receitasPrevistas) }}</strong><small>Compromissos cadastrados, sem movimentação</small></div>
+    <div class="resumo-card"><span>Despesas previstas</span><strong class="vermelho">{{ moeda(total.despesasPrevistas) }}</strong><small>Compromissos cadastrados, sem movimentação</small></div>
+    <div class="resumo-card"><span>Lançamentos registrados</span><strong>{{ total.registrados }}</strong><small>Registros realizados no histórico financeiro</small></div>
   </div>
   <section class="painel">
     <div class="cabecalho"><div><span class="sobretitulo">VISÃO MENSAL</span><h2>{{ titulo }}</h2></div>
