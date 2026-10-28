@@ -2,7 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { notify } from '@/services/toast'
-import { carregarCalendario, confirmarVencimento } from '@/services/calendario'
+import { carregarCalendario } from '@/services/calendario'
 import SideBarComponent from '@/components/SideBarComponent.vue'
 
 const router = useRouter()
@@ -15,7 +15,6 @@ const erro = ref('')
 watch(erro, value => { if (value) notify.error(value) })
 const selecionado = ref(null)
 const detalhe = ref(null)
-const processando = ref(false)
 const titulo = computed(() => new Date(ano.value, mes.value, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }))
 const moeda = v => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 const dataISO = d => [ano.value, String(mes.value+1).padStart(2,'0'), String(d).padStart(2,'0')].join('-')
@@ -57,17 +56,6 @@ function editarRecorrencia() {
   const id = detalhe.value.recorrencia
   detalhe.value = null
   router.push({ path: '/recorrencias', query: { editar: String(id) } })
-}
-async function confirmar() {
-  if(!detalhe.value?.recorrencia || detalhe.value.confirmada_em || processando.value)return
-  processando.value=true
-  try {
-    const data = detalhe.value.vencimento
-    await confirmarVencimento(detalhe.value.id)
-    await carregar()
-    detalhe.value = eventos.value.find(e=>e.recorrencia && e.vencimento===data && e.id===detalhe.value.id) || null
-  } catch { erro.value='Falha ao confirmar o lançamento.' }
-  finally { processando.value=false }
 }
 watch([ano,mes], carregar, { immediate:true })
 </script>
@@ -113,7 +101,7 @@ watch([ano,mes], carregar, { immediate:true })
         <div><dt>Categoria</dt><dd>{{ detalhe.categoria || 'Não informada' }}</dd></div>
         <div><dt>Situação</dt><dd>{{ status(detalhe) }}</dd></div></dl>
       <button v-if="detalhe.recorrencia" class="confirmar" type="button" @click="editarRecorrencia">Editar recorrência</button>
-      <button v-if="detalhe.recorrencia && !detalhe.confirmada_em" class="confirmar" :disabled="processando" @click="confirmar">{{ processando?'Confirmando...':detalhe.tipo==='receita'?'Confirmar recebimento':'Confirmar pagamento' }}</button>
+      
     </section>
   </div>
 </main></div></div>
