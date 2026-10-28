@@ -18,8 +18,8 @@ const formulario = ref({
 const carregandoSalvar = ref(false)
 
 async function submeterFormulario() {
-  carregandoSalvar.value = true
   if (carregandoSalvar.value) return
+  carregandoSalvar.value = true
   const sucesso = props.transacao
     ? await transacoesStore.editarTransacao(props.transacao.id, formulario.value)
     : await transacoesStore.criarTransacao(formulario.value)
