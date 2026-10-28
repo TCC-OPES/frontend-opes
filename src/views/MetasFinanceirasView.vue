@@ -1,4 +1,5 @@
 <script setup>
+import { confirmAction } from '@/services/toast'
 import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { Plus, Target } from '@lucide/vue'
 import { useMetasStore } from '@/store/metas'
@@ -63,7 +64,7 @@ async function salvarMeta(dados) {
 }
 
 async function deletarMeta(id) {
-  if (confirm('Tem certeza que deseja excluir esta meta?')) {
+  if (await confirmAction('Tem certeza que deseja excluir esta meta?')) {
     await metasStore.deletarMeta(id)
   }
 }

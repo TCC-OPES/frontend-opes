@@ -1,4 +1,5 @@
 <script setup>
+import { notify } from '@/services/toast'
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
@@ -66,7 +67,7 @@ async function submitForm() {
 
   } catch (error) {
     console.log(error)
-    alert('Erro ao cadastrar. Verifique os dados inseridos.')
+    notify.error('Erro ao cadastrar. Verifique os dados inseridos.')
   } finally {
     carregando.value = false
   }

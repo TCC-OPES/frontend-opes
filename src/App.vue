@@ -1,3 +1,6 @@
+<script setup>
+import ToastHost from '@/components/ToastHost.vue'
+</script>
 <template>
   <div id="app-layout">
     <!-- Sidebar / Navegação -->
@@ -7,6 +10,7 @@
     <main class="conteudo-principal">
       <router-view />
     </main>
+    <ToastHost />
   </div>
 </template>
 

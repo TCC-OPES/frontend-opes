@@ -1,5 +1,7 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { notify, confirmAction } from '@/services/toast'
+
+import { ref, computed, onMounted, watch } from 'vue'
 import api from '@/services/api'
 import SideBarComponent from '@/components/SideBarComponent.vue'
 import HeaderComponent from '@/components/HeaderComponent.vue'
@@ -12,6 +14,8 @@ const carregando = ref(false)
 const salvando = ref(false)
 const erro = ref('')
 const mensagem = ref('')
+watch(erro, v => { if (v) notify.error(v) })
+watch(mensagem, v => { if (v) notify.success(v) })
 const edicao = ref(null)
 const hoje = new Date()
 const ano = ref(hoje.getFullYear())
@@ -86,7 +90,7 @@ async function alternar(item) {
   } catch (e) { erro.value = erroAPI(e) }
 }
 async function encerrar(item) {
-  if (!window.confirm('Encerrar essa recorrência? Os pagamentos já confirmados serão preservados.')) return
+  if (!(await confirmAction('Encerrar essa recorrência? Os pagamentos já confirmados serão preservados.'))) return
   erro.value = ''
   try {
     await api.delete('/api/recorrencias/' + item.id + '/')
@@ -94,7 +98,7 @@ async function encerrar(item) {
   } catch (e) { erro.value = erroAPI(e) }
 }
 async function confirmar(item) {
-  if (!window.confirm('Confirmar ' + (item.tipo === 'receita' ? 'recebimento' : 'pagamento') + ' de ' + formatarMoeda(item.valor) + '?')) return
+  if (!(await confirmAction('Confirmar lançamento financeiro?'))) return
   erro.value = ''; mensagem.value = ''
   try {
     await api.post('/api/recorrencias/ocorrencias/' + item.id + '/confirmar/')
@@ -118,8 +122,6 @@ onMounted(carregar)
       <HeaderComponent />
       <main class="conteudo">
         <header><h1>Contas recorrentes</h1><p>Controle despesas e receitas que se repetem.</p></header>
-        <p v-if="erro" role="alert" class="alerta erro">{{ erro }}</p>
-        <p v-if="mensagem" role="status" class="alerta sucesso">{{ mensagem }}</p>
 
         <form class="painel formulario" @submit.prevent="salvar">
           <h2>{{ edicao ? 'Editar recorrência' : 'Nova recorrência' }}</h2>

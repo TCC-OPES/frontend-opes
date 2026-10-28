@@ -1,4 +1,5 @@
 <script setup>
+import { notify } from '@/services/toast'
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/auth.js'
@@ -36,7 +37,7 @@ const cpfFormatado = computed({
 
 async function login() {
   if (!form.value.cpf || !form.value.senha) {
-    alert('Preencha todos os campos!')
+    notify.error('Preencha todos os campos!')
     return
   }
 
@@ -50,9 +51,9 @@ async function login() {
   } catch (error) {
     console.error('Erro no login:', error)
     if (error.response && error.response.data) {
-      alert(error.response.data.error || 'CPF ou senha incorretos')
+      notify.error(error.response.data.error || 'CPF ou senha incorretos')
     } else {
-      alert('Não foi possível conectar ao servidor')
+      notify.error('Não foi possível conectar ao servidor')
     }
   } finally {
     carregando.value = false

@@ -1,4 +1,5 @@
 <script setup>
+import { notify } from '@/services/toast'
 import { reactive, ref } from 'vue'
 
 const emit = defineEmits(['close', 'success'])
@@ -45,6 +46,7 @@ const submitForm = async () => {
     emit('success', novoCartao)
   } catch (err) {
     erro.value = err.message || 'Erro inesperado.'
+    notify.error(erro.value)
   } finally {
     enviando.value = false
   }
@@ -59,9 +61,7 @@ const submitForm = async () => {
         <button @click="$emit('close')" class="close-btn">✕</button>
       </div>
 
-      <div v-if="erro" class="error-alert">
-        {{ erro }}
-      </div>
+      
 
       <form @submit.prevent="submitForm" class="modal-form">
         <div class="form-group">

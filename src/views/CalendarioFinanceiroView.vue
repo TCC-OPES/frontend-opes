@@ -1,4 +1,5 @@
 <script setup>
+import { notify } from '@/services/toast'
 import { ref, computed, watch } from 'vue'
 import { carregarCalendario, confirmarVencimento } from '@/services/calendario'
 import SideBarComponent from '@/components/SideBarComponent.vue'
@@ -10,6 +11,7 @@ const mes = ref(agora.getMonth())
 const eventos = ref([])
 const carregando = ref(false)
 const erro = ref('')
+watch(erro, v => { if (v) notify.error(v) })
 const selecionado = ref(null)
 const titulo = computed(() => new Date(ano.value, mes.value, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }))
 const formatar = v => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
@@ -56,7 +58,7 @@ watch([ano,mes], carregar,{immediate:true})
   <div class="layout"><SideBarComponent /><div class="principal"><HeaderComponent /><main class="conteudo">
     <h1>Calendário financeiro</h1><p>Visualize vencimentos e movimentações do mês.</p>
     <div class="resumo"><span>Receitas (previstas + realizadas): <strong>{{ formatar(totais.receitas) }}</strong></span><span>Despesas (previstas + realizadas): <strong>{{ formatar(totais.despesas) }}</strong></span></div>
-    <p v-if="erro" role="alert" class="erro">{{ erro }}</p><p v-if="carregando">Carregando...</p>
+    <p v-if="carregando">Carregando...</p>
     <section class="painel"><div class="cabecalho"><button @click="navegar(-1)" aria-label="Mês anterior">‹</button><h2>{{ titulo }}</h2><button @click="navegar(1)" aria-label="Próximo mês">›</button></div>
       <div class="dias"><strong v-for="d in ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb']" :key="d">{{ d }}</strong></div>
       <div class="grade"><div v-for="(dia,i) in celulas" :key="i" :class="['celula', {ativa: dia && selecionado===diaISO(dia)}]">
