@@ -384,7 +384,7 @@ const irParaInvestimentos = () => {
 @media(max-width:1023px){.theme-toggle{display:none}}
 
 :global(:root[data-theme="dark"]) .sidebar-container .logo-img {
-  filter: brightness(0) saturate(100%) invert(82%) sepia(16%) saturate(504%) hue-rotate(89deg) brightness(95%) contrast(88%);
+  filter: brightness(0) saturate(100%) invert(87%) sepia(18%) saturate(463%) hue-rotate(87deg) brightness(104%) contrast(93%) drop-shadow(0 0 5px rgba(163,205,180,.18));
 }
 .sidebar-container .logo-img { transition: filter .24s ease; }
 </style>
