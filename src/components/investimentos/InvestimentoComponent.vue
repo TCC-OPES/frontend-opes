@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import api from '../../services/api'
+import { notify, confirmAction } from '@/services/toast'
 
 const ativos = ref([])
 const carregando = ref(true)
@@ -13,10 +14,10 @@ const carregarDados = async () => {
       ...item,
       valor: item.valor_investido ?? item.valor ?? 0,
       rendimento: item.rentabilidade ?? item.rendimento ?? 0,
-      cor: item.cor || '#2563EB'
+      cor: item.cor || '#b7835d'
     }))
   } catch (erro) {
-    console.error('Erro ao carregar investimentos:', erro)
+    notify.error('Não foi possível carregar os investimentos.')
   } finally {
     carregando.value = false
   }
@@ -48,7 +49,7 @@ const segmentosGrafico = computed(() => {
 
     return {
       ...ativo,
-      cor: ativo.cor || '#2563EB',
+      cor: ativo.cor || '#b7835d',
       dashArray: `${percentual} ${100 - percentual}`,
       dashOffset: offset
     }
@@ -60,11 +61,13 @@ const formatarMoeda = (valor) => {
 }
 
 const removerInvestimento = async (id) => {
+  if (!(await confirmAction('Excluir este investimento cadastrado?'))) return
   try {
     await api.delete(`api/investimentos/${id}/`)
     ativos.value = ativos.value.filter(item => item.id !== id)
+    notify.success('Investimento excluído.')
   } catch (erro) {
-    console.error('Erro ao deletar investimento:', erro)
+    notify.error('Não foi possível excluir o investimento.')
   }
 }
 
@@ -73,7 +76,7 @@ const adicionarAtivoLocal = (novoItem) => {
     ...novoItem,
     valor: novoItem.valor_investido ?? novoItem.valor ?? 0,
     rendimento: novoItem.rentabilidade ?? novoItem.rendimento ?? 0,
-    cor: novoItem.cor || '#2563EB'
+    cor: novoItem.cor || '#b7835d'
   })
 }
 
