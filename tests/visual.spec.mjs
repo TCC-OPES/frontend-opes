@@ -35,3 +35,18 @@ test('desktop sidebar permanece visível ao rolar', async ({ page }) => {
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
   await expect.poll(() => sidebar.evaluate(el => Math.round(el.getBoundingClientRect().top))).toBe(0)
 })
+
+test('tema alterna e persiste em desktop e celular', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('http://127.0.0.1:5173/recorrencias')
+  await page.evaluate(() => localStorage.removeItem('opes-tema'))
+  await page.reload()
+  const darkButton = page.getByRole('button', { name: 'Ativar modo escuro' }).first()
+  await darkButton.click()
+  await expect.poll(() => page.evaluate(() => document.documentElement.dataset.theme)).toBe('dark')
+  await page.reload()
+  await expect.poll(() => page.evaluate(() => document.documentElement.dataset.theme)).toBe('dark')
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.getByRole('button', { name: 'Ativar modo claro' }).last().click()
+  await expect.poll(() => page.evaluate(() => document.documentElement.dataset.theme)).toBe('light')
+})
