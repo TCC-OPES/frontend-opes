@@ -31,6 +31,12 @@ const totais = computed(() => ocorrencias.value.reduce((s, o) => {
 
 function normalizar(data) { return Array.isArray(data) ? data : (data.results || []) }
 function erroAPI(error) {
+  if (error.response?.status === 404) {
+    return 'A API de contas recorrentes retornou 404. O servidor pode estar usando uma versão antiga do backend ou uma URL incorreta. Confira o deploy e VITE_API_URL.'
+  }
+  if (error.response?.status === 401) {
+    return 'Sua sessão expirou. Entre novamente para acessar as contas recorrentes.'
+  }
   const dado = error.response?.data
   if (typeof dado?.detail === 'string') return dado.detail
   if (dado && typeof dado === 'object') return Object.values(dado).flat().join(' ')
