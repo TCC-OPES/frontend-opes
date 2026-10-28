@@ -107,7 +107,7 @@ async function submeterFormulario() {
 
 .modal-header h2 {
   font-size: 20px;
-  color: #0f172a;
+  color: var(--opes-ink);
 }
 
 .btn-fechar {
@@ -115,7 +115,7 @@ async function submeterFormulario() {
   border: none;
   font-size: 24px;
   cursor: pointer;
-  color: #64748b;
+  color: var(--opes-forest);
 }
 
 .formulario {
@@ -133,19 +133,19 @@ async function submeterFormulario() {
 .grupo-input label {
   font-size: 14px;
   font-weight: 600;
-  color: #334155;
+  color: var(--opes-ink);
 }
 
 .grupo-input input, .grupo-input select {
   padding: 10px 14px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--opes-sand);
   border-radius: 10px;
   font-size: 15px;
   outline: none;
 }
 
 .grupo-input input:focus, .grupo-input select:focus {
-  border-color: #16a34a;
+  border-color: var(--opes-forest);
 }
 
 .modal-footer {
@@ -156,17 +156,17 @@ async function submeterFormulario() {
 }
 
 .btn-secundario {
-  background: #f1f5f9;
+  background: var(--opes-paper);
   border: none;
   padding: 10px 16px;
   border-radius: 10px;
   font-weight: 600;
-  color: #475569;
+  color: var(--opes-forest);
   cursor: pointer;
 }
 
 .btn-primario {
-  background: #16a34a;
+  background: var(--opes-forest);
   border: none;
   padding: 10px 18px;
   border-radius: 10px;

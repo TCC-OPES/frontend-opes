@@ -21,7 +21,6 @@ const form = ref({
   descricao: ''
 })
 
-// O watch garante que o formulário preencha os dados no momento exato em que a prop chegar
 watch(
   () => props.metaParaEditar,
   (novaMeta) => {
@@ -36,7 +35,7 @@ watch(
         descricao: novaMeta.descricao || ''
       }
     } else {
-      // Limpa os campos se for uma nova meta
+
       form.value = {
         nome: '',
         categoria: '',
@@ -184,7 +183,7 @@ function submitForm() {
 }
 
 .modal-card {
-  background-color: #ffffff;
+  background-color: var(--opes-paper);
   border-radius: 16px;
   padding: 24px;
   width: 100%;
@@ -202,20 +201,20 @@ function submitForm() {
 .modal-header h2 {
   font-size: 18px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--opes-ink);
   margin: 0;
 }
 
 .btn-close {
   background: none;
   border: none;
-  color: #94a3b8;
+  color: var(--opes-muted);
   cursor: pointer;
   padding: 4px;
 }
 
 .btn-close:hover {
-  color: #475569;
+  color: var(--opes-forest);
 }
 
 .icon-close {
@@ -238,7 +237,7 @@ function submitForm() {
 .form-group label {
   font-size: 12px;
   font-weight: 700;
-  color: #475569;
+  color: var(--opes-forest);
 }
 
 .form-group input,
@@ -247,18 +246,18 @@ function submitForm() {
   width: 100%;
   padding: 8px 12px;
   font-size: 14px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--opes-cream);
   border-radius: 12px;
   box-sizing: border-box;
   outline: none;
-  background-color: #ffffff;
-  color: #1e293b;
+  background-color: var(--opes-paper);
+  color: var(--opes-ink);
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
-  border-color: #059669;
+  border-color: var(--opes-forest);
 }
 
 .form-group textarea {
@@ -282,7 +281,7 @@ function submitForm() {
   padding: 8px 16px;
   font-size: 12px;
   font-weight: 700;
-  color: #64748b;
+  color: var(--opes-forest);
   background: none;
   border: none;
   border-radius: 12px;
@@ -290,21 +289,21 @@ function submitForm() {
 }
 
 .btn-cancel:hover {
-  background-color: #f1f5f9;
+  background-color: var(--opes-paper);
 }
 
 .btn-submit {
   padding: 8px 16px;
   font-size: 12px;
   font-weight: 700;
-  color: #ffffff;
-  background-color: #006400;
+  color: var(--opes-paper);
+  background-color: var(--opes-forest);
   border: none;
   border-radius: 12px;
   cursor: pointer;
 }
 
 .btn-submit:hover {
-  background-color: #228b22;
+  background-color: var(--opes-forest);
 }
 </style>
