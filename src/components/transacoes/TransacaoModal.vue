@@ -36,7 +36,7 @@ async function submeterFormulario() {
     <div class="modal-content">
       <div class="modal-header">
         <h2>{{ transacao ? 'Editar transação' : 'Nova transação' }}</h2>
-        <button class="btn-fechar" @click="emit('fechar')">&times;</button>
+        <button type="button" class="btn-fechar" aria-label="Fechar formulário" @click="emit('fechar')">&times;</button>
       </div>
 
       <form @submit.prevent="submeterFormulario" class="formulario">
@@ -116,11 +116,19 @@ async function submeterFormulario() {
 }
 
 .btn-fechar {
-  background: transparent;
-  border: none;
+  appearance: none;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 24px;
   cursor: pointer;
-  color: var(--opes-forest);
+  color: var(--opes-ink) !important;
 }
 
 .formulario {
