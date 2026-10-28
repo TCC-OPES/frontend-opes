@@ -90,7 +90,7 @@ onUnmounted(() => {
   flex-direction: column;
   height: 100vh;
   width: 100vw;
-  background-color: #f8fafc;
+  background-color: var(--opes-paper);
   overflow: hidden;
   margin: 0;
 }
@@ -128,12 +128,12 @@ onUnmounted(() => {
 .header-pagina h1 {
   font-size: 24px;
   font-weight: bold;
-  color: #1e293b;
+  color: var(--opes-ink);
   margin-bottom: 4px;
 }
 
 .header-pagina p {
-  color: #64748b;
+  color: var(--opes-forest);
   font-size: 13px;
 }
 
