@@ -382,4 +382,9 @@ const irParaInvestimentos = () => {
 .theme-toggle { display:flex;align-items:center;gap:12px;margin:8px 0 12px;width:100%;padding:12px 14px;border:1px solid var(--opes-border);border-radius:10px;background:var(--opes-cream);color:var(--opes-ink);font-size:14px;font-weight:650 }
 .theme-toggle i { width:20px;text-align:center }
 @media(max-width:1023px){.theme-toggle{display:none}}
+
+:global(:root[data-theme="dark"]) .sidebar-container .logo-img {
+  filter: brightness(0) saturate(100%) invert(87%) sepia(18%) saturate(463%) hue-rotate(87deg) brightness(104%) contrast(93%) drop-shadow(0 0 5px rgba(163,205,180,.18));
+}
+.sidebar-container .logo-img { transition: filter .24s ease; }
 </style>
