@@ -9,9 +9,15 @@ import CartoesView from '../views/CartoesView.vue'
 import MetasFinanceirasView from '@/views/MetasFinanceirasView.vue'
 import TransacoesView from '@/views/TransacoesView.vue'
 
+import RecorrenciasView from '@/views/RecorrenciasView.vue'
+
+import CalendarioFinanceiroView from '@/views/CalendarioFinanceiroView.vue'
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    { path: '/calendario', component: CalendarioFinanceiroView, name: 'Calendário' },
+    { path: '/recorrencias', name: 'RecorrenciasView', component: RecorrenciasView },
     {
       path: '/',
       name: 'home',

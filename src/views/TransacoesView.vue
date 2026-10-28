@@ -48,6 +48,7 @@ onUnmounted(() => {
           </div>
         </div>
 
+
         <TransacoesStats
           class="animar"
           :resumo="transacoesStore.resumo"
