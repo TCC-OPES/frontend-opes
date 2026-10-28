@@ -59,6 +59,7 @@ onUnmounted(() => {
           :carregando="transacoesStore.carregando"
           @filtrar="(tipo) => transacoesStore.buscarTransacoes(tipo)"
           @exportar="transacoesStore.exportarTransacoes"
+          @excluir="transacoesStore.excluirTransacao"
           @abrir-modal="modalAberta = true"
         />
 

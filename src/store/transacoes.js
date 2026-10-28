@@ -61,6 +61,19 @@ export const useTransacoesStore = defineStore('transacoes', () => {
     }
   }
 
+  async function excluirTransacao(id) {
+    try {
+      await api.delete(`/api/transacoes/${id}/`)
+      transacoesGeral.value = transacoesGeral.value.filter(item => item.id !== id)
+      transacoes.value = transacoes.value.filter(item => item.id !== id)
+      notify.success('Transação excluída com sucesso.')
+      return true
+    } catch {
+      notify.error('Não foi possível excluir a transação.')
+      return false
+    }
+  }
+
   function exportarTransacoes() {
     if (transacoes.value.length === 0) {
       notify.warning('Não há transações para exportar.')
@@ -88,6 +101,7 @@ export const useTransacoesStore = defineStore('transacoes', () => {
     carregando,
     buscarTransacoes,
     criarTransacao,
+    excluirTransacao,
     exportarTransacoes
   }
 })
