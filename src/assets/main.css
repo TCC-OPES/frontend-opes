@@ -8,8 +8,14 @@ html,
 body,
 #app {
   width: 100%;
-  height: 100vh;
-  overflow: hidden !important; /* Trava o scroll do navegador inteiro */
+  min-height: 100%;
+  height: auto;
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+body {
+  min-height: 100vh;
 }
 
 body {
