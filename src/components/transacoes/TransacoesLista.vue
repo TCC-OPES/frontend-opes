@@ -135,7 +135,7 @@ onUnmounted(() => {
 }
 
 .filtros-abas button.ativo {
-  background: white;
+  background: var(--opes-forest-soft);
   color: var(--opes-ink);
   box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
@@ -148,7 +148,7 @@ onUnmounted(() => {
 
 .btn-acao {
   flex: 1;
-  background: white;
+  background: var(--opes-paper);
   border: 1px solid var(--opes-sand);
   padding: 10px 16px;
   border-radius: 10px;
@@ -183,13 +183,14 @@ onUnmounted(() => {
 }
 
 .item-transacao {
-  background: white;
+  background: var(--opes-paper);
   padding: 16px 20px;
   border-radius: 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid var(--opes-cream);
+  border: 1px solid var(--opes-border);
+  color: var(--opes-ink);
 }
 
 .info-esquerda {
@@ -205,7 +206,8 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--opes-paper);
+  background: var(--opes-forest-soft);
+  color: var(--opes-ink);
   font-weight: bold;
 }
 
@@ -242,9 +244,9 @@ onUnmounted(() => {
   text-align: center;
   padding: 40px;
   color: var(--opes-forest);
-  background: white;
+  background: var(--opes-paper);
   border-radius: 14px;
-  border: 1px solid var(--opes-cream);
+  border: 1px solid var(--opes-border);
 }
 
 @media (min-width: 768px) {
