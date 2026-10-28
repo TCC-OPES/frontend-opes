@@ -49,7 +49,6 @@ function CardItem({ card }) {
   );
 }
 
-// Subcomponente 2: Item da Transação
 function TransactionItem({ transaction }) {
   return (
     <div className="flex items-center justify-between p-3.5 bg-slate-50/70 hover:bg-slate-50 rounded-xl transition-colors">
@@ -70,13 +69,12 @@ function TransactionItem({ transaction }) {
   );
 }
 
-// Componente Principal
 export default function CreditCardDashboard({ cards = [], transactions = [] }) {
   return (
     <div className="min-h-screen bg-[#f4f6f8] p-6 text-slate-800 font-sans relative">
       <div className="max-w-6xl mx-auto space-y-6">
         
-        {/* Grade de Cartões */}
+        {}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {!cards || cards.length === 0 ? (
             <div className="col-span-full bg-white p-6 rounded-xl text-center text-slate-400 border border-dashed border-slate-300">
@@ -88,7 +86,7 @@ export default function CreditCardDashboard({ cards = [], transactions = [] }) {
             ))
           )}
 
-        {/* Lista de Transações */}
+        {}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 space-y-4">
           <h2 className="text-base font-bold text-slate-800">Transações Recentes</h2>
 

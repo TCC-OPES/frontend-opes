@@ -117,7 +117,7 @@ async function login() {
   border-radius: 28px;
 }
 
-/* Scroll ATIVO por padrão para dispositivos móveis */
+
 .scroll-content {
   overflow-y: auto;
   max-height: calc(90vh - 48px);
@@ -150,7 +150,7 @@ async function login() {
   justify-content: space-between;
   margin: 16px 0;
   font-size: 14px;
-  color: #4b5563;
+  color: var(--opes-forest);
 }
 
 .enviar {
@@ -158,7 +158,7 @@ async function login() {
   padding: 14px;
   border: none;
   border-radius: 14px;
-  background: #006400;
+  background: var(--opes-forest);
   color: white;
   font-weight: bold;
   cursor: pointer;
@@ -166,28 +166,28 @@ async function login() {
 }
 
 .enviar:disabled {
-  background: #555;
+  background: var(--opes-forest);
   cursor: not-allowed;
 }
 
 .enviar:hover:not(:disabled) {
-  background: #228B22;
+  background: var(--opes-forest);
 }
 
 .criar {
   margin-top: 20px;
   text-align: center;
   font-size: 14px;
-  color: #4b5563;
+  color: var(--opes-forest);
 }
 
 .criar a {
-  color: #006400;
+  color: var(--opes-forest);
   font-weight: bold;
   text-decoration: none;
 }
 
-/* DESKTOP: Remove o scroll completamente */
+
 @media (min-width: 769px) {
   .card-interno {
     max-height: 95vh;

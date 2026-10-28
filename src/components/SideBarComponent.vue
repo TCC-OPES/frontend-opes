@@ -149,8 +149,8 @@ const irParaInvestimentos = () => {
   left: 0;
   right: 0;
   height: 65px;
-  background-color: #ffffff;
-  border-top: 1px solid #e2e8f0;
+  background-color: var(--opes-paper);
+  border-top: 1px solid var(--opes-cream);
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -165,7 +165,7 @@ const irParaInvestimentos = () => {
   align-items: center;
   justify-content: center;
   gap: 3px;
-  color: #64748b;
+  color: var(--opes-forest);
   text-decoration: none;
   font-size: 0.65rem;
   font-weight: 500;
@@ -183,7 +183,7 @@ const irParaInvestimentos = () => {
 
 .mobile-nav-item.router-link-active,
 .mobile-nav-item.active {
-  color: #0f766e;
+  color: var(--opes-forest);
   font-weight: 700;
 }
 
@@ -198,7 +198,7 @@ const irParaInvestimentos = () => {
 }
 
 .avatar {
-  background-color: #0f766e;
+  background-color: var(--opes-forest);
   color: white;
   width: 40px;
   height: 40px;
@@ -237,12 +237,12 @@ const irParaInvestimentos = () => {
     min-width: 260px;
     max-width: 260px;
     box-sizing: border-box;
-    background-color: #ffffff;
+    background-color: var(--opes-paper);
     padding: 24px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    border-right: 1px solid #e2e8f0;
+    border-right: 1px solid var(--opes-cream);
     height: 100%;
     position: relative;
     top: auto;
@@ -283,7 +283,7 @@ const irParaInvestimentos = () => {
     gap: 12px;
     height: 44px;
     padding: 0 16px;
-    color: #64748b;
+    color: var(--opes-forest);
     text-decoration: none;
     border-radius: 8px;
     font-family: "Plus Jakarta Sans", Arial, sans-serif;
@@ -313,14 +313,14 @@ const irParaInvestimentos = () => {
   }
 
   .menu-item:hover {
-    background-color: #f1f5f9;
-    color: #1e293b;
+    background-color: var(--opes-paper);
+    color: var(--opes-ink);
   }
 
   .menu-item.router-link-active,
   .menu-item.active {
-    background-color: #0f766e;
-    color: #ffffff;
+    background-color: var(--opes-forest);
+    color: var(--opes-paper);
     font-weight: 500;
   }
 
@@ -330,8 +330,8 @@ const irParaInvestimentos = () => {
     text-align: left;
     gap: 12px;
     padding: 12px;
-    background-color: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background-color: var(--opes-paper);
+    border: 1px solid var(--opes-cream);
     border-radius: 12px;
     cursor: pointer;
     width: 100%;
@@ -341,8 +341,8 @@ const irParaInvestimentos = () => {
   }
 
   .user-profile-btn:hover {
-    background-color: #f1f5f9;
-    border-color: #cbd5e1;
+    background-color: var(--opes-paper);
+    border-color: var(--opes-sand);
   }
 
   .user-info {
@@ -352,7 +352,7 @@ const irParaInvestimentos = () => {
 
   .user-info h4 {
     font-size: 0.9rem;
-    color: #1e293b;
+    color: var(--opes-ink);
     margin: 0;
     white-space: nowrap;
     overflow: hidden;
@@ -361,12 +361,12 @@ const irParaInvestimentos = () => {
 
   .user-info p {
     font-size: 0.8rem;
-    color: #94a3b8;
+    color: var(--opes-muted);
     margin: 2px 0 0 0;
   }
 
   .arrow-icon {
-    color: #64748b;
+    color: var(--opes-forest);
     flex-shrink: 0;
   }
 }

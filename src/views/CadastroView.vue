@@ -170,7 +170,7 @@ async function submitForm() {
   width: 100vw;
   overflow: hidden !important;
   padding: 16px;
-  background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
+  background: linear-gradient(135deg, var(--opes-cream) 0%, var(--opes-caramel) 100%);
   font-family: Arial, sans-serif;
 }
 
@@ -223,7 +223,7 @@ async function submitForm() {
 }
 
 .enviar {
-  background-color: #006400;
+  background-color: var(--opes-forest);
   color: white;
   padding: 14px;
   border-radius: 10px;
@@ -239,8 +239,8 @@ async function submitForm() {
 .btn-login {
   display: block;
   text-decoration: none;
-  border: 1px solid #a0a2a4;
-  color: #1f2937;
+  border: 1px solid var(--opes-muted);
+  color: var(--opes-ink);
   padding: 12px;
   border-radius: 12px;
   font-weight: bold;
@@ -255,11 +255,11 @@ h1 {
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 8px;
-  color: #1f2937;
+  color: var(--opes-ink);
 }
 
 .subtitulo {
-  color: #6b7280;
+  color: var(--opes-forest);
   margin-bottom: 24px;
 }
 
@@ -267,7 +267,7 @@ h1 {
   display: flex;
   align-items: center;
   margin: 15px 0;
-  color: #9ca3af;
+  color: var(--opes-muted);
   font-size: 14px;
 }
 
@@ -275,7 +275,7 @@ h1 {
 .divisor::after {
   content: '';
   flex: 1;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--opes-cream);
 }
 
 .divisor span {

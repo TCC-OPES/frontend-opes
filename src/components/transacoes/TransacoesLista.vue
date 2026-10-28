@@ -115,7 +115,7 @@ onUnmounted(() => {
 
 .filtros-abas {
   display: flex;
-  background: #e2e8f0;
+  background: var(--opes-cream);
   padding: 4px;
   border-radius: 10px;
   gap: 4px;
@@ -129,7 +129,7 @@ onUnmounted(() => {
   padding: 8px 12px;
   border-radius: 8px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--opes-forest);
   cursor: pointer;
   font-size: 13px;
   text-align: center;
@@ -137,7 +137,7 @@ onUnmounted(() => {
 
 .filtros-abas button.ativo {
   background: white;
-  color: #0f172a;
+  color: var(--opes-ink);
   box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
@@ -150,18 +150,18 @@ onUnmounted(() => {
 .btn-acao {
   flex: 1;
   background: white;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--opes-sand);
   padding: 10px 16px;
   border-radius: 10px;
   font-weight: 600;
-  color: #334155;
+  color: var(--opes-ink);
   cursor: pointer;
   text-align: center;
 }
 
 .btn-primario {
   flex: 1.5;
-  background: #16a34a;
+  background: var(--opes-forest);
   border: none;
   padding: 10px 18px;
   border-radius: 10px;
@@ -173,7 +173,7 @@ onUnmounted(() => {
 
 .historico-secao h3 {
   font-size: 18px;
-  color: #1e293b;
+  color: var(--opes-ink);
   margin-bottom: 16px;
 }
 
@@ -190,7 +190,7 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--opes-cream);
 }
 
 .info-esquerda {
@@ -206,18 +206,18 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f1f5f9;
+  background: var(--opes-paper);
   font-weight: bold;
 }
 
 .info-esquerda strong {
   display: block;
-  color: #0f172a;
+  color: var(--opes-ink);
   font-size: 15px;
 }
 
 .info-esquerda small, .info-direita small {
-  color: #94a3b8;
+  color: var(--opes-muted);
   font-size: 13px;
 }
 
@@ -232,20 +232,20 @@ onUnmounted(() => {
 }
 
 .texto-verde {
-  color: #16a34a !important;
+  color: var(--opes-forest) !important;
 }
 
 .texto-vermelho {
-  color: #dc2626 !important;
+  color: var(--opes-danger) !important;
 }
 
 .vazio, .loading {
   text-align: center;
   padding: 40px;
-  color: #64748b;
+  color: var(--opes-forest);
   background: white;
   border-radius: 14px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--opes-cream);
 }
 
 @media (min-width: 768px) {

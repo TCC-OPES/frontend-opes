@@ -7,7 +7,6 @@ export const useTransacoesStore = defineStore('transacoes', () => {
   const transacoesGeral = ref([])     // Lista completa para manter os cards do topo fixos
   const carregando = ref(false)
 
-  // O resumo agora calcula com base na lista COMPLETA, garantindo que o topo não mude/suma
   const resumo = computed(() => {
     let totalReceitas = 0
     let totalDespesas = 0
@@ -28,16 +27,14 @@ export const useTransacoesStore = defineStore('transacoes', () => {
     }
   })
 
-  // Busca as transações do backend
   async function buscarTransacoes(tipoFiltro = 'todas') {
     carregando.value = true
     try {
-      // 1. Sempre busca a lista completa na primeira carga ou para atualizar o topo
+
       const responseGeral = await api.get('/api/transacoes/')
       const dadosCompletos = Array.isArray(responseGeral.data) ? responseGeral.data : (responseGeral.data.results || [])
       transacoesGeral.value = dadosCompletos
 
-      // 2. Aplica o filtro visual na lista de baixo
       if (tipoFiltro && tipoFiltro !== 'todas') {
         transacoes.value = dadosCompletos.filter(t => t.tipo === tipoFiltro)
       } else {
@@ -51,7 +48,6 @@ export const useTransacoesStore = defineStore('transacoes', () => {
     }
   }
 
-  // Cria uma nova transação e atualiza ambas as listas
   async function criarTransacao(novaTransacaoData) {
     try {
       const response = await api.post('/api/transacoes/', novaTransacaoData)
@@ -65,7 +61,6 @@ export const useTransacoesStore = defineStore('transacoes', () => {
     }
   }
 
-  // Exportar transações visíveis para CSV
   function exportarTransacoes() {
     if (transacoes.value.length === 0) {
       alert('Não há transações para exportar.')

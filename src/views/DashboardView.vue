@@ -322,7 +322,7 @@ const obterCorProgresso = (porcentagem) => {
   display: flex;
   height: 100vh;
   width: 100vw;
-  background-color: #ffffff;
+  background-color: var(--opes-paper);
   overflow: hidden;
   margin: 0;
 }
@@ -338,7 +338,7 @@ const obterCorProgresso = (porcentagem) => {
   height: 100vh;
   position: relative;
   overflow: hidden;
-  background-color: #ffffff;
+  background-color: var(--opes-paper);
 }
 
 .dashboard-content {
@@ -350,22 +350,22 @@ const obterCorProgresso = (porcentagem) => {
   width: 100%;
   box-sizing: border-box;
   overflow-y: auto; 
-  background-color: #ffffff;
+  background-color: var(--opes-paper);
 }
 
 .welcome-section h2 {
   font-size: 1.4rem;
-  color: #1e293b;
+  color: var(--opes-ink);
   font-weight: 700;
 }
 .welcome-section p {
-  color: #64748b;
+  color: var(--opes-forest);
   font-size: 0.875rem;
   margin-top: 2px;
 }
 
 .balance-gradient-card {
-  background: linear-gradient(135deg, #0d5c63 0%, #115e59 45%, #1e40af 100%);
+  background: linear-gradient(135deg, var(--opes-forest) 0%, var(--opes-forest) 45%, var(--opes-forest) 100%);
   border-radius: 16px;
   padding: 20px;
   color: white;
@@ -419,8 +419,8 @@ const obterCorProgresso = (porcentagem) => {
   font-weight: 600;
   word-break: break-all;
 }
-.icon-receita { color: #34d399; }
-.icon-despesa { color: #f87171; }
+.icon-receita { color: var(--opes-forest); }
+.icon-despesa { color: var(--opes-caramel); }
 
 .analytics-grid,
 .bottom-grid {
@@ -444,7 +444,7 @@ const obterCorProgresso = (porcentagem) => {
 .chart-card h3,
 .card-section h3 {
   font-size: 1rem;
-  color: #1e293b;
+  color: var(--opes-ink);
   margin-bottom: 12px;
   font-weight: 600;
 }
@@ -467,26 +467,26 @@ const obterCorProgresso = (porcentagem) => {
   justify-content: space-between;
   align-items: center;
   padding: 12px;
-  background-color: #f8fafc;
+  background-color: var(--opes-paper);
   border-radius: 12px;
 }
 
 .conta-info h4 {
   font-size: 0.875rem;
-  color: #1e293b;
+  color: var(--opes-ink);
   margin: 0;
   font-weight: 600;
 }
 
 .conta-info p {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--opes-muted);
   margin: 2px 0 0 0;
 }
 
 .conta-valor {
   font-weight: 700;
-  color: #1e293b;
+  color: var(--opes-ink);
   font-size: 0.875rem;
 }
 
@@ -495,19 +495,19 @@ const obterCorProgresso = (porcentagem) => {
   justify-content: space-between;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #334155;
+  color: var(--opes-ink);
   margin-bottom: 6px;
 }
 
 .meta-percent {
-  color: #64748b;
+  color: var(--opes-forest);
   font-weight: 500;
 }
 
 .progress-bar {
   width: 100%;
   height: 8px;
-  background-color: #e2e8f0;
+  background-color: var(--opes-cream);
   border-radius: 10px;
   overflow: hidden;
 }
@@ -518,12 +518,12 @@ const obterCorProgresso = (porcentagem) => {
   transition: width 0.3s ease;
 }
 
-.progress-fill.green { background-color: #15803d; }
-.progress-fill.blue { background-color: #2563eb; }
-.progress-fill.gray { background-color: #64748b; }
+.progress-fill.green { background-color: var(--opes-forest); }
+.progress-fill.blue { background-color: var(--opes-forest); }
+.progress-fill.gray { background-color: var(--opes-forest); }
 
 .empty-msg {
-  color: #94a3b8;
+  color: var(--opes-muted);
   font-size: 0.85rem;
   margin: 0;
 }
@@ -538,7 +538,7 @@ const obterCorProgresso = (porcentagem) => {
 
 @media (min-width: 1024px) {
   .dashboard-layout {
-    background-color: #f4f6f9;
+    background-color: var(--opes-paper);
   }
   .dashboard-layout :deep(.desktop-sidebar) {
     display: flex !important;
@@ -546,12 +546,12 @@ const obterCorProgresso = (porcentagem) => {
   .main-container {
     height: 100vh;
     overflow: hidden;
-    background-color: #f4f6f9;
+    background-color: var(--opes-paper);
   }
   .dashboard-content {
     padding: 32px 40px;
     overflow-y: auto; 
-    background-color: #f4f6f9;
+    background-color: var(--opes-paper);
   }
 
 .welcome-section h2 { font-size: 1.8rem; }
