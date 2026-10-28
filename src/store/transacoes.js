@@ -52,8 +52,7 @@ export const useTransacoesStore = defineStore('transacoes', () => {
   async function criarTransacao(novaTransacaoData) {
     try {
       const response = await api.post('/api/transacoes/', novaTransacaoData)
-      transacoesGeral.value.unshift(response.data)
-      transacoes.value.unshift(response.data)
+      await buscarTransacoes()
       notify.success('Transação registrada com sucesso.')
       return true
     } catch (error) {
