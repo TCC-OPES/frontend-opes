@@ -33,7 +33,7 @@ onMounted(() => {
 
 <template>
   <div class="p-6 bg-gray-50 min-h-screen">
-    <!-- Cabeçalho -->
+    
     <div class="flex justify-between items-center mb-6">
       <div>
         <h1 class="text-2xl font-bold text-gray-800">Cartões</h1>
@@ -47,10 +47,10 @@ onMounted(() => {
       </button>
     </div>
 
-    <!-- Resumo de Métricas -->
+    
     <CardResumo :cartoes="cartoes" />
 
-    <!-- Grid de Cartões -->
+    
     <div v-if="!carregando" class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <CartaoItem
         v-for="cartao in cartoes"
@@ -58,7 +58,7 @@ onMounted(() => {
         :cartao="cartao"
       />
 
-      <!-- Botão Tracejado na Grade -->
+      
       <button
         @click="showModal = true"
         class="h-48 rounded-2xl border-2 border-dashed border-gray-300 hover:border-emerald-500 hover:bg-emerald-50/50 flex flex-col items-center justify-center text-gray-400 hover:text-emerald-600 transition group"
@@ -70,12 +70,12 @@ onMounted(() => {
       </button>
     </div>
 
-    <!-- Feedback de Carregamento -->
+    
     <div v-else class="text-center py-12 text-gray-500 text-sm">
       Carregando cartões...
     </div>
 
-    <!-- Modal de Cadastro -->
+    
     <NovoCartao
       v-if="showModal"
       @close="showModal = false"

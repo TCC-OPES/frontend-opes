@@ -52,31 +52,31 @@
               <div class="cartao-perfil">
                 <h3 class="titulo-secao">👤 Informações Pessoais</h3>
                 <div class="grade-inputs">
-                  <!-- EDITÁVEL: Nome -->
+                  
                   <div class="campo">
                     <label>Nome Completo</label>
                     <input type="text" v-model="formEdicao.nome" :disabled="!editando" placeholder="Seu nome">
                   </div>
 
-                  <!-- BLOQUEADO PERMANENTEMENTE: Email -->
+                  
                   <div class="campo">
                     <label>Email</label>
                     <input type="email" :value="formEdicao.email" disabled placeholder="seu@email.com">
                   </div>
 
-                  <!-- EDITÁVEL: Telefone -->
+                  
                   <div class="campo">
                     <label>Telefone</label>
                     <input type="text" v-model="formEdicao.telefone" @input="aplicarMascaraTelefone" :disabled="!editando" placeholder="(00) 00000-0000">
                   </div>
 
-                  <!-- BLOQUEADO PERMANENTEMENTE: CPF -->
+                  
                   <div class="campo">
                     <label>CPF</label>
                     <input type="text" :value="formEdicao.cpf" disabled placeholder="000.000.000-00">
                   </div>
 
-                  <!-- EDITÁVEL: Data de Nascimento -->
+                  
                   <div class="campo">
                     <label>Data de Nascimento</label>
                     <input type="date" v-model="formEdicao.nascimento" :disabled="!editando">
@@ -94,7 +94,7 @@
       </main>
     </div>
 
-    <!-- Modal para foto expandida -->
+    
     <div v-if="modalFotoAberta" class="modal-overlay" @click="fecharFotoExpandida">
       <div class="modal-conteudo" @click.stop>
         <button class="btn-fechar" @click="fecharFotoExpandida">✕</button>
@@ -179,7 +179,7 @@ const sincronizarEstadoLocal = (novosDados) => {
 }
 
 const carregarPerfil = async () => {
-  // 1. Pega do cache local primeiro para carregamento instantâneo
+
   const local = localStorage.getItem('user')
   if (local) {
     try {
@@ -199,7 +199,6 @@ const carregarPerfil = async () => {
     }
   }
 
-  // 2. Atualiza via servidor
   try {
     const { data } = await api.get('api/me/')
     sincronizarEstadoLocal(data.data || data)
@@ -224,7 +223,7 @@ const cancelarEdicao = () => { resetarForm(); editando.value = false }
 const salvarPerfil = async () => {
   salvando.value = true
   try {
-    // Apenas Nome, Telefone e Nascimento vão para a requisição
+
     const payload = {
       name: formEdicao.nome,
       telefone: formEdicao.telefone.replace(/\D/g, ''),
@@ -304,7 +303,7 @@ onUnmounted(() => {
   display: flex;
   height: 100vh;
   width: 100vw;
-  background-color: #ffffff;
+  background-color: var(--opes-paper);
   overflow: hidden;
   margin: 0;
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -321,7 +320,7 @@ onUnmounted(() => {
   height: 100vh;
   position: relative;
   overflow: hidden;
-  background-color: #ffffff;
+  background-color: var(--opes-paper);
 }
 
 .dashboard-content {
@@ -333,7 +332,7 @@ onUnmounted(() => {
   width: 100%;
   box-sizing: border-box;
   overflow-y: auto;
-  background-color: #f4f6f9;
+  background-color: var(--opes-paper);
 }
 
 .container-perfil {
@@ -354,11 +353,11 @@ h1 {
   font-size: 2.2rem;
   font-weight: 800;
   margin-bottom: 8px;
-  color: #1e293b;
+  color: var(--opes-ink);
 }
 
 .texto-gradiente {
-  background: linear-gradient(90deg, #10b981, #3b82f6);
+  background: linear-gradient(90deg, var(--opes-forest), var(--opes-caramel));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -374,13 +373,13 @@ h1 {
 }
 
 .header-perfil p {
-  color: #64748b;
+  color: var(--opes-forest);
   font-size: 0.95rem;
   margin: 0;
 }
 
 .botao-principal {
-  background: linear-gradient(135deg, #059669 0%, #2563eb 100%);
+  background: linear-gradient(135deg, var(--opes-forest) 0%, var(--opes-forest) 100%);
   color: white;
   border: none;
   padding: 12px 24px;
@@ -396,8 +395,8 @@ h1 {
 }
 
 .botao-secundario {
-  background: #e2e8f0;
-  color: #475569;
+  background: var(--opes-cream);
+  color: var(--opes-forest);
   border: none;
   padding: 12px 24px;
   border-radius: 12px;
@@ -420,7 +419,7 @@ h1 {
   background: white;
   border-radius: 24px;
   padding: 30px;
-  border: 1px solid #f1f5f9;
+  border: 1px solid var(--opes-paper);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
 
@@ -437,7 +436,7 @@ h1 {
 .avatar-circulo {
   width: 110px;
   height: 110px;
-  background: linear-gradient(135deg, #059669, #10b981);
+  background: linear-gradient(135deg, var(--opes-forest), var(--opes-forest));
   color: white;
   border-radius: 50%;
   display: flex;
@@ -459,7 +458,7 @@ h1 {
   bottom: 0;
   right: 0;
   background: white;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--opes-cream);
   border-radius: 50%;
   width: 32px;
   height: 32px;
@@ -473,12 +472,12 @@ h1 {
 
 .cartao-perfil h2 {
   font-size: 1.25rem;
-  color: #1e293b;
+  color: var(--opes-ink);
   margin: 0 0 4px 0;
 }
 
 .email-texto {
-  color: #64748b;
+  color: var(--opes-forest);
   font-size: 0.875rem;
   margin: 0;
   word-break: break-all;
@@ -488,7 +487,7 @@ h1 {
   margin-top: 0;
   margin-bottom: 25px;
   font-weight: 800;
-  color: #1e293b;
+  color: var(--opes-ink);
   font-size: 1.1rem;
 }
 
@@ -502,28 +501,28 @@ h1 {
   display: block;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #64748b;
+  color: var(--opes-forest);
   margin-bottom: 8px;
 }
 
 .campo input {
   width: 100%;
   padding: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--opes-cream);
   border-radius: 10px;
-  background: #f8fafc;
-  color: #1e293b;
+  background: var(--opes-paper);
+  color: var(--opes-ink);
   font-family: inherit;
   box-sizing: border-box;
   transition: all 0.2s;
 }
 
 .campo input:not(:disabled) {
-  background: #ffffff;
-  border-color: #10b981;
+  background: var(--opes-paper);
+  border-color: var(--opes-forest);
 }
 
-/* Modal Foto Expandida */
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -556,7 +555,7 @@ h1 {
   width: 250px;
   height: 250px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #059669, #10b981);
+  background: linear-gradient(135deg, var(--opes-forest), var(--opes-forest));
   color: white;
   display: flex;
   align-items: center;
@@ -569,7 +568,7 @@ h1 {
   position: absolute;
   top: -15px;
   right: -15px;
-  background: #ffffff;
+  background: var(--opes-paper);
   border: none;
   border-radius: 50%;
   width: 36px;
@@ -578,7 +577,7 @@ h1 {
   font-weight: bold;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  color: #1e293b;
+  color: var(--opes-ink);
 }
 
 .carregando {
@@ -587,14 +586,14 @@ h1 {
   align-items: center;
   justify-content: center;
   height: 80vh;
-  color: #64748b;
+  color: var(--opes-forest);
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #cbd5e1;
-  border-top-color: #10b981;
+  border: 4px solid var(--opes-sand);
+  border-top-color: var(--opes-forest);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16px;
@@ -621,7 +620,7 @@ h1 {
 
 @media (min-width: 1024px) {
   .dashboard-layout {
-    background-color: #f4f6f9;
+    background-color: var(--opes-paper);
   }
   .dashboard-layout :deep(.desktop-sidebar) {
     display: flex !important;
@@ -629,12 +628,12 @@ h1 {
   .main-container {
     height: 100vh;
     overflow: hidden;
-    background-color: #f4f6f9;
+    background-color: var(--opes-paper);
   }
   .dashboard-content {
     padding: 32px 40px;
     overflow-y: auto;
-    background-color: #f4f6f9;
+    background-color: var(--opes-paper);
   }
 }
 </style>

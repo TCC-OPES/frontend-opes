@@ -33,7 +33,7 @@ import FormLogin from '@/components/login/FormLogin.vue'
   width: 100vw;
   overflow: hidden !important;
   padding: 16px;
-  background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
+  background: linear-gradient(135deg, var(--opes-cream) 0%, var(--opes-caramel) 100%);
   font-family: Arial, sans-serif;
 }
 
