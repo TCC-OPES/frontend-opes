@@ -13,12 +13,9 @@ import RecorrenciasView from '@/views/RecorrenciasView.vue'
 
 import CalendarioFinanceiroView from '@/views/CalendarioFinanceiroView.vue'
 
-import SimuladorFinanceiroView from '@/views/SimuladorFinanceiroView.vue'
-
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/simulador', name: 'Simulador', component: SimuladorFinanceiroView },
     { path: '/calendario', component: CalendarioFinanceiroView, name: 'Calendário' },
     { path: '/recorrencias', name: 'RecorrenciasView', component: RecorrenciasView },
     {
