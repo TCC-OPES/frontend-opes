@@ -1,9 +1,11 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { notify } from '@/services/toast'
 import { carregarCalendario, confirmarVencimento } from '@/services/calendario'
 import SideBarComponent from '@/components/SideBarComponent.vue'
 
+const router = useRouter()
 const agora = new Date()
 const ano = ref(agora.getFullYear())
 const mes = ref(agora.getMonth())
@@ -50,6 +52,12 @@ function navegar(n) {
 }
 function abrir(e) { detalhe.value=e; selecionado.value=e.vencimento || e.data?.slice(0,10) }
 function fechar() { detalhe.value=null }
+function editarRecorrencia() {
+  if (!detalhe.value?.recorrencia) return
+  const id = detalhe.value.recorrencia
+  detalhe.value = null
+  router.push({ path: '/recorrencias', query: { editar: String(id) } })
+}
 async function confirmar() {
   if(!detalhe.value?.recorrencia || detalhe.value.confirmada_em || processando.value)return
   processando.value=true
@@ -104,6 +112,7 @@ watch([ano,mes], carregar, { immediate:true })
         <div><dt>Tipo</dt><dd>{{ detalhe.tipo==='receita'?'Receita':'Despesa' }}</dd></div>
         <div><dt>Categoria</dt><dd>{{ detalhe.categoria || 'Não informada' }}</dd></div>
         <div><dt>Situação</dt><dd>{{ status(detalhe) }}</dd></div></dl>
+      <button v-if="detalhe.recorrencia" class="confirmar" type="button" @click="editarRecorrencia">Editar recorrência</button>
       <button v-if="detalhe.recorrencia && !detalhe.confirmada_em" class="confirmar" :disabled="processando" @click="confirmar">{{ processando?'Confirmando...':detalhe.tipo==='receita'?'Confirmar recebimento':'Confirmar pagamento' }}</button>
     </section>
   </div>
