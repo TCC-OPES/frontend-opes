@@ -42,21 +42,7 @@ export default defineConfig({
           },
         ],
       },
-      workbox: {
-        runtimeCaching: [
-          {
-            urlPattern: /\/api\//,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 86400,
-              },
-            },
-          },
-        ],
-      },
+      workbox: { navigateFallbackDenylist: [new RegExp('^/api/')] },
       devOptions: {
         enabled: true,
       },

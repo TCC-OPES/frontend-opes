@@ -8,7 +8,7 @@
     <div class="topbar-actions">
       <div class="date-filter">
         <i class="far fa-calendar-alt"></i>
-        <span>Março 2026</span>
+        <span>{{ mesAtual }}</span>
         <i class="fas fa-chevron-down arrow-icon"></i>
       </div>
       <div class="icon-btn">
@@ -23,6 +23,7 @@
 </template>
 
 <script setup>
+const mesAtual = new Date().toLocaleDateString('pt-BR', {month:'long',year:'numeric'})
 </script>
 
 <style scoped>
