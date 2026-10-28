@@ -66,7 +66,6 @@ function submitForm() {
   }
 
   emit('salvar', payload)
-  emit('fechar')
 }
 </script>
 
@@ -110,6 +109,7 @@ function submitForm() {
             <input
               v-model="form.valorTotal"
               type="number"
+              min="0"
               step="0.01"
               placeholder="10000"
               required
