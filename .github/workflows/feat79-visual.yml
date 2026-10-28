@@ -4,6 +4,7 @@ on:
     paths:
       - 'src/**'
       - 'tests/**'
+      - 'scripts/**'
       - 'playwright.config.mjs'
       - 'package.json'
       - 'package-lock.json'
@@ -21,6 +22,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      - run: node scripts/audit-comments.mjs
       - run: npm install --no-save @playwright/test@1.56.1
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test --config=playwright.config.mjs
