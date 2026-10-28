@@ -1,43 +1,92 @@
+
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import axios from 'axios'
 
 export const useCartoesStore = defineStore('cartoes', () => {
-  // Estado
   const cartoes = ref([])
   const carregando = ref(false)
   const erro = ref('')
 
-  // Helper para obter o cabeçalho de autenticação
   function getAuthHeader() {
-    const token = localStorage.getItem('token') || localStorage.getItem('access')
-    return token ? { Authorization: `Bearer ${token}` } : {}
+    const token =
+      localStorage.getItem('token') ||
+      localStorage.getItem('access')
+
+    return token
+      ? { Authorization: `Bearer ${token}` }
+      : {}
   }
 
-  // Getters (Computeds)
-  const totalLimite = computed(() => {
-    return cartoes.value.reduce((acc, card) => acc + (Number(card.limite) || 0), 0)
-  })
+  const totalLimite = computed(() =>
+    cartoes.value.reduce(
+      (total, cartao) =>
+        total + Number(cartao.limite_total || 0),
+      0
+    )
+  )
 
-  const totalUtilizado = computed(() => {
-    return cartoes.value.reduce((acc, card) => acc + (Number(card.valor_utilizado) || 0), 0)
-  })
+  const totalUtilizado = computed(() =>
+    cartoes.value.reduce(
+      (total, cartao) =>
+        total + Number(cartao.valor_utilizado || 0),
+      0
+    )
+  )
 
-  const totalDisponivel = computed(() => {
-    return totalLimite.value - totalUtilizado.value
-  })
+  const totalDisponivel = computed(
+    () => totalLimite.value - totalUtilizado.value
+  )
 
-  // Ações
+  function obterMensagemErro(err, padrao) {
+    if (err.response?.status === 401) {
+      return 'Sessão expirada. Faça login novamente.'
+    }
+
+    const dados = err.response?.data
+
+    if (typeof dados?.detail === 'string') {
+      return dados.detail
+    }
+
+    if (typeof dados?.message === 'string') {
+      return dados.message
+    }
+
+    if (typeof dados?.erro === 'string') {
+      return dados.erro
+    }
+
+    if (dados && typeof dados === 'object') {
+      const valor = Object.values(dados)[0]
+      if (Array.isArray(valor)) return valor.join(' ')
+      if (typeof valor === 'string') return valor
+    }
+
+    return padrao
+  }
+
   async function carregarCartoes() {
     carregando.value = true
     erro.value = ''
+
     try {
       const response = await axios.get('/api/cartoes/', {
         headers: getAuthHeader()
       })
-      cartoes.value = response.data
+
+      const dados = response.data
+
+      cartoes.value = Array.isArray(dados)
+        ? dados
+        : (dados.results ?? [])
+
     } catch (err) {
-      erro.value = err.response?.data?.message || 'Erro ao carregar lista de cartões.'
+      erro.value = obterMensagemErro(
+        err,
+        'Erro ao carregar os cartões.'
+      )
+      throw err
     } finally {
       carregando.value = false
     }
@@ -49,23 +98,56 @@ export const useCartoesStore = defineStore('cartoes', () => {
 
     try {
       const payload = {
-        ...dadosCartao,
-        limite: parseFloat(dadosCartao.limite)
+        nome: dadosCartao.nome,
+        banco: dadosCartao.banco,
+        limite_total: Number(dadosCartao.limite_total),
+        valor_utilizado: 0,
+        vencimento: dadosCartao.vencimento,
+        cor: dadosCartao.cor
       }
 
-      const response = await axios.post('/api/cartoes/', payload, {
+      const response = await axios.post(
+        '/api/cartoes/',
+        payload,
+        {
+          headers: getAuthHeader()
+        }
+      )
+
+      // Atualiza a interface após o backend salvar
+      cartoes.value.push(response.data)
+
+      return response.data
+
+    } catch (err) {
+      erro.value = obterMensagemErro(
+        err,
+        'Não foi possível cadastrar o cartão.'
+      )
+      throw err
+    } finally {
+      carregando.value = false
+    }
+  }
+
+  async function excluirCartao(id) {
+    carregando.value = true
+    erro.value = ''
+
+    try {
+      await axios.delete(`/api/cartoes/${id}/`, {
         headers: getAuthHeader()
       })
 
-      const novoCartao = response.data
-      cartoes.value.push(novoCartao)
-      return novoCartao
+      cartoes.value = cartoes.value.filter(
+        cartao => cartao.id !== id
+      )
+
     } catch (err) {
-      if (err.response?.status === 401) {
-        erro.value = 'Sessão expirada ou usuário não autenticado.'
-      } else {
-        erro.value = err.response?.data?.message || 'Erro ao salvar o cartão no servidor.'
-      }
+      erro.value = obterMensagemErro(
+        err,
+        'Não foi possível excluir o cartão.'
+      )
       throw err
     } finally {
       carregando.value = false
@@ -80,6 +162,7 @@ export const useCartoesStore = defineStore('cartoes', () => {
     totalUtilizado,
     totalDisponivel,
     carregarCartoes,
-    adicionarCartao
+    adicionarCartao,
+    excluirCartao
   }
 })
