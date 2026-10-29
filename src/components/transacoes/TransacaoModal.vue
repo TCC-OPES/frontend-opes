@@ -61,24 +61,25 @@ async function submeterFormulario() {
   if (carregandoSalvar.value) return
   erroFormulario.value = ''
   if (metodoCredito.value) {
-    if (!formulario.value.cartao) {
+    if (!formulario.value.cartao || !cartaoSelecionado.value) {
       erroFormulario.value = 'Selecione o cartão utilizado na compra.'
       return
     }
-    if (cartaoSelecionado.value && Number(formulario.value.valor) > disponivel.value) {
+    if (Number(formulario.value.valor) > disponivel.value) {
       erroFormulario.value = 'O valor ultrapassa o limite disponível deste cartão.'
       return
     }
   }
   carregandoSalvar.value = true
   const dados = { ...formulario.value, cartao: metodoCredito.value ? Number(formulario.value.cartao) : null }
-  const sucesso = props.transacao
-    ? await transacoesStore.editarTransacao(props.transacao.id, dados)
-    : await transacoesStore.criarTransacao(dados)
-  carregandoSalvar.value = false
+  try {
+    const sucesso = props.transacao
+      ? await transacoesStore.editarTransacao(props.transacao.id, dados)
+      : await transacoesStore.criarTransacao(dados)
 
-  if (sucesso) {
-    emit('fechar')
+    if (sucesso) emit('fechar')
+  } finally {
+    carregandoSalvar.value = false
   }
 }
 </script>
@@ -122,7 +123,7 @@ async function submeterFormulario() {
         </div>
         <div v-if="metodoCredito" class="grupo-input">
           <label for="cartao-transacao">Cartão utilizado</label>
-          <select id="cartao-transacao" v-model="formulario.cartao" required :disabled="carregandoCartoes">
+          <select id="cartao-transacao" v-model="formulario.cartao" required :disabled="carregandoCartoes || !!erroCartoes">
             <option value="" disabled>Selecione seu cartão</option>
             <option v-for="cartao in cartoes" :key="cartao.id" :value="cartao.id">
               {{ cartao.banco }} — {{ cartao.nome }}
@@ -131,7 +132,8 @@ async function submeterFormulario() {
           <small v-if="carregandoCartoes">Carregando cartões...</small>
           <small v-else-if="erroCartoes" class="mensagem-erro">{{ erroCartoes }}</small>
           <small v-else-if="!cartoes.length">Cadastre um cartão na página Cartões para usar este método.</small>
-          <small v-else-if="cartaoSelecionado">Limite disponível: {{ moeda(disponivel) }}</small>
+          <small v-else-if="cartaoSelecionado">Limite disponível: <strong>{{ moeda(disponivel) }}</strong></small>
+          <small class="aviso-limite">O valor da compra será somado ao limite utilizado do cartão.</small>
         </div>
         <div class="grupo-input">
           <label>Valor (R$)</label>
@@ -146,7 +148,7 @@ async function submeterFormulario() {
         <p v-if="erroFormulario" class="mensagem-erro" role="alert">{{ erroFormulario }}</p>
         <div class="modal-footer">
           <button class="btn-secundario" type="button" @click="emit('fechar')">Cancelar</button>
-          <button class="btn-primario" type="submit" :disabled="carregandoSalvar">
+          <button class="btn-primario" type="submit" :disabled="carregandoSalvar || (metodoCredito && (!cartaoSelecionado || carregandoCartoes || !!erroCartoes))">
             {{ carregandoSalvar ? 'Salvando...' : (transacao ? 'Salvar alterações' : 'Salvar Transação') }}
           </button>
         </div>
@@ -166,7 +168,9 @@ async function submeterFormulario() {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 2500;
+  padding: 16px;
+  overflow-y: auto;
 }
 
 .modal-content {
@@ -176,6 +180,8 @@ async function submeterFormulario() {
   border-radius: 16px;
   width: 100%;
   max-width: 450px;
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
   box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
 
@@ -265,4 +271,6 @@ async function submeterFormulario() {
 }
 .mensagem-erro{color:var(--opes-danger);font-size:12px;margin:0}
 .grupo-input small{color:var(--opes-muted);font-size:12px}
+.grupo-input small.aviso-limite{color:var(--opes-forest);line-height:1.5}
+@media(max-width:540px){.modal-content{padding:20px 16px}.modal-footer{flex-wrap:wrap}.modal-footer button{flex:1}}
 </style>
