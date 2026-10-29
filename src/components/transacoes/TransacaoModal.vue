@@ -48,6 +48,11 @@ const formulario = ref({
 
 const carregandoSalvar = ref(false)
 const erroFormulario = ref('')
+watch(() => formulario.value.tipo, tipo => {
+  if (tipo !== 'despesa' && formulario.value.metodo_pagamento === 'credito') {
+    formulario.value.metodo_pagamento = 'outro'
+  }
+})
 watch(() => [formulario.value.tipo, formulario.value.metodo_pagamento], () => {
   if (!metodoCredito.value) formulario.value.cartao = ''
 })
