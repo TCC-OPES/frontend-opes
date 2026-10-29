@@ -60,7 +60,7 @@ const salvarInvestimento = async () => {
     <div class="main-wrapper">
       
 
-      <main class="main-content">
+      <main class="main-content entrada-pagina">
         <div class="conteudo-interno">
           <InvestimentoComponent ref="investimentoRef" />
         </div>
@@ -279,4 +279,7 @@ const salvarInvestimento = async () => {
     bottom: 20px;
   }
 }
+
+.entrada-pagina { animation: entrada-pagina 0.6s ease-out both; }
+@keyframes entrada-pagina { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 </style>
