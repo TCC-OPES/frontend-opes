@@ -23,6 +23,18 @@ function mudarFiltro(tipo) {
   emit('filtrar', tipo)
 }
 
+const nomesMetodos = {
+  pix: 'Pix',
+  dinheiro: 'Dinheiro',
+  debito: 'Cartão de débito',
+  credito: 'Cartão de crédito',
+  outro: 'Método não informado'
+}
+
+function descreverMetodo(item) {
+  return nomesMetodos[item.metodo_pagamento] || 'Método não informado'
+}
+
 function formatarMoeda(valor) {
   return Number(valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
@@ -78,7 +90,7 @@ onUnmounted(() => {
             </div>
             <div>
               <strong>{{ item.titulo }}</strong>
-              <small>{{ item.categoria }}</small>
+              <small>{{ item.categoria }} · {{ descreverMetodo(item) }}</small>
             </div>
           </div>
 
