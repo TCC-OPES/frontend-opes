@@ -67,7 +67,7 @@ watch([ano,mes], carregar, { immediate:true })
 </script>
 
 <template>
-<div class="layout"><SideBarComponent /><div class="principal"><main class="conteudo">
+<div class="layout"><SideBarComponent /><div class="principal"><main class="conteudo entrada-pagina">
   <div class="titulo"><div><span class="sobretitulo">PLANEJAMENTO FINANCEIRO</span><h1>Calendário financeiro</h1><p>Seus compromissos e movimentações, organizados por dia.</p></div></div>
   <div class="resumo">
     <div class="resumo-card"><span>Receitas previstas</span><strong class="verde">{{ moeda(total.receitasPrevistas) }}</strong><small>Compromissos cadastrados, sem movimentação</small></div>
@@ -151,4 +151,7 @@ watch([ano,mes], carregar, { immediate:true })
 :global(:root[data-theme="dark"]) .modal-dia .fechar-dia{background:#344d3e!important;color:#f1f5ef!important;border-color:#52715d!important}
 
 .fechar-detalhe{background:transparent!important;border:0!important;box-shadow:none!important;color:var(--opes-ink)!important;font-size:20px;padding:4px 8px!important}
+
+.entrada-pagina { animation: entrada-pagina 0.6s ease-out both; }
+@keyframes entrada-pagina { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 </style>
