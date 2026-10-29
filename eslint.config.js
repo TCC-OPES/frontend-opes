@@ -6,11 +6,9 @@ import pluginOxlint from 'eslint-plugin-oxlint'
 import skipFormatting from 'eslint-config-prettier/flat'
 
 export default defineConfig([
-  globalIgnores(['dist/**', 'dist-ssr/**', 'coverage/**', 'dev-dist/**', 'node_modules/**']),
   {
     name: 'app/files-to-lint',
-    files: ['**/*.{js,mjs,cjs,vue}'],
-  },
+    files: ['**distdist-ssrcoverage/**']),
 
   {
     languageOptions: {
