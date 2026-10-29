@@ -127,7 +127,7 @@ onMounted(async () => {
     <SideBarComponent class="sidebar" />
     <div class="principal">
       
-      <main class="conteudo">
+      <main class="conteudo entrada-pagina">
         <header><h1>Contas recorrentes</h1><p>Controle despesas e receitas que se repetem.</p></header>
 
         <form class="painel formulario" @submit.prevent="salvar">
@@ -180,4 +180,7 @@ onMounted(async () => {
 
 <style scoped>
 .layout{display:flex;min-height:100vh;height:auto;overflow:visible;background:var(--opes-paper)}.principal{flex:1;min-width:0;min-height:100vh;height:auto;overflow:visible}.conteudo{max-width:1140px;margin:auto;padding:32px 24px 160px;color:var(--opes-ink)}h1{font-size:28px;margin:0 0 6px}h2{font-size:20px;margin:0 0 16px}header p,.nota,.item p{color:var(--opes-forest);font-size:14px}.nota{grid-column:1/-1;margin:0 0 12px}.painel{background:white;border:1px solid var(--opes-cream);border-radius:14px;padding:24px;margin-top:24px}.formulario{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}.formulario h2{grid-column:1/-1}.acoes{grid-column:1/-1;display:flex;gap:8px}label{display:flex;flex-direction:column;gap:6px;font-size:14px}input,select{padding:12px;border:1px solid var(--opes-sand);border-radius:8px;background:white;min-width:0}button{background:var(--opes-forest);color:white;border:0;border-radius:8px;padding:10px 14px;cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}.secundario{background:var(--opes-cream);color:var(--opes-ink)}.perigo{background:var(--opes-cream);color:var(--opes-danger)}.item{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:16px 0;border-top:1px solid var(--opes-cream)}.item p{margin:6px 0}.direita{text-align:right}.botoes{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:10px}.status{font-size:12px;border-radius:20px;padding:3px 9px}.ativo{background:var(--opes-cream);color:var(--opes-forest)}.inativo{background:var(--opes-paper);color:var(--opes-forest)}.contagem{font-size:13px;font-weight:normal;color:var(--opes-forest)}.navegar{display:flex;align-items:center;justify-content:space-between}.navegar h2{text-transform:capitalize;margin:0}.alerta{padding:12px;border-radius:8px}.erro{color:var(--opes-danger);background:var(--opes-cream)}.sucesso{color:var(--opes-forest);background:var(--opes-cream)}@media(max-width:800px){.layout{display:block;min-height:100vh;height:auto}.conteudo{padding:20px 14px 140px;min-height:calc(100vh - 100px)}.item{align-items:flex-start;flex-direction:column}.direita{text-align:left}.botoes{justify-content:flex-start}}
+
+.entrada-pagina { animation: entrada-pagina 0.6s ease-out both; }
+@keyframes entrada-pagina { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 </style>
