@@ -18,6 +18,7 @@ const cartaoEditando = ref(null)
 const cartaoExcluindo = ref(null)
 const erroFormulario = ref('')
 const mostrarValores = ref(true)
+const coresSugeridas = ['#14372D', '#295B83', '#6C4A73', '#935A39', '#374151', '#7D4655', '#006B63', '#A75530']
 const formulario = reactive({ nome: '', banco: '', limite_total: '', valor_utilizado: '', vencimento: '', cor: '#14372D' })
 const itensMenu = [
   { rotulo: 'Dashboard', icone: 'fa-chart-pie', rota: '/dashboard' },
@@ -328,9 +329,27 @@ onMounted(() => {
               <label>Vencimento<input v-model="formulario.vencimento" type="text" placeholder="15/04/2026" required /></label>
             </div>
             <label>Valor utilizado (R$)<input v-model="formulario.valor_utilizado" type="number" min="0" max="99999999.99" step="0.01" required /></label>
-            <label>Cor do cartão
-              <span class="opes-cards-color"><input v-model="formulario.cor" type="color" /><span>{{ formulario.cor }}</span></span>
-            </label>
+            <div class="opes-cards-color-field">
+              <span class="opes-cards-field-title">Personalize a cor do cartão</span>
+              <div class="opes-cards-palette" role="group" aria-label="Cores sugeridas">
+                <button v-for="cor in coresSugeridas" :key="cor" type="button"
+                  class="opes-cards-swatch" :class="{ escolhida: formulario.cor.toLowerCase() === cor.toLowerCase() }"
+                  :style="{ backgroundColor: cor }" :aria-label="'Escolher cor ' + cor"
+                  :aria-pressed="formulario.cor.toLowerCase() === cor.toLowerCase()"
+                  @click="formulario.cor = cor">
+                  <i v-if="formulario.cor.toLowerCase() === cor.toLowerCase()" class="fas fa-check" aria-hidden="true"></i>
+                </button>
+              </div>
+              <label class="opes-cards-custom-color">Outra cor:
+                <input v-model="formulario.cor" type="color" />
+                <span>{{ formulario.cor }}</span>
+              </label>
+              <div class="opes-cards-preview" :style="{ backgroundColor: corCartao(formulario.cor), color: corLetra(formulario.cor) }">
+                <span>{{ formulario.banco || 'Instituição financeira' }}</span>
+                <strong>{{ formulario.nome || 'Prévia do cartão' }}</strong>
+                <small>•••• •••• •••• ••••</small>
+              </div>
+            </div>
             <p v-if="erroFormulario" class="opes-cards-form-error" role="alert">{{ erroFormulario }}</p>
             <div class="opes-cards-modal-actions">
               <button type="button" class="opes-cards-secondary" @click="fecharModal">Cancelar</button>
@@ -450,8 +469,19 @@ onMounted(() => {
 .opes-cards-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .opes-cards-card-top>div:first-child{min-width:0;overflow-wrap:anywhere}
 .opes-cards-card-actions{display:flex;flex-shrink:0;gap:6px}
-.opes-cards-card-actions button{width:29px;height:29px;display:grid;place-items:center;border:1px solid currentColor!important;border-radius:8px;background:transparent!important;color:inherit!important;opacity:.85}
+.opes-cards-card-actions button{width:29px;height:29px;display:grid;place-items:center;border:0!important;box-shadow:none!important;background:transparent!important;color:inherit!important;opacity:.85}
 .opes-cards-card-actions button:hover{background:#ffffff25!important;opacity:1}
 .opes-cards-delete{padding:12px 17px;border:0;border-radius:10px;background:var(--opes-danger)!important;color:white!important;font-weight:700}
 .opes-cards-confirm>p{line-height:1.6;margin:14px 0 22px}
+.opes-cards-color-field{display:flex;flex-direction:column;gap:12px}
+.opes-cards-field-title{font-size:12px;font-weight:700;color:var(--opes-ink)}
+.opes-cards-palette{display:flex;flex-wrap:wrap;gap:9px}
+.opes-cards-swatch{border:2px solid transparent!important;width:35px;height:35px;border-radius:50%;color:white!important;display:grid;place-items:center;box-shadow:0 0 0 1px var(--opes-border)!important;transition:transform .2s}
+.opes-cards-swatch.escolhida{outline:2px solid var(--opes-caramel)!important;outline-offset:2px}
+.opes-cards-custom-color{display:flex!important;flex-direction:row!important;align-items:center;gap:10px!important}
+.opes-cards-custom-color input{width:40px;height:35px;border:0;padding:0;background:none}
+.opes-cards-preview{display:flex;flex-direction:column;justify-content:space-between;padding:17px 20px;border-radius:12px;min-height:120px}
+.opes-cards-preview span{font-size:11px}
+.opes-cards-preview strong{font-size:15px}
+.opes-cards-preview small{letter-spacing:2px}
 </style>
