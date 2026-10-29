@@ -13,9 +13,12 @@ const carregando = ref(true)
 const erro = ref('')
 const modalAberto = ref(false)
 const salvando = ref(false)
+const excluindo = ref(false)
+const cartaoEditando = ref(null)
+const cartaoExcluindo = ref(null)
 const erroFormulario = ref('')
 const mostrarValores = ref(true)
-const formulario = reactive({ nome: '', banco: '', limite: '', data_vencimento: '', cor: '#14372D' })
+const formulario = reactive({ nome: '', banco: '', limite_total: '', valor_utilizado: '', vencimento: '', cor: '#14372D' })
 const itensMenu = [
   { rotulo: 'Dashboard', icone: 'fa-chart-pie', rota: '/dashboard' },
   { rotulo: 'Transações', icone: 'fa-exchange-alt', rota: '/transacoes' },
@@ -30,14 +33,14 @@ const nomeUsuario = ref('Usuário')
 const fotoUsuario = ref('')
 const moeda = valor => Number(valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 const valorExibido = valor => mostrarValores.value ? moeda(valor) : 'R$ •••••'
-const totalLimite = computed(() => cartoes.value.reduce((acc, item) => acc + (Number(item.limite) || 0), 0))
+const totalLimite = computed(() => cartoes.value.reduce((acc, item) => acc + (Number(item.limite_total) || 0), 0))
 const totalUtilizado = computed(() => cartoes.value.reduce((acc, item) => acc + (Number(item.valor_utilizado) || 0), 0))
 const totalDisponivel = computed(() => Math.max(0, totalLimite.value - totalUtilizado.value))
 const recentes = computed(() => [...transacoesStore.transacoes]
   .sort((a, b) => String(b.data || '').localeCompare(String(a.data || '')))
   .slice(0, 5))
 function porcentagem(cartao) {
-  const limite = Number(cartao.limite) || 0
+  const limite = Number(cartao.limite_total) || 0
   return limite > 0 ? Math.min(100, Math.max(0, (Number(cartao.valor_utilizado) || 0) / limite * 100)) : 0
 }
 function corCartao(valor) {
@@ -66,34 +69,97 @@ async function buscarCartoes() {
     carregando.value = false
   }
 }
-function abrirModal() {
-  Object.assign(formulario, { nome: '', banco: '', limite: '', data_vencimento: '', cor: '#14372D' })
+function abrirModal(cartao = null) {
+  cartaoEditando.value = cartao
+  Object.assign(formulario, {
+    nome: cartao?.nome || '',
+    banco: cartao?.banco || '',
+    limite_total: cartao?.limite_total ?? '',
+    valor_utilizado: cartao?.valor_utilizado ?? 0,
+    vencimento: cartao ? dataBR(cartao.vencimento) : '',
+    cor: corCartao(cartao?.cor),
+  })
   erroFormulario.value = ''
   modalAberto.value = true
 }
+function fecharModal() {
+  if (salvando.value) return
+  modalAberto.value = false
+  cartaoEditando.value = null
+}
+function erroDaApi(e, mensagem) {
+  const dados = e.response?.data
+  if (typeof dados?.detail === 'string') return dados.detail
+  if (typeof dados?.erro === 'string') return dados.erro
+  if (dados && typeof dados === 'object') {
+    const textos = Object.entries(dados).flatMap(([campo, lista]) =>
+      (Array.isArray(lista) ? lista : [lista]).map(t => campo + ': ' + String(t)))
+    if (textos.length) return textos.join(' · ')
+  }
+  return mensagem
+}
+async function excluirCartao() {
+  const cartao = cartaoExcluindo.value
+  if (!cartao || excluindo.value) return
+  excluindo.value = true
+  try {
+    await api.delete('/api/cartoes/' + cartao.id + '/')
+    cartoes.value = cartoes.value.filter(item => item.id !== cartao.id)
+    cartaoExcluindo.value = null
+    notify.success('Cartão excluído com sucesso!')
+  } catch (e) {
+    notify.error(erroDaApi(e, 'Não foi possível excluir o cartão.'))
+  } finally {
+    excluindo.value = false
+  }
+}
 async function salvarCartao() {
   if (salvando.value) return
-  salvando.value = true
   erroFormulario.value = ''
+  const payload = {
+    nome: formulario.nome.trim(),
+    banco: formulario.banco.trim(),
+    limite_total: Number(formulario.limite_total),
+    valor_utilizado: Number(formulario.valor_utilizado || 0),
+    vencimento: formulario.vencimento.trim(),
+    cor: formulario.cor,
+  }
+  if (!Number.isFinite(payload.limite_total) || payload.limite_total < 0 ||
+      !Number.isFinite(payload.valor_utilizado) || payload.valor_utilizado < 0) {
+    erroFormulario.value = 'Informe valores válidos, maiores ou iguais a zero.'
+    return
+  }
+  if (payload.valor_utilizado > payload.limite_total) {
+    erroFormulario.value = 'O valor utilizado não pode superar o limite total.'
+    return
+  }
+  if (!/^\\d{2}\\/\\d{2}\\/\\d{4}$/.test(payload.vencimento)) {
+    erroFormulario.value = 'Informe o vencimento no formato DD/MM/AAAA.'
+    return
+  }
+  salvando.value = true
   try {
-    const { data } = await api.post('/api/cartoes/', {
-      nome: formulario.nome.trim(),
-      banco: formulario.banco.trim(),
-      limite: Number(formulario.limite),
-      data_vencimento: formulario.data_vencimento.trim(),
-      cor: formulario.cor,
-    })
+    const atual = cartaoEditando.value
+    const { data } = atual
+      ? await api.patch('/api/cartoes/' + atual.id + '/', payload)
+      : await api.post('/api/cartoes/', payload)
+    if (atual) {
+      cartoes.value = cartoes.value.map(item => item.id === atual.id ? data : item)
+    } else if (data?.id) {
+      cartoes.value = [data, ...cartoes.value]
+    } else {
+      await buscarCartoes()
+    }
     modalAberto.value = false
-    notify.success('Cartão cadastrado com sucesso!')
-    if (data?.id) cartoes.value = [data, ...cartoes.value]
-    else await buscarCartoes()
+    cartaoEditando.value = null
+    notify.success(atual ? 'Cartão atualizado com sucesso!' : 'Cartão cadastrado com sucesso!')
   } catch (e) {
-    const detalhe = e.response?.data
-    erroFormulario.value = typeof detalhe?.detail === 'string' ? detalhe.detail : 'Não foi possível cadastrar. Confira os campos e tente novamente.'
+    erroFormulario.value = erroDaApi(e, 'Não foi possível salvar o cartão. Confira os campos.')
   } finally {
     salvando.value = false
   }
 }
+
 onMounted(() => {
   try {
     const salvo = JSON.parse(localStorage.getItem('user') || '{}')
@@ -183,7 +249,7 @@ onMounted(() => {
                   <h2>{{ cartao.nome || 'Cartão de crédito' }}</h2></div>
                 <div class="opes-cards-number">•••• &nbsp;•••• &nbsp;•••• &nbsp;{{ cartao.ultimos_digitos || '••••' }}</div>
                 <div class="opes-cards-face-bottom">
-                  <div><small>Vencimento</small><strong>{{ dataBR(cartao.data_vencimento) }}</strong></div>
+                  <div><small>Vencimento</small><strong>{{ dataBR(cartao.vencimento) }}</strong></div>
                   <i class="far fa-credit-card" aria-hidden="true"></i>
                 </div>
               </div>
@@ -196,7 +262,7 @@ onMounted(() => {
                 </div>
                 <div class="opes-cards-limit-values">
                   <span>{{ valorExibido(cartao.valor_utilizado) }}</span>
-                  <span>{{ valorExibido(cartao.limite) }}</span>
+                  <span>{{ valorExibido(cartao.limite_total) }}</span>
                 </div>
               </div>
             </article>
