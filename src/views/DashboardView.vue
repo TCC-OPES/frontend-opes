@@ -44,9 +44,9 @@ const gastosData = computed(() => ({
 const options = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
-  plugins: { legend: { labels: { color: cores.value.texto } }, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${moeda(c.raw)}` } } },
+  plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${moeda(c.raw)}` } } },
   scales: {
-    y: { beginAtZero: true, grid: { color: cores.value.grade }, ticks: { color: cores.value.texto, callback: v => moeda(v) } },
+    y: { beginAtZero: true, grid: { color: cores.value.grade }, ticks: { color: cores.value.texto, maxTicksLimit: 5, callback: v => `R$ ${Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}` } },
     x: { grid: { display: false }, ticks: { color: cores.value.texto } },
   },
 }))
