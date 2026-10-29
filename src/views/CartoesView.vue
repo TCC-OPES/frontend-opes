@@ -133,7 +133,7 @@ async function salvarCartao() {
     erroFormulario.value = 'O valor utilizado não pode superar o limite total.'
     return
   }
-  if (!/^\\d{2}\\/\\d{2}\\/\\d{4}$/.test(payload.vencimento)) {
+  if (!/^\d{2}\/\d{2}\/\d{4}$/.test(payload.vencimento)) {
     erroFormulario.value = 'Informe o vencimento no formato DD/MM/AAAA.'
     return
   }
