@@ -1,7 +1,7 @@
 <template>
   <aside class="sidebar-container">
     <div class="desktop-sidebar">
-      <div class="logo">
+      <div class="logo" :class="{ 'tema-escuro': tema === 'dark' }">
         <img src="/icons/logo.png" alt="Logo OPES" class="logo-img" />
       </div>
 
@@ -264,6 +264,20 @@ const irParaInvestimentos = () => {
     align-items: center;
     height: 55px;
     flex-shrink: 0;
+    position: relative;
+  }
+
+  .logo.tema-escuro::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: #a3cdb4;
+    -webkit-mask: url("/icons/logo.png") left center / contain no-repeat;
+    mask: url("/icons/logo.png") left center / contain no-repeat;
+  }
+
+  .logo.tema-escuro .logo-img {
+    visibility: hidden;
   }
 
   .logo-img {
