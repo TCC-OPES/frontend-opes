@@ -90,7 +90,7 @@ onMounted(() => {
 <div class="dashboard-layout">
   <SideBarComponent />
   <div class="main-container">
-    <main class="dashboard-content">
+    <main class="dashboard-content entrada-pagina">
       <header class="titulo">
         <div><span class="sobretitulo">VISÃO GERAL</span><h1>Bem-vindo{{ nome ? ', ' + nome : '' }}!</h1>
         <p>Resumo dos seus lançamentos financeiros cadastrados.</p></div>
@@ -176,4 +176,7 @@ p,.nota{color:var(--opes-muted);margin:0}
 .estado{padding:10px 0}
 @media(max-width:1100px){.resumo{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:720px){.dashboard-content{padding:20px 14px 125px}.resumo,.analytics-grid{grid-template-columns:1fr}.titulo{align-items:flex-start;flex-wrap:wrap}.cartao{padding:16px}}
+
+.entrada-pagina { animation: entrada-pagina 0.6s ease-out both; }
+@keyframes entrada-pagina { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 </style>
