@@ -215,7 +215,7 @@ onMounted(() => {
               :title="mostrarValores ? 'Ocultar valores' : 'Mostrar valores'" @click="mostrarValores = !mostrarValores">
               <i class="fas" :class="mostrarValores ? 'fa-eye' : 'fa-eye-slash'"></i>
             </button>
-            <button type="button" class="opes-cards-primary" @click="abrirModal">
+            <button type="button" class="opes-cards-primary" @click="abrirModal()">
               <i class="fas fa-plus" aria-hidden="true"></i><span>Adicionar cartão</span>
             </button>
           </div>
@@ -245,8 +245,16 @@ onMounted(() => {
           <div v-else-if="cartoes.length" class="opes-cards-grid">
             <article v-for="cartao in cartoes" :key="cartao.id" class="opes-cards-card">
               <div class="opes-cards-face" :style="{ backgroundColor: corCartao(cartao.cor), color: corLetra(cartao.cor) }">
-                <div><span class="opes-cards-bank">{{ cartao.banco || 'Instituição financeira' }}</span>
-                  <h2>{{ cartao.nome || 'Cartão de crédito' }}</h2></div>
+                <div class="opes-cards-card-top">
+                  <div><span class="opes-cards-bank">{{ cartao.banco || 'Instituição financeira' }}</span>
+                    <h2>{{ cartao.nome || 'Cartão de crédito' }}</h2></div>
+                  <div class="opes-cards-card-actions">
+                    <button type="button" title="Editar cartão" :aria-label="'Editar ' + cartao.nome" @click="abrirModal(cartao)">
+                      <i class="fas fa-pen" aria-hidden="true"></i></button>
+                    <button type="button" title="Excluir cartão" :aria-label="'Excluir ' + cartao.nome" @click="cartaoExcluindo = cartao">
+                      <i class="fas fa-trash" aria-hidden="true"></i></button>
+                  </div>
+                </div>
                 <div class="opes-cards-number">•••• &nbsp;•••• &nbsp;•••• &nbsp;{{ cartao.ultimos_digitos || '••••' }}</div>
                 <div class="opes-cards-face-bottom">
                   <div><small>Vencimento</small><strong>{{ dataBR(cartao.vencimento) }}</strong></div>
@@ -270,7 +278,7 @@ onMounted(() => {
           <div v-else class="opes-cards-empty">
             <i class="far fa-credit-card"></i><h2>Nenhum cartão cadastrado</h2>
             <p>Adicione seu primeiro cartão para acompanhar seus limites.</p>
-            <button type="button" class="opes-cards-primary" @click="abrirModal">Adicionar cartão</button>
+            <button type="button" class="opes-cards-primary" @click="abrirModal()">Adicionar cartão</button>
           </div>
         </section>
 
@@ -307,27 +315,43 @@ onMounted(() => {
     </nav>
 
     <Teleport to="body">
-      <div v-if="modalAberto" class="opes-cards-overlay" @click.self="modalAberto = false">
+      <div v-if="modalAberto" class="opes-cards-overlay" @click.self="fecharModal">
         <section class="opes-cards-modal" role="dialog" aria-modal="true" aria-labelledby="opes-cards-modal-title">
-          <header><h2 id="opes-cards-modal-title">Adicionar cartão</h2>
-            <button class="opes-cards-close" type="button" aria-label="Fechar" @click="modalAberto = false">×</button></header>
-          <p>Cadastre seu cartão para acompanhar os limites.</p>
+          <header><h2 id="opes-cards-modal-title">{{ cartaoEditando ? 'Editar cartão' : 'Adicionar cartão' }}</h2>
+            <button class="opes-cards-close" type="button" aria-label="Fechar" @click="fecharModal">×</button></header>
+          <p>{{ cartaoEditando ? 'Atualize os dados e personalize a cor.' : 'Cadastre seu cartão para acompanhar os limites.' }}</p>
           <form @submit.prevent="salvarCartao">
             <label>Nome do cartão<input v-model="formulario.nome" maxlength="100" placeholder="Ex.: Cartão Platinum" required /></label>
             <label>Banco / Instituição<input v-model="formulario.banco" maxlength="100" placeholder="Ex.: Banco do Brasil" required /></label>
             <div class="opes-cards-form-row">
-              <label>Limite (R$)<input v-model="formulario.limite" type="number" min="0" step="0.01" required /></label>
-              <label>Vencimento<input v-model="formulario.data_vencimento" type="text" placeholder="15/04/2026" required /></label>
+              <label>Limite total (R$)<input v-model="formulario.limite_total" type="number" min="0" max="99999999.99" step="0.01" required /></label>
+              <label>Vencimento<input v-model="formulario.vencimento" type="text" placeholder="15/04/2026" required /></label>
             </div>
+            <label>Valor utilizado (R$)<input v-model="formulario.valor_utilizado" type="number" min="0" max="99999999.99" step="0.01" required /></label>
             <label>Cor do cartão
               <span class="opes-cards-color"><input v-model="formulario.cor" type="color" /><span>{{ formulario.cor }}</span></span>
             </label>
             <p v-if="erroFormulario" class="opes-cards-form-error" role="alert">{{ erroFormulario }}</p>
             <div class="opes-cards-modal-actions">
-              <button type="button" class="opes-cards-secondary" @click="modalAberto = false">Cancelar</button>
-              <button type="submit" class="opes-cards-primary" :disabled="salvando">{{ salvando ? 'Salvando...' : 'Salvar cartão' }}</button>
+              <button type="button" class="opes-cards-secondary" @click="fecharModal">Cancelar</button>
+              <button type="submit" class="opes-cards-primary" :disabled="salvando">{{ salvando ? 'Salvando...' : (cartaoEditando ? 'Salvar alterações' : 'Cadastrar cartão') }}</button>
             </div>
           </form>
+        </section>
+      </div>
+    </Teleport>
+    <Teleport to="body">
+      <div v-if="cartaoExcluindo" class="opes-cards-overlay" @click.self="!excluindo && (cartaoExcluindo = null)">
+        <section class="opes-cards-modal opes-cards-confirm" role="alertdialog" aria-modal="true"
+          aria-labelledby="opes-cards-delete-title" aria-describedby="opes-cards-delete-description">
+          <h2 id="opes-cards-delete-title">Excluir cartão?</h2>
+          <p id="opes-cards-delete-description">Deseja excluir “{{ cartaoExcluindo.nome }}”? Essa ação remove o cartão do OPES e não pode ser desfeita.</p>
+          <div class="opes-cards-modal-actions">
+            <button type="button" class="opes-cards-secondary" :disabled="excluindo" @click="cartaoExcluindo = null">Cancelar</button>
+            <button type="button" class="opes-cards-delete" :disabled="excluindo" @click="excluirCartao">
+              {{ excluindo ? 'Excluindo...' : 'Excluir cartão' }}
+            </button>
+          </div>
         </section>
       </div>
     </Teleport>
@@ -423,4 +447,11 @@ onMounted(() => {
 @media(max-width:1023px){.opes-cards-sidebar{display:none}.opes-cards-mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;height:calc(70px + env(safe-area-inset-bottom));padding:6px 4px env(safe-area-inset-bottom);border-top:1px solid var(--cp-line);background:var(--cp-surface);z-index:1100;justify-content:space-around}.opes-cards-mobile-nav a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--cp-forest);font-size:10px}.opes-cards-mobile-nav a i{font-size:18px}.opes-cards-mobile-nav a.selected{font-weight:800}}
 @media(max-width:650px){.opes-cards-content{padding:25px 14px 115px}.opes-cards-heading{align-items:flex-start;flex-wrap:wrap}.opes-cards-heading h1{font-size:24px}.opes-cards-summary{grid-template-columns:1fr;gap:12px}.opes-cards-summary-item{min-height:104px;padding:18px}.opes-cards-grid{grid-template-columns:1fr;gap:15px}.opes-cards-face{min-height:218px}.opes-cards-recent{padding:17px}.opes-cards-transaction-value{font-size:11px}.opes-cards-recent-head{align-items:flex-start}.opes-cards-form-row{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.opes-cards-page *{transition:none!important}}
+.opes-cards-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.opes-cards-card-top>div:first-child{min-width:0;overflow-wrap:anywhere}
+.opes-cards-card-actions{display:flex;flex-shrink:0;gap:6px}
+.opes-cards-card-actions button{width:29px;height:29px;display:grid;place-items:center;border:1px solid currentColor!important;border-radius:8px;background:transparent!important;color:inherit!important;opacity:.85}
+.opes-cards-card-actions button:hover{background:#ffffff25!important;opacity:1}
+.opes-cards-delete{padding:12px 17px;border:0;border-radius:10px;background:var(--opes-danger)!important;color:white!important;font-weight:700}
+.opes-cards-confirm>p{line-height:1.6;margin:14px 0 22px}
 </style>
