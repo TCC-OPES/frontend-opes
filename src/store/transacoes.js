@@ -49,6 +49,17 @@ export const useTransacoesStore = defineStore('transacoes', () => {
     }
   }
 
+  function mensagemErro(error, padrao) {
+    const dados = error.response?.data
+    if (typeof dados?.detail === 'string') return dados.detail
+    if (typeof dados?.erro === 'string') return dados.erro
+    if (typeof dados?.valor === 'string') return dados.valor
+    if (Array.isArray(dados?.valor)) return dados.valor.join(' ')
+    if (typeof dados?.cartao === 'string') return dados.cartao
+    if (Array.isArray(dados?.cartao)) return dados.cartao.join(' ')
+    return padrao
+  }
+
   async function criarTransacao(novaTransacaoData) {
     try {
       const response = await api.post('/api/transacoes/', novaTransacaoData)
@@ -56,7 +67,7 @@ export const useTransacoesStore = defineStore('transacoes', () => {
       notify.success('Transação registrada com sucesso.')
       return true
     } catch (error) {
-      notify.error('Erro ao salvar a transação. Verifique os campos.')
+      notify.error(mensagemErro(error, 'Erro ao salvar a transação. Verifique os campos.'))
       return false
     }
   }
@@ -67,8 +78,8 @@ export const useTransacoesStore = defineStore('transacoes', () => {
       await buscarTransacoes()
       notify.success('Transação atualizada com sucesso.')
       return true
-    } catch {
-      notify.error('Não foi possível atualizar a transação.')
+    } catch (error) {
+      notify.error(mensagemErro(error, 'Não foi possível atualizar a transação.'))
       return false
     }
   }

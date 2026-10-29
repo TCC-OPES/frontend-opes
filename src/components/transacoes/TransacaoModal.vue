@@ -1,10 +1,39 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import api from '@/services/api'
 import { useTransacoesStore } from '@/store/transacoes'
 
 const props = defineProps({ transacao: { type: Object, default: null } })
 const emit = defineEmits(['fechar'])
 const transacoesStore = useTransacoesStore()
+const cartoes = ref([])
+const erroCartoes = ref('')
+const carregandoCartoes = ref(false)
+const metodoCredito = computed(() => formulario.value.tipo === 'despesa' && formulario.value.metodo_pagamento === 'credito')
+const cartaoSelecionado = computed(() => cartoes.value.find(c => c.id === Number(formulario.value.cartao)) || null)
+const disponivel = computed(() => {
+  const cartao = cartaoSelecionado.value
+  if (!cartao) return 0
+  const creditoAnterior = props.transacao?.tipo === 'despesa'
+    && props.transacao?.metodo_pagamento === 'credito'
+    && Number(props.transacao?.cartao) === cartao.id ? Number(props.transacao.valor) || 0 : 0
+  return Math.max(0, Number(cartao.limite_total) - Number(cartao.valor_utilizado) + creditoAnterior)
+})
+const moeda = valor => Number(valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+async function carregarCartoes() {
+  carregandoCartoes.value = true
+  erroCartoes.value = ''
+  try {
+    const { data } = await api.get('/api/cartoes/')
+    cartoes.value = Array.isArray(data) ? data : (data.results || [])
+  } catch {
+    erroCartoes.value = 'Não foi possível carregar os cartões.'
+  } finally {
+    carregandoCartoes.value = false
+  }
+}
+onMounted(carregarCartoes)
+
 
 
 const formulario = ref({
@@ -12,21 +41,45 @@ const formulario = ref({
   categoria: props.transacao?.categoria || '',
   tipo: props.transacao?.tipo || 'receita',
   valor: props.transacao?.valor || '',
-  data: props.transacao?.data?.slice(0, 10) || new Date().toLocaleDateString('sv-SE')
+  data: props.transacao?.data?.slice(0, 10) || new Date().toLocaleDateString('sv-SE'),
+  metodo_pagamento: props.transacao?.metodo_pagamento || 'outro',
+  cartao: props.transacao?.cartao || ''
 })
 
 const carregandoSalvar = ref(false)
+const erroFormulario = ref('')
+watch(() => formulario.value.tipo, tipo => {
+  if (tipo !== 'despesa' && formulario.value.metodo_pagamento === 'credito') {
+    formulario.value.metodo_pagamento = 'outro'
+  }
+})
+watch(() => [formulario.value.tipo, formulario.value.metodo_pagamento], () => {
+  if (!metodoCredito.value) formulario.value.cartao = ''
+})
 
 async function submeterFormulario() {
   if (carregandoSalvar.value) return
+  erroFormulario.value = ''
+  if (metodoCredito.value) {
+    if (!formulario.value.cartao || !cartaoSelecionado.value) {
+      erroFormulario.value = 'Selecione o cartão utilizado na compra.'
+      return
+    }
+    if (Number(formulario.value.valor) > disponivel.value) {
+      erroFormulario.value = 'O valor ultrapassa o limite disponível deste cartão.'
+      return
+    }
+  }
   carregandoSalvar.value = true
-  const sucesso = props.transacao
-    ? await transacoesStore.editarTransacao(props.transacao.id, formulario.value)
-    : await transacoesStore.criarTransacao(formulario.value)
-  carregandoSalvar.value = false
+  const dados = { ...formulario.value, cartao: metodoCredito.value ? Number(formulario.value.cartao) : null }
+  try {
+    const sucesso = props.transacao
+      ? await transacoesStore.editarTransacao(props.transacao.id, dados)
+      : await transacoesStore.criarTransacao(dados)
 
-  if (sucesso) {
-    emit('fechar')
+    if (sucesso) emit('fechar')
+  } finally {
+    carregandoSalvar.value = false
   }
 }
 </script>
@@ -59,6 +112,30 @@ async function submeterFormulario() {
         </div>
 
         <div class="grupo-input">
+          <label for="metodo-pagamento">Método de pagamento</label>
+          <select id="metodo-pagamento" v-model="formulario.metodo_pagamento">
+            <option value="pix">Pix</option>
+            <option value="dinheiro">Dinheiro</option>
+            <option value="debito">Cartão de débito</option>
+            <option value="credito" :disabled="formulario.tipo !== 'despesa'">Cartão de crédito</option>
+            <option value="outro">Outro / não informado</option>
+          </select>
+        </div>
+        <div v-if="metodoCredito" class="grupo-input">
+          <label for="cartao-transacao">Cartão utilizado</label>
+          <select id="cartao-transacao" v-model="formulario.cartao" required :disabled="carregandoCartoes || !!erroCartoes">
+            <option value="" disabled>Selecione seu cartão</option>
+            <option v-for="cartao in cartoes" :key="cartao.id" :value="cartao.id">
+              {{ cartao.banco }} — {{ cartao.nome }}
+            </option>
+          </select>
+          <small v-if="carregandoCartoes">Carregando cartões...</small>
+          <small v-else-if="erroCartoes" class="mensagem-erro">{{ erroCartoes }}</small>
+          <small v-else-if="!cartoes.length">Cadastre um cartão na página Cartões para usar este método.</small>
+          <small v-else-if="cartaoSelecionado">Limite disponível: <strong>{{ moeda(disponivel) }}</strong></small>
+          <small class="aviso-limite">O valor da compra será somado ao limite utilizado do cartão.</small>
+        </div>
+        <div class="grupo-input">
           <label>Valor (R$)</label>
           <input type="number" step="0.01" min="0.01" v-model="formulario.valor" placeholder="0.00" required />
         </div>
@@ -68,9 +145,10 @@ async function submeterFormulario() {
           <input type="date" v-model="formulario.data" required />
         </div>
 
+        <p v-if="erroFormulario" class="mensagem-erro" role="alert">{{ erroFormulario }}</p>
         <div class="modal-footer">
           <button class="btn-secundario" type="button" @click="emit('fechar')">Cancelar</button>
-          <button class="btn-primario" type="submit" :disabled="carregandoSalvar">
+          <button class="btn-primario" type="submit" :disabled="carregandoSalvar || (metodoCredito && (!cartaoSelecionado || carregandoCartoes || !!erroCartoes))">
             {{ carregandoSalvar ? 'Salvando...' : (transacao ? 'Salvar alterações' : 'Salvar Transação') }}
           </button>
         </div>
@@ -90,7 +168,9 @@ async function submeterFormulario() {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 2500;
+  padding: 16px;
+  overflow-y: auto;
 }
 
 .modal-content {
@@ -100,6 +180,8 @@ async function submeterFormulario() {
   border-radius: 16px;
   width: 100%;
   max-width: 450px;
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
   box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
 
@@ -187,4 +269,8 @@ async function submeterFormulario() {
   color: white;
   cursor: pointer;
 }
+.mensagem-erro{color:var(--opes-danger);font-size:12px;margin:0}
+.grupo-input small{color:var(--opes-muted);font-size:12px}
+.grupo-input small.aviso-limite{color:var(--opes-forest);line-height:1.5}
+@media(max-width:540px){.modal-content{padding:20px 16px}.modal-footer{flex-wrap:wrap}.modal-footer button{flex:1}}
 </style>
