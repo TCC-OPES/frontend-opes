@@ -206,10 +206,3 @@ img { max-width: 100%; }
 :root[data-theme="dark"] #app .btn-foto { background:#2c493a; color:#edf5ee; }
 :root[data-theme="dark"] #app .sidebar-container .menu-item.router-link-active { color:#11251b !important; }
 :root[data-theme="dark"] #app .sidebar-container .theme-toggle { color:#edf5ee !important; }
-
-@media (prefers-reduced-motion: no-preference) {
-  #app .dashboard-content > *, #app .main-content > *, #app .container-perfil > *, #app .conteudo > .titulo, #app .conteudo > .painel {
-    animation: opes-entrada-segura 280ms ease-out both;
-  }
-  @keyframes opes-entrada-segura { from { opacity: .7; translate: 0 6px; } to { opacity: 1; translate: 0 0; } }
-}
