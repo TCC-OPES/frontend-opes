@@ -79,7 +79,7 @@ export const useTransacoesStore = defineStore('transacoes', () => {
       notify.success('Transação atualizada com sucesso.')
       return true
     } catch (error) {
-      notify.error(mensagemErro(error, 'Não foi possível atualizar a transação.')
+      notify.error(mensagemErro(error, 'Não foi possível atualizar a transação.'))
       return false
     }
   }
