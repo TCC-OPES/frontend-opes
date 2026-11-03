@@ -19,7 +19,7 @@
           <span>Cartões</span>
         </router-link>
         <router-link to="/recorrencias" class="menu-item">
-          <i class="fas fa-repeat"></i>
+          <i class="fas fa-sync-alt"></i>
           <span>Contas recorrentes</span>
         </router-link>
         <router-link to="/calendario" class="menu-item"><i class="fas fa-calendar-alt"></i><span>Calendário</span></router-link>
@@ -257,6 +257,7 @@ const irParaInvestimentos = () => {
     top: auto;
     flex-shrink: 0;
     overflow: hidden;
+    gap: 0;
   }
 
   .logo {
@@ -289,8 +290,8 @@ const irParaInvestimentos = () => {
   .menu {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin-top: 40px;
+    gap: 5px;
+    margin-top: 28px;
     flex-grow: 1;
     width: 100%;
     min-height: 0;
@@ -303,15 +304,16 @@ const irParaInvestimentos = () => {
   .menu-item {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+    min-height: 44px;
     height: 44px;
-    padding: 0 16px;
+    padding: 0 12px;
     color: var(--opes-forest);
     text-decoration: none;
     border-radius: 8px;
     font-family: "Plus Jakarta Sans", Arial, sans-serif;
     font-weight: 500;
-    font-size: 1rem;
+    font-size: 0.875rem;
     letter-spacing: normal;
     width: 100%;
     box-sizing: border-box;
@@ -393,7 +395,33 @@ const irParaInvestimentos = () => {
     flex-shrink: 0;
   }
 }
-.theme-toggle { display:flex;align-items:center;gap:12px;margin:8px 0 12px;width:100%;padding:12px 14px;border:1px solid var(--opes-border);border-radius:10px;background:var(--opes-cream);color:var(--opes-ink);font-size:14px;font-weight:650 }
-.theme-toggle i { width:20px;text-align:center }
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  margin: 8px 0 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--opes-border) !important;
+  border-radius: 10px;
+  background: var(--opes-forest-soft) !important;
+  color: var(--opes-ink) !important;
+  font-size: 14px;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+}
+.theme-toggle i { width: 20px; text-align: center; }
+.theme-toggle:hover { filter: brightness(.96); }
+.user-profile-btn:focus-visible, .theme-toggle:focus-visible, .menu-item:focus-visible {
+  outline: 2px solid var(--opes-caramel);
+  outline-offset: 2px;
+}
+@media (min-width: 1024px) and (max-height: 680px) {
+  .desktop-sidebar { padding-top: 14px; padding-bottom: 14px; }
+  .menu { margin-top: 12px; gap: 2px; }
+  .menu-item { min-height: 39px; height: 39px; }
+}
 @media(max-width:1023px){.theme-toggle{display:none}}
 </style>
