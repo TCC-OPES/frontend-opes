@@ -1,6 +1,16 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import api from '@/services/api.js'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/store/auth'
+
+const router = useRouter()
+const authStore = useAuthStore()
+
+function sairDaConta() {
+  authStore.logout()
+  router.replace('/login')
+}
 
 const dadosUsuario = ref(null)
 const observador = ref(null)
@@ -101,7 +111,7 @@ onMounted(async () => {
           <h1>Meu <span class="texto-gradiente">Perfil</span></h1>
           <p>Gerencie suas informações e preferências de conta.</p>
         </div>
-        <button class="botao-principal">✏️ Editar Perfil</button>
+        <button type="button" class="botao-sair" @click="sairDaConta"><i class="fas fa-sign-out-alt" aria-hidden="true"></i> Sair da conta</button>
       </header>
 
       <div class="layout-grid">
@@ -225,6 +235,28 @@ h1 {
   cursor: pointer;
 }
 
+.botao-sair {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border: 1px solid #ad4c42;
+  border-radius: 12px;
+  background: transparent;
+  color: #ad4c42;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color .2s ease, color .2s ease;
+}
+.botao-sair:hover {
+  background: #ad4c42;
+  color: white;
+}
+.botao-sair:focus-visible {
+  outline: 3px solid #ad4c42;
+  outline-offset: 3px;
+}
 .header-perfil {
   display: flex;
   justify-content: space-between;
