@@ -441,7 +441,7 @@ h1 {
   color: inherit;
 }
 :global(:root[data-theme="dark"]) .botao-sair {
-  color: #a82d2b !important;
+  color: #aa001b !important;
 }
 .acoes-edicao {
   display: flex;
