@@ -17,7 +17,7 @@ const cartaoExcluindo = ref(null)
 const erroFormulario = ref('')
 const mostrarValores = ref(true)
 const coresSugeridas = ['#14372D', '#295B83', '#6C4A73', '#935A39', '#374151', '#7D4655', '#006B63', '#A75530']
-const formulario = reactive({ nome: '', banco: '', limite_total: '', valor_utilizado: '', vencimento: '', cor: '#14372D' })
+const formulario = reactive({ nome: '', banco: '', limite_total: '', valor_utilizado: '', vencimento: '', dia_fechamento: '', cor: '#14372D' })
 const moeda = valor => Number(valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 const valorExibido = valor => mostrarValores.value ? moeda(valor) : 'R$ •••••'
 const totalLimite = computed(() => cartoes.value.reduce((acc, item) => acc + (Number(item.limite_total) || 0), 0))
@@ -64,6 +64,7 @@ function abrirModal(cartao = null) {
     limite_total: cartao?.limite_total ?? '',
     valor_utilizado: cartao?.valor_utilizado ?? 0,
     vencimento: cartao ? dataBR(cartao.vencimento) : '',
+    dia_fechamento: cartao?.dia_fechamento ?? '',
     cor: corCartao(cartao?.cor),
   })
   erroFormulario.value = ''
@@ -109,6 +110,7 @@ async function salvarCartao() {
     limite_total: Number(formulario.limite_total),
     valor_utilizado: Number(formulario.valor_utilizado || 0),
     vencimento: formulario.vencimento.trim(),
+    dia_fechamento: formulario.dia_fechamento === '' ? null : Number(formulario.dia_fechamento),
     cor: formulario.cor,
   }
   if (!Number.isFinite(payload.limite_total) || payload.limite_total < 0 ||
@@ -124,6 +126,10 @@ async function salvarCartao() {
     erroFormulario.value = 'Informe o vencimento no formato DD/MM/AAAA.'
     return
   }
+  if (payload.dia_fechamento !== null && (!Number.isInteger(payload.dia_fechamento) || payload.dia_fechamento < 1 || payload.dia_fechamento > 31)) {
+    erroFormulario.value = 'O dia de fechamento deve estar entre 1 e 31.'
+    return
+  }
   salvando.value = true
   try {
     const atual = cartaoEditando.value
@@ -131,12 +137,13 @@ async function salvarCartao() {
       ? await api.patch('/api/cartoes/' + atual.id + '/', payload)
       : await api.post('/api/cartoes/', payload)
     if (atual) {
-      cartoes.value = cartoes.value.map(item => item.id === atual.id ? data : item)
+      cartoes.value = cartoes.value.map(item => item.id === atual.id ? { ...item, ...data } : item)
     } else if (data?.id) {
       cartoes.value = [data, ...cartoes.value]
     } else {
       await buscarCartoes()
     }
+    await buscarCartoes()
     modalAberto.value = false
     cartaoEditando.value = null
     notify.success(atual ? 'Cartão atualizado com sucesso!' : 'Cartão cadastrado com sucesso!')
@@ -198,7 +205,7 @@ onMounted(() => {
           </div>
           <div v-else-if="cartoes.length" class="opes-cards-grid">
             <article v-for="cartao in cartoes" :key="cartao.id" class="opes-cards-card">
-              <div class="opes-cards-face" :style="{ backgroundColor: corCartao(cartao.cor), color: corLetra(cartao.cor) }">
+              <div class="opes-cards-face" :style="{ '--cor-cartao': corCartao(cartao.cor), '--texto-cartao': corLetra(cartao.cor) }">
                 <div class="opes-cards-card-top">
                   <div><span class="opes-cards-bank">{{ cartao.banco || 'Instituição financeira' }}</span>
                     <h2>{{ cartao.nome || 'Cartão de crédito' }}</h2></div>
@@ -211,7 +218,7 @@ onMounted(() => {
                 </div>
                 <div class="opes-cards-number">•••• &nbsp;•••• &nbsp;•••• &nbsp;{{ cartao.ultimos_digitos || '••••' }}</div>
                 <div class="opes-cards-face-bottom">
-                  <div><small>Vencimento</small><strong>{{ dataBR(cartao.vencimento) }}</strong></div>
+                  <div><small>Vencimento</small><strong>{{ dataBR(cartao.vencimento) }}</strong><small v-if="cartao.dia_fechamento" class="opes-cards-closing">Fecha dia {{ cartao.dia_fechamento }}</small></div>
                   <i class="far fa-credit-card" aria-hidden="true"></i>
                 </div>
               </div>
@@ -274,6 +281,7 @@ onMounted(() => {
               <label>Limite total (R$)<input v-model="formulario.limite_total" type="number" min="0" max="99999999.99" step="0.01" required /></label>
               <label>Vencimento<input v-model="formulario.vencimento" type="text" placeholder="15/04/2026" required /></label>
             </div>
+            <label>Dia de fechamento mensal da fatura (opcional)<input v-model="formulario.dia_fechamento" type="number" min="1" max="31" step="1" placeholder="Ex.: 8" /><small class="opes-cards-field-hint">O fechamento e o vencimento aparecerão todo mês no calendário financeiro. Em meses curtos, o dia 31 será o último dia.</small></label>
             <label>Valor utilizado (R$)<input v-model="formulario.valor_utilizado" type="number" min="0" max="99999999.99" step="0.01" required /></label>
             <div class="opes-cards-color-field">
               <span class="opes-cards-field-title">Personalize a cor do cartão</span>
@@ -343,8 +351,11 @@ onMounted(() => {
 .opes-cards-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
 .opes-cards-card{border-radius:15px;overflow:hidden;background:var(--cp-surface);border:1px solid var(--cp-line);min-width:0;transition:transform .2s ease,box-shadow .2s ease}
 .opes-cards-card:hover{transform:translateY(-3px);box-shadow:0 8px 20px #10251b15}
-.opes-cards-face{min-height:228px;padding:24px;display:flex;flex-direction:column;justify-content:space-between}
+.opes-cards-face{min-height:228px;padding:24px;display:flex;flex-direction:column;justify-content:space-between;background-color:var(--cor-cartao,#14372D)!important;color:var(--texto-cartao,#fff)!important}
 .opes-cards-bank{display:block;font-size:12px;margin-bottom:6px;opacity:.9}
+.opes-cards-face .opes-cards-bank,.opes-cards-face .opes-cards-number,.opes-cards-face-bottom *{color:inherit!important}
+.opes-cards-closing{margin-top:7px;opacity:.85}
+.opes-cards-field-hint{font-size:11px;font-weight:400;color:var(--opes-muted);line-height:1.5}
 .opes-cards-face h2{font-size:17px;color:inherit!important;margin:0;font-weight:800}
 .opes-cards-number{font-family:ui-monospace,Consolas,monospace;font-size:13px;font-weight:700;letter-spacing:.06em;white-space:nowrap}
 .opes-cards-face-bottom{display:flex;justify-content:space-between;align-items:end}
