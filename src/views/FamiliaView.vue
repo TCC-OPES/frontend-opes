@@ -1,8 +1,8 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import {
   UsersRound, UserRoundPlus, Wallet, ReceiptText, Plus, X,
-  House, Crown, ArrowRight, RefreshCw, Users, ShieldCheck
+  House, Crown, ArrowRight, RefreshCw, Users, ShieldCheck, Mail, Trash2, Check, Ban
 } from '@lucide/vue'
 import api from '@/services/api'
 import { notify } from '@/services/toast'
@@ -16,6 +16,20 @@ const modalAberto = ref(false)
 const erro = ref('')
 const erroFormulario = ref('')
 const nomeNovaFamilia = ref('')
+const minhaContaId = ref(null)
+const meusConvites = ref([])
+const convitesEnviados = ref([])
+const modalConviteAberto = ref(false)
+const emailConvite = ref('')
+const papelConvite = ref('membro')
+const erroConvite = ref('')
+const enviandoConvite = ref(false)
+const carregandoConvites = ref(false)
+const processandoConvite = ref(null)
+const removendoMembro = ref(null)
+const cancelandoConvite = ref(null)
+const erroConvites = ref('')
+const erroEnviados = ref('')
 
 const moeda = valor => Number(valor || 0).toLocaleString('pt-BR', {
   style: 'currency', currency: 'BRL'
@@ -26,12 +40,21 @@ const familiaSelecionada = computed(() =>
   familias.value.find(f => String(f.id) === String(selecionadaId.value)) || null
 )
 
-// A API atual só entrega os campos básicos da família.
-// Exibimos membros/despesas apenas quando esses dados existirem na resposta.
+// Os dados de membros e despesas vêm das famílias acessíveis ao usuário.
 const membrosDisponiveis = computed(() => Array.isArray(familiaSelecionada.value?.membros))
 const despesasDisponiveis = computed(() => Array.isArray(familiaSelecionada.value?.despesas))
 const membros = computed(() => membrosDisponiveis.value ? familiaSelecionada.value.membros : [])
 const despesas = computed(() => despesasDisponiveis.value ? familiaSelecionada.value.despesas : [])
+const meuPapel = computed(() => {
+  if (!familiaSelecionada.value || minhaContaId.value == null) return null
+  if (String(familiaSelecionada.value.criador) === String(minhaContaId.value)) return 'admin'
+  return membros.value.find(m => String(m.usuario) === String(minhaContaId.value))?.papel || null
+})
+const souAdmin = computed(() => meuPapel.value === 'admin')
+const meuMembro = membro => String(membro.usuario) === String(minhaContaId.value)
+const podeRemover = membro => minhaContaId.value != null &&
+  String(membro.usuario) !== String(familiaSelecionada.value?.criador) &&
+  (souAdmin.value || meuMembro(membro))
 const totalDespesas = computed(() => despesas.value.reduce((total, item) =>
   total + (Number(item.valor) || 0), 0))
 const iniciais = nome => String(nome || '?').trim().split(/\s+/).slice(0, 2)
@@ -44,6 +67,115 @@ const papelMembro = item => ({
 const nomePagador = despesa => despesa.pago_por_nome ||
   despesa.pago_por?.name || despesa.pago_por?.nome || 'Não informado'
 
+function mensagemApi(e, fallback) {
+  const dados = e.response?.data
+  if (typeof dados?.detail === 'string') return dados.detail
+  if (typeof dados?.erro === 'string') return dados.erro
+  if (typeof dados?.email?.[0] === 'string') return dados.email[0]
+  if (typeof dados?.papel?.[0] === 'string') return dados.papel[0]
+  return fallback
+}
+async function carregarMinhaConta() {
+  try {
+    const { data } = await api.get('/api/me/')
+    minhaContaId.value = (data.data || data).id ?? null
+  } catch {
+    minhaContaId.value = null
+  }
+}
+async function carregarMeusConvites() {
+  carregandoConvites.value = true
+  erroConvites.value = ''
+  try {
+    const { data } = await api.get('/api/familias/convites/')
+    meusConvites.value = lista(data)
+  } catch (e) {
+    erroConvites.value = mensagemApi(e, 'Não foi possível consultar seus convites. Confira se o backend de famílias está atualizado.')
+  } finally {
+    carregandoConvites.value = false
+  }
+}
+async function carregarConvitesEnviados() {
+  convitesEnviados.value = []
+  erroEnviados.value = ''
+  if (!souAdmin.value || !selecionadaId.value) return
+  try {
+    const { data } = await api.get('/api/familias/' + selecionadaId.value + '/convites/')
+    convitesEnviados.value = lista(data)
+  } catch (e) {
+    erroEnviados.value = mensagemApi(e, 'Não foi possível consultar os convites enviados.')
+  }
+}
+function abrirModalConvite() {
+  emailConvite.value = ''
+  papelConvite.value = 'membro'
+  erroConvite.value = ''
+  modalConviteAberto.value = true
+}
+function fecharModalConvite() {
+  if (!enviandoConvite.value) modalConviteAberto.value = false
+}
+async function enviarConvite() {
+  if (enviandoConvite.value || !souAdmin.value) return
+  const email = emailConvite.value.trim()
+  if (!email) { erroConvite.value = 'Informe o e-mail da pessoa.'; return }
+  enviandoConvite.value = true
+  erroConvite.value = ''
+  try {
+    await api.post('/api/familias/' + selecionadaId.value + '/membros/', {
+      email, papel: papelConvite.value
+    })
+    modalConviteAberto.value = false
+    notify.success('Convite enviado! A pessoa poderá aceitar na página Família.')
+    await carregarConvitesEnviados()
+  } catch (e) {
+    erroConvite.value = mensagemApi(e, 'Não foi possível enviar o convite.')
+  } finally {
+    enviandoConvite.value = false
+  }
+}
+async function responderConvite(convite, acao) {
+  if (processandoConvite.value != null) return
+  processandoConvite.value = convite.id
+  try {
+    await api.post('/api/familias/convites/' + convite.id + '/responder/', { acao })
+    notify.success(acao === 'aceitar' ? 'Você entrou na família!' : 'Convite recusado.')
+    await Promise.all([carregarFamilias(), carregarMeusConvites()])
+  } catch (e) {
+    notify.error(mensagemApi(e, 'Não foi possível responder ao convite.'))
+  } finally {
+    processandoConvite.value = null
+  }
+}
+async function removerMembro(membro) {
+  if (!podeRemover(membro) || removendoMembro.value != null) return
+  const sair = meuMembro(membro)
+  if (!window.confirm(sair ? 'Deseja sair desta família?' : 'Remover este membro da família?')) return
+  removendoMembro.value = membro.id
+  try {
+    await api.delete('/api/familias/' + selecionadaId.value + '/membros/' + membro.id + '/')
+    notify.success(sair ? 'Você saiu da família.' : 'Membro removido.')
+    await carregarFamilias()
+  } catch (e) {
+    notify.error(mensagemApi(e, 'Não foi possível remover o membro.'))
+  } finally {
+    removendoMembro.value = null
+  }
+}
+async function cancelarConvite(convite) {
+  if (!souAdmin.value || cancelandoConvite.value != null) return
+  if (!window.confirm('Cancelar convite pendente para ' + convite.usuario_email + '?')) return
+  cancelandoConvite.value = convite.id
+  try {
+    await api.delete('/api/familias/' + selecionadaId.value + '/convites/' + convite.id + '/')
+    notify.success('Convite cancelado.')
+    await carregarConvitesEnviados()
+  } catch (e) {
+    notify.error(mensagemApi(e, 'Não foi possível cancelar o convite.'))
+  } finally {
+    cancelandoConvite.value = null
+  }
+}
 async function carregarFamilias() {
   carregando.value = true
   erro.value = ''
@@ -96,7 +228,11 @@ async function criarFamilia() {
   }
 }
 
-onMounted(carregarFamilias)
+watch([selecionadaId, souAdmin], carregarConvitesEnviados)
+onMounted(async () => {
+  await carregarMinhaConta()
+  await Promise.all([carregarFamilias(), carregarMeusConvites()])
+})
 </script>
 
 <template>
@@ -128,11 +264,35 @@ onMounted(carregarFamilias)
         </template>
 
         <template v-else-if="!erro">
+          <section class="painel painel-convites" aria-labelledby="meus-convites">
+            <div class="painel-cabecalho">
+              <div><h2 id="meus-convites">Convites recebidos</h2><p>Participe de famílias que convidaram você pelo e-mail da sua conta.</p></div>
+              <span class="indicador"><Mail :size="18" /></span>
+            </div>
+            <p v-if="carregandoConvites" class="texto-apoio">Consultando seus convites...</p>
+            <div v-else-if="erroConvites" class="aviso-pequeno" role="alert">
+              {{ erroConvites }} <button class="botao-secundario" type="button" @click="carregarMeusConvites">Tentar novamente</button>
+            </div>
+            <div v-else-if="meusConvites.length" class="lista-convites">
+              <article v-for="convite in meusConvites" :key="convite.id" class="convite-item">
+                <span class="icone-despesa"><Mail :size="19" /></span>
+                <div class="despesa-info">
+                  <strong>{{ convite.familia_nome }}</strong>
+                  <small>Convidado por {{ convite.convidado_por_nome || 'um administrador' }} · {{ papelMembro(convite) }}</small>
+                </div>
+                <div class="acoes-convite">
+                  <button class="botao-principal" type="button" :disabled="processandoConvite !== null" @click="responderConvite(convite, 'aceitar')"><Check :size="15" /> Aceitar</button>
+                  <button class="botao-cancelar" type="button" :disabled="processandoConvite !== null" @click="responderConvite(convite, 'recusar')"><Ban :size="15" /> Recusar</button>
+                </div>
+              </article>
+            </div>
+            <p v-else class="texto-apoio">Nenhum convite pendente no momento.</p>
+          </section>
           <section class="resumos" aria-label="Resumo familiar">
             <article class="resumo-cartao">
               <div class="resumo-topo"><span>Suas famílias</span><UsersRound :size="20" /></div>
               <strong>{{ familias.length }}</strong>
-              <small>Grupos que você criou</small>
+              <small>Grupos criados ou dos quais você participa</small>
             </article>
             <article class="resumo-cartao">
               <div class="resumo-topo"><span>Membros da família</span><Users :size="20" /></div>
@@ -187,7 +347,10 @@ onMounted(carregarFamilias)
                     <h2 id="titulo-membros">Membros da família</h2>
                     <p>{{ familiaSelecionada?.nome }}</p>
                   </div>
-                  <span class="indicador"><UsersRound :size="18" /></span>
+                  <button v-if="souAdmin" class="botao-principal" type="button" @click="abrirModalConvite">
+                    <UserRoundPlus :size="17" /> Convidar por e-mail
+                  </button>
+                  <span v-else class="indicador"><UsersRound :size="18" /></span>
                 </div>
                 <div v-if="membrosDisponiveis && membros.length" class="membros-grade">
                   <article v-for="(membro, i) in membros" :key="membro.id || i" class="membro-cartao">
@@ -195,13 +358,32 @@ onMounted(carregarFamilias)
                     <div class="membro-dados">
                       <strong>{{ nomeMembro(membro) }}</strong>
                       <small><Crown v-if="membro.papel === 'admin'" :size="13" /> {{ papelMembro(membro) }}</small>
+                      <small v-if="membro.email">{{ membro.email }}</small>
                     </div>
+                    <button v-if="podeRemover(membro)" type="button" class="icone-acao" :disabled="removendoMembro !== null"
+                      :title="meuMembro(membro) ? 'Sair da família' : 'Remover membro'"
+                      :aria-label="meuMembro(membro) ? 'Sair da família' : 'Remover ' + nomeMembro(membro)"
+                      @click="removerMembro(membro)"><Trash2 :size="17" /></button>
                   </article>
                 </div>
                 <div v-else class="vazio-interno">
                   <div class="icone-vazio"><UserRoundPlus :size="23" /></div>
-                  <h3>{{ membrosDisponiveis ? 'Nenhum membro cadastrado' : 'Membros em breve' }}</h3>
-                  <p>{{ membrosDisponiveis ? 'Os integrantes desta família aparecerão aqui.' : 'O cadastro e a consulta de membros dependem da integração dessa funcionalidade no backend.' }}</p>
+                  <h3>{{ membrosDisponiveis ? 'Nenhum membro cadastrado' : 'Membros não disponíveis' }}</h3>
+                  <p>{{ membrosDisponiveis ? 'Os integrantes desta família aparecerão aqui.' : 'Confira se o backend da funcionalidade Família está atualizado.' }}</p>
+                </div>
+                <div v-if="souAdmin" class="convites-enviados">
+                  <div class="painel-cabecalho">
+                    <div><h3>Convites enviados</h3><p>Aguardando a resposta de outras pessoas.</p></div>
+                  </div>
+                  <p v-if="erroEnviados" class="aviso-pequeno" role="alert">{{ erroEnviados }}</p>
+                  <div v-else-if="convitesEnviados.length" class="lista-convites">
+                    <article v-for="convite in convitesEnviados" :key="convite.id" class="convite-item">
+                      <span class="icone-despesa"><Mail :size="18" /></span>
+                      <div class="despesa-info"><strong>{{ convite.usuario_nome || convite.usuario_email }}</strong><small>{{ convite.usuario_email }} · {{ papelMembro(convite) }} · Pendente</small></div>
+                      <button class="icone-acao" type="button" :disabled="cancelandoConvite !== null" title="Cancelar convite" aria-label="Cancelar convite" @click="cancelarConvite(convite)"><X :size="17" /></button>
+                    </article>
+                  </div>
+                  <p v-else class="texto-apoio">Nenhum convite aguardando resposta.</p>
                 </div>
               </section>
 
@@ -235,6 +417,29 @@ onMounted(carregarFamilias)
       </div>
     </main>
 
+    <div v-if="modalConviteAberto" class="modal-fundo" @click.self="fecharModalConvite">
+      <section class="modal-familia" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-convite" @keydown.esc="fecharModalConvite">
+        <div class="modal-cabecalho">
+          <div><h2 id="titulo-modal-convite">Convidar para a família</h2><p>Informe o e-mail de uma conta já cadastrada no OPES.</p></div>
+          <button class="fechar-modal" type="button" aria-label="Fechar" @click="fecharModalConvite"><X :size="20" /></button>
+        </div>
+        <form @submit.prevent="enviarConvite">
+          <label for="email-convite">E-mail da pessoa</label>
+          <input id="email-convite" v-model.trim="emailConvite" type="email" maxlength="255" placeholder="pessoa@exemplo.com" autocomplete="email" required autofocus />
+          <label for="papel-convite" class="campo-segundo">Função na família</label>
+          <select id="papel-convite" v-model="papelConvite" required>
+            <option value="membro">Membro</option>
+            <option value="dependente">Dependente</option>
+          </select>
+          <p class="texto-apoio">A pessoa somente entrará no grupo depois de aceitar o convite na página Família.</p>
+          <p v-if="erroConvite" class="erro-formulario" role="alert">{{ erroConvite }}</p>
+          <div class="modal-acoes">
+            <button type="button" class="botao-cancelar" :disabled="enviandoConvite" @click="fecharModalConvite">Cancelar</button>
+            <button type="submit" class="botao-principal" :disabled="enviandoConvite">{{ enviandoConvite ? 'Enviando...' : 'Enviar convite' }}</button>
+          </div>
+        </form>
+      </section>
+    </div>
     <div v-if="modalAberto" class="modal-fundo" @click.self="fecharModal">
       <section class="modal-familia" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-familia" @keydown.esc="fecharModal">
         <div class="modal-cabecalho">
@@ -335,4 +540,22 @@ onMounted(carregarFamilias)
 @media(max-width:720px){.pagina-header{align-items:flex-start;flex-direction:column}.resumos{grid-template-columns:1fr;gap:11px}.resumo-cartao{min-height:120px;padding:18px}.familia-content{padding:24px 14px 130px}.painel{padding:18px}.painel-cabecalho{align-items:flex-start;flex-wrap:wrap}.criar-topo{width:100%}}
 @media(max-width:420px){.modal-acoes{flex-direction:column-reverse}.modal-acoes button{width:100%}.despesa-item{flex-wrap:wrap}.despesa-valor{margin-left:50px}}
 @media(prefers-reduced-motion:reduce){.carregando-cartao{animation:none}}
+
+.painel-convites{margin-bottom:22px}
+.texto-apoio{color:var(--opes-muted);font-size:12px;line-height:1.6;margin:10px 0}
+.lista-convites{display:flex;flex-direction:column;gap:10px}
+.convite-item{display:flex;align-items:center;gap:12px;min-width:0;background:var(--opes-cream);border:1px solid var(--opes-border);border-radius:12px;padding:13px}
+.acoes-convite{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.acoes-convite button{padding:9px 12px!important}
+.convites-enviados{margin-top:23px;border-top:1px solid var(--opes-border);padding-top:20px}
+.convites-enviados .painel-cabecalho{margin-bottom:12px}
+.convites-enviados h3{font-size:14px;margin:0 0 6px}
+.icone-acao{border:1px solid var(--opes-border)!important;background:var(--opes-paper)!important;color:var(--opes-danger)!important;border-radius:9px;padding:9px;display:grid;place-items:center;margin-left:auto;flex-shrink:0}
+.icone-acao:hover{border-color:var(--opes-danger)!important}
+.icone-acao:disabled{opacity:.45;cursor:not-allowed}
+.aviso-pequeno{font-size:12px;color:var(--opes-danger);line-height:1.6}
+.campo-segundo{margin-top:18px}
+.modal-familia select{width:100%;padding:12px 14px;border:1px solid var(--opes-border);border-radius:9px;background:var(--opes-cream);color:var(--opes-ink)}
+.membro-cartao .membro-dados{flex:1}
+@media(max-width:700px){.convite-item{align-items:flex-start;flex-wrap:wrap}.acoes-convite{width:100%}.acoes-convite button{flex:1}}
 </style>
