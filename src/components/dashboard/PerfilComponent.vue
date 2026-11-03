@@ -1,205 +1,302 @@
+<template>
+  <div class="dashboard-layout">
+    <SideBarComponent />
+
+    <div class="main-container">
+      <main class="dashboard-content">
+        <section v-if="dadosUsuario" class="container-perfil">
+          <header class="header-perfil animar">
+            <div>
+              <h1>Meu <span class="texto-gradiente">Perfil</span></h1>
+              <p>Gerencie suas informações e preferências de conta.</p>
+            </div>
+            <div class="acoes-cabecalho">
+              <button v-if="!editando" class="botao-principal" @click="iniciarEdicao">
+                Editar Perfil
+              </button>
+              <div v-else class="acoes-edicao">
+              <button class="botao-secundario" @click="cancelarEdicao" :disabled="salvando">
+                Cancelar
+              </button>
+              <button class="botao-principal" @click="salvarPerfil" :disabled="salvando">
+                {{ salvando ? 'Salvando...' : 'Salvar' }}
+              </button>
+              </div>
+              <button type="button" class="botao-sair" aria-label="Sair da conta" @click="sairDaConta">
+                <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                Sair da conta
+              </button>
+            </div>
+          </header>
+
+          <div class="layout-grid">
+            <aside class="coluna-lateral animar">
+              <div class="cartao-perfil centro">
+                <div class="avatar-container">
+                  <div class="avatar-circulo" @click="expandirFoto">
+                    <img v-if="dadosUsuario.fotoUrl" :src="dadosUsuario.fotoUrl" alt="Foto de Perfil" class="foto-renderizada" />
+                    <span v-else>{{ obterIniciais(dadosUsuario.nome) }}</span>
+                  </div>
+
+                  <button v-if="editando" class="btn-foto" @click="abrirSeletorArquivo" title="Alterar foto" aria-label="Alterar foto"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 4h-4l-2 3H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg></button>
+                  
+                  <input 
+                    type="file" 
+                    ref="fileInput" 
+                    style="display: none" 
+                    accept="image/png, image/jpeg, image/jpg, image/webp" 
+                    @change="aoSelecionarFoto" 
+                  />
+                </div>
+
+                <h2>{{ dadosUsuario.nome || 'Usuário' }}</h2>
+                <p class="email-texto">{{ dadosUsuario.email }}</p>
+              </div>
+            </aside>
+
+            <section class="coluna-principal animar">
+              <div class="cartao-perfil">
+                <h3 class="titulo-secao">Informações pessoais</h3>
+                <div class="grade-inputs">
+                  
+                  <div class="campo">
+                    <label>Nome Completo</label>
+                    <input type="text" v-model="formEdicao.nome" :disabled="!editando" placeholder="Seu nome">
+                  </div>
+
+                  
+                  <div class="campo">
+                    <label>Email</label>
+                    <input type="email" :value="formEdicao.email" disabled placeholder="seu@email.com">
+                  </div>
+
+                  
+                  <div class="campo">
+                    <label>Telefone</label>
+                    <input type="text" v-model="formEdicao.telefone" @input="aplicarMascaraTelefone" :disabled="!editando" placeholder="(00) 00000-0000">
+                  </div>
+
+                  
+                  <div class="campo">
+                    <label>CPF</label>
+                    <input type="text" :value="formEdicao.cpf" disabled placeholder="000.000.000-00">
+                  </div>
+
+                  
+                  <div class="campo">
+                    <label>Data de Nascimento</label>
+                    <input type="date" v-model="formEdicao.nascimento" :disabled="!editando">
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section v-else class="carregando">
+          <div class="spinner"></div>
+          <p>Buscando seus dados...</p>
+        </section>
+      </main>
+    </div>
+
+    
+    <div v-if="modalFotoAberta" class="modal-overlay" @click="fecharFotoExpandida">
+      <div class="modal-conteudo" @click.stop>
+        <button class="btn-fechar" @click="fecharFotoExpandida">✕</button>
+        <img v-if="dadosUsuario?.fotoUrl" :src="dadosUsuario.fotoUrl" alt="Foto Ampliada" class="foto-expandida" />
+        <div v-else class="avatar-expandido">
+          {{ obterIniciais(dadosUsuario?.nome) }}
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { notify } from '@/services/toast'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import SideBarComponent from '@/components/SideBarComponent.vue'
 import api from '@/services/api.js'
-import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 
-const router = useRouter()
 const authStore = useAuthStore()
-
-function sairDaConta() {
-  authStore.logout()
-  router.replace('/login')
-}
+const sairDaConta = () => authStore.logout()
 
 const dadosUsuario = ref(null)
-const observador = ref(null)
 const fileInput = ref(null)
+const editando = ref(false)
+const salvando = ref(false)
+const modalFotoAberta = ref(false)
+let observer = null
 
-// Computed para formatar o CPF que vem da API
-const cpfFormatado = computed(() => {
-  if (!dadosUsuario.value?.cpf) return ''
-  let v = dadosUsuario.value.cpf.replace(/\D/g, '').slice(0, 11)
-  v = v.replace(/(\d{3})(\d)/, '$1.$2')
-  v = v.replace(/(\d{3})(\d)/, '$1.$2')
-  v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2')
-  return v
+const formEdicao = reactive({
+  nome: '',
+  email: '',
+  telefone: '',
+  cpf: '',
+  nascimento: ''
 })
 
-// Computed para formatar o Telefone que vem da API
-const telefoneFormatado = computed(() => {
-  if (!dadosUsuario.value?.telefone) return ''
-  let v = dadosUsuario.value.telefone.replace(/\D/g, '').slice(0, 11)
-  v = v.replace(/^(\d{2})(\d)/g, '($1) $2')
-  v = v.replace(/(\d)(\d{4})$/, '$1-$2')
-  return v
-})
+const formatarCPF = (v = '') => {
+  return v.replace(/\D/g, '').slice(0, 11)
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+}
 
-const carregarPerfil = async () => {
-  try {
-    const resposta = await api.get('api/me/')
-    const dadosDoBack = resposta.data.data
+const formatarTelefone = (v = '') => {
+  return v.replace(/\D/g, '').slice(0, 11)
+    .replace(/^(\d{2})(\d)/g, '($1) $2')
+    .replace(/(\d)(\d{4})$/, '$1-$2')
+}
 
-    dadosUsuario.value = {
-      nome: dadosDoBack.name,
-      email: dadosDoBack.email,
-      telefone: dadosDoBack.telefone,
-      cpf: dadosDoBack.cpf,
-      nascimento: dadosDoBack.nascimento,
-      localizacao: dadosDoBack.localizacao,
-      fotoUrl: dadosDoBack.foto
-    }
-  } catch (error) {
-    console.error('Erro ao carregar perfil:', error)
-    if (error.response?.status === 401) {
-      alert('Sua sessão expirou. Faça login novamente.')
-    } else {
-      alert('Não foi possível carregar os dados do perfil.')
+const obterIniciais = (nome) => {
+  if (!nome) return '?'
+  const partes = nome.trim().split(' ')
+  return partes.length > 1
+    ? (partes[0][0] + partes[partes.length - 1][0]).toUpperCase()
+    : partes[0][0].toUpperCase()
+}
+
+const aplicarMascaraTelefone = (e) => { formEdicao.telefone = formatarTelefone(e.target.value) }
+
+const expandirFoto = () => { modalFotoAberta.value = true }
+const fecharFotoExpandida = () => { modalFotoAberta.value = false }
+
+const sincronizarEstadoLocal = (novosDados) => {
+  dadosUsuario.value = {
+    ...dadosUsuario.value,
+    nome: novosDados.name || novosDados.nome || dadosUsuario.value?.nome || '',
+    email: novosDados.email || dadosUsuario.value?.email || '',
+    telefone: novosDados.telefone || dadosUsuario.value?.telefone || '',
+    cpf: novosDados.cpf || dadosUsuario.value?.cpf || '',
+    nascimento: novosDados.nascimento || dadosUsuario.value?.nascimento || '',
+    fotoUrl: novosDados.foto || novosDados.fotoUrl || dadosUsuario.value?.fotoUrl || ''
+  }
+
+  const local = localStorage.getItem('user')
+  if (local) {
+    try {
+      const parsed = JSON.parse(local)
+      if (parsed.data) parsed.data = { ...parsed.data, ...dadosUsuario.value }
+      else Object.assign(parsed, dadosUsuario.value)
+      localStorage.setItem('user', JSON.stringify(parsed))
+    } catch (e) {
+      console.error('Erro ao salvar no Storage', e)
     }
   }
 }
 
-const abrirSeletorArquivo = () => {
-  fileInput.value.click()
-}
+const carregarPerfil = async () => {
 
-const aoSelecionarFoto = async (event) => {
-  const arquivo = event.target.files[0]
-  if (!arquivo) return
-
-  const formData = new FormData()
-  formData.append('foto', arquivo)
+  const local = localStorage.getItem('user')
+  if (local) {
+    try {
+      const parsed = JSON.parse(local)
+      const dadosLocais = parsed.data || parsed
+      dadosUsuario.value = {
+        nome: dadosLocais.name || dadosLocais.nome || '',
+        email: dadosLocais.email || '',
+        telefone: dadosLocais.telefone || '',
+        cpf: dadosLocais.cpf || '',
+        nascimento: dadosLocais.nascimento || '',
+        fotoUrl: dadosLocais.foto || dadosLocais.fotoUrl || ''
+      }
+      resetarForm()
+    } catch (e) {
+      console.error('Erro ao carregar dados locais:', e)
+    }
+  }
 
   try {
-    const resposta = await api.patch('api/user/foto/', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    })
+    const { data } = await api.get('api/me/')
+    sincronizarEstadoLocal(data.data || data)
+    resetarForm()
+  } catch (err) {
+    console.error('Falha ao carregar perfil:', err)
+  }
+}
 
-    if (dadosUsuario.value) {
-      dadosUsuario.value.fotoUrl = resposta.data.foto
+const resetarForm = () => {
+  if (!dadosUsuario.value) return
+  formEdicao.nome = dadosUsuario.value.nome
+  formEdicao.email = dadosUsuario.value.email
+  formEdicao.telefone = formatarTelefone(dadosUsuario.value.telefone)
+  formEdicao.cpf = formatarCPF(dadosUsuario.value.cpf)
+  formEdicao.nascimento = dadosUsuario.value.nascimento
+}
+
+const iniciarEdicao = () => { resetarForm(); editando.value = true }
+const cancelarEdicao = () => { resetarForm(); editando.value = false }
+
+const salvarPerfil = async () => {
+  salvando.value = true
+  try {
+
+    const payload = {
+      name: formEdicao.nome,
+      telefone: formEdicao.telefone.replace(/\D/g, ''),
+      nascimento: formEdicao.nascimento
     }
-    alert('Foto de perfil atualizada com sucesso!')
-  } catch (error) {
-    console.error('Erro ao salvar foto:', error)
-    alert('Erro ao salvar a foto.')
+
+    const { data } = await api.patch('api/me/', payload)
+    
+    sincronizarEstadoLocal(data.data || data)
+    
+    editando.value = false
+    notify.success('Perfil atualizado com sucesso!')
+  } catch (err) {
+    console.error('Erro ao salvar perfil:', err)
+    notify.error('Não foi possível salvar as alterações.')
+  } finally {
+    salvando.value = false
+  }
+}
+
+const abrirSeletorArquivo = () => {
+  if (!editando.value) return
+  fileInput.value?.click()
+}
+
+const aoSelecionarFoto = async (e) => {
+  const file = e.target.files[0]
+  if (!file) return
+
+  const formData = new FormData()
+  formData.append('foto', file)
+
+  try {
+    const { data } = await api.patch('api/user/foto/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    sincronizarEstadoLocal(data.data || data)
+    notify.success('Foto atualizada com sucesso!')
+  } catch (err) {
+    console.error('Erro ao subir foto:', err)
+    notify.error('Erro ao enviar foto.')
   }
 }
 
 onMounted(async () => {
   await carregarPerfil()
 
-  observador.value = new IntersectionObserver((entradas) => {
-    entradas.forEach((entrada) => {
-      if (entrada.isIntersecting) {
-        entrada.target.classList.add('exibir');
-      }
-    });
-  }, { threshold: 0.1 });
+  observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) entry.target.classList.add('exibir')
+    })
+  }, { threshold: 0.1 })
 
-  const elementosParaAnimar = document.querySelectorAll('.animar');
-  elementosParaAnimar.forEach((el) => observador.value.observe(el));
-});
+  document.querySelectorAll('.animar').forEach((el) => observer.observe(el))
+})
+
+onUnmounted(() => {
+  if (observer) observer.disconnect()
+})
 </script>
-
-<template>
-  <main class="pagina-perfil">
-    <section v-if="dadosUsuario" class="container-perfil">
-      <header class="header-perfil animar">
-        <div>
-          <h1>Meu <span class="texto-gradiente">Perfil</span></h1>
-          <p>Gerencie suas informações e preferências de conta.</p>
-        </div>
-        <button type="button" class="botao-sair" @click="sairDaConta"><i class="fas fa-sign-out-alt" aria-hidden="true"></i> Sair da conta</button>
-      </header>
-
-      <div class="layout-grid">
-        <aside class="coluna-lateral animar">
-          <div class="cartao-perfil centro">
-            <div class="avatar-container">
-              <div class="avatar-circulo" @click="abrirSeletorArquivo">
-                <img v-if="dadosUsuario.fotoUrl" :src="dadosUsuario.fotoUrl" alt="Foto de Perfil"
-                  class="foto-renderizada" />
-                <span v-else>
-                  {{dadosUsuario.nome ? dadosUsuario.nome.split(' ').map(n => n[0]).join('').toUpperCase() : ''}}
-                </span>
-              </div>
-              <button class="btn-foto" @click="abrirSeletorArquivo">📷</button>
-              <input type="file" ref="fileInput" style="display: none" accept="image/*" @change="aoSelecionarFoto" />
-            </div>
-
-            <h2>{{ dadosUsuario.nome }}</h2>
-            <p class="email-texto">{{ dadosUsuario.email }}</p>
-            <span class="badge-status">● Conta Ativa</span>
-          </div>
-        </aside>
-
-        <section class="coluna-principal animar">
-          <div class="cartao-perfil">
-            <h3 class="titulo-secao">👤 Informações Pessoais</h3>
-            <div class="grade-inputs">
-              <div class="campo">
-                <label>Nome Completo</label>
-                <input type="text" :value="dadosUsuario.nome" disabled>
-              </div>
-              <div class="campo">
-                <label>Email</label>
-                <input type="text" :value="dadosUsuario.email" disabled>
-              </div>
-              <div class="campo">
-                <label>Telefone</label>
-                <input type="text" :value="telefoneFormatado" disabled>
-              </div>
-              <div class="campo">
-                <label>CPF</label>
-                <input type="text" :value="cpfFormatado" disabled>
-              </div>
-              <div class="campo">
-                <label>Data de Nascimento</label>
-                <input type="text" :value="dadosUsuario.nascimento" disabled>
-              </div>
-              <div class="campo">
-                <label>Localização</label>
-                <input type="text" :value="dadosUsuario.localizacao" disabled>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-    </section>
-
-    <section v-else class="carregando">
-      <div class="spinner"></div>
-      <p>Buscando seus dados...</p>
-    </section>
-  </main>
-</template>
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-
-.foto-renderizada {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-}
-
-.pagina-perfil {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  min-height: 100vh;
-  color: #1e293b;
-  background-color: #D1E1DB;
-  background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
-  background-size: 24px 24px;
-  padding: 40px 20px;
-}
-
-.container-perfil {
-  max-width: 1100px;
-  margin: 0 auto;
-}
 
 .animar {
   opacity: 0;
@@ -212,22 +309,104 @@ onMounted(async () => {
   transform: translateY(0);
 }
 
+.dashboard-layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: var(--opes-paper);
+  overflow: hidden;
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.dashboard-layout :deep(.desktop-sidebar) {
+  display: none !important;
+}
+
+.main-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--opes-paper);
+}
+
+.dashboard-content {
+  flex: 1;
+  padding: 16px 16px 90px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+  background-color: var(--opes-paper);
+}
+
+.container-perfil {
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.foto-renderizada {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
 h1 {
   font-size: 2.2rem;
   font-weight: 800;
   margin-bottom: 8px;
+  color: var(--opes-ink);
 }
 
 .texto-gradiente {
-  background: linear-gradient(90deg, #10b981, #3b82f6);
+  background: linear-gradient(90deg, var(--opes-forest), var(--opes-caramel));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
+.header-perfil {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.header-perfil p {
+  color: var(--opes-forest);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
 .botao-principal {
-  background: linear-gradient(135deg, #059669 0%, #2563eb 100%);
+  background: linear-gradient(135deg, var(--opes-forest) 0%, var(--opes-forest) 100%);
   color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.botao-principal:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.botao-secundario {
+  background: var(--opes-cream);
+  color: var(--opes-forest);
   border: none;
   padding: 12px 24px;
   border-radius: 12px;
@@ -235,46 +414,44 @@ h1 {
   cursor: pointer;
 }
 
+.acoes-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
 .botao-sair {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 12px 20px;
-  border: 1px solid #ad4c42;
+  border: 1px solid var(--opes-danger);
   border-radius: 12px;
-  background: transparent;
-  color: #ad4c42;
+  background: transparent !important;
+  color: var(--opes-danger) !important;
+  padding: 12px 20px;
   font-weight: 700;
   cursor: pointer;
-  transition: background-color .2s ease, color .2s ease;
 }
 .botao-sair:hover {
-  background: #ad4c42;
-  color: white;
+  background: var(--opes-danger-soft) !important;
 }
-.botao-sair:focus-visible {
-  outline: 3px solid #ad4c42;
-  outline-offset: 3px;
-}
-.header-perfil {
+.acoes-edicao {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 40px;
+  gap: 12px;
 }
 
 .layout-grid {
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: minmax(245px, 295px) minmax(0, 1fr);
   gap: 30px;
 }
 
 .cartao-perfil {
-  background: white;
-  border-radius: 24px;
-  padding: 30px;
-  border: 1px solid #f1f5f9;
+  background: var(--opes-paper);
+  border-radius: 20px;
+  padding: 32px;
+  border: 1px solid var(--opes-border);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
 
@@ -291,8 +468,8 @@ h1 {
 .avatar-circulo {
   width: 110px;
   height: 110px;
-  background: linear-gradient(135deg, #059669, #10b981);
-  color: white;
+  background: linear-gradient(135deg, var(--opes-forest), var(--opes-forest));
+  color: var(--opes-paper);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -301,15 +478,20 @@ h1 {
   font-weight: 800;
   overflow: hidden;
   cursor: pointer;
-  transition: 0.2s ease;
+  transition: transform 0.2s ease;
+}
+
+.avatar-circulo:hover {
+  transform: scale(1.03);
 }
 
 .btn-foto {
   position: absolute;
   bottom: 0;
   right: 0;
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--opes-forest-soft);
+  color: var(--opes-ink);
+  border: 1px solid var(--opes-border);
   border-radius: 50%;
   width: 32px;
   height: 32px;
@@ -318,11 +500,28 @@ h1 {
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+}
+
+.cartao-perfil h2 {
+  font-size: 1.25rem;
+  color: var(--opes-ink);
+  margin: 0 0 4px 0;
+}
+
+.email-texto {
+  color: var(--opes-forest);
+  font-size: 0.875rem;
+  margin: 0;
+  word-break: break-all;
 }
 
 .titulo-secao {
+  margin-top: 0;
   margin-bottom: 25px;
   font-weight: 800;
+  color: var(--opes-ink);
+  font-size: 1.1rem;
 }
 
 .grade-inputs {
@@ -335,29 +534,84 @@ h1 {
   display: block;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #64748b;
+  color: var(--opes-forest);
   margin-bottom: 8px;
 }
 
 .campo input {
   width: 100%;
   padding: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--opes-cream);
   border-radius: 10px;
-  background: #f8fafc;
-  color: #1e293b;
+  background: var(--opes-paper);
+  color: var(--opes-ink);
   font-family: inherit;
+  box-sizing: border-box;
+  transition: all 0.2s;
 }
 
-.badge-status {
-  display: inline-block;
-  margin-top: 15px;
-  background: #ecfdf5;
-  color: #10b981;
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 700;
+.campo input:not(:disabled) {
+  background: var(--opes-paper);
+  border-color: var(--opes-forest);
+}
+
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-conteudo {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+
+.foto-expandida {
+  max-width: 80vw;
+  max-height: 80vh;
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+  object-fit: contain;
+}
+
+.avatar-expandido {
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--opes-forest), var(--opes-forest));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 5rem;
+  font-weight: 800;
+}
+
+.btn-fechar {
+  appearance: none;
+  position: absolute;
+  top: -15px;
+  right: -15px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  color: var(--opes-ink) !important;
 }
 
 .carregando {
@@ -366,37 +620,64 @@ h1 {
   align-items: center;
   justify-content: center;
   height: 80vh;
+  color: var(--opes-forest);
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #cbd5e1;
-  border-top-color: #10b981;
+  border: 4px solid var(--opes-sand);
+  border-top-color: var(--opes-forest);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16px;
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 @media (max-width: 850px) {
-  .layout-grid {
-    grid-template-columns: 1fr;
-  }
-
+  .layout-grid,
   .grade-inputs {
     grid-template-columns: 1fr;
   }
-
   .header-perfil {
     flex-direction: column;
     text-align: center;
-    gap: 20px;
+    align-items: stretch;
+  }
+  .acoes-edicao {
+    justify-content: center;
   }
 }
+
+@media (min-width: 1024px) {
+  .dashboard-layout {
+    background-color: var(--opes-paper);
+  }
+  .dashboard-layout :deep(.desktop-sidebar) {
+    display: flex !important;
+  }
+  .main-container {
+    height: 100vh;
+    overflow: hidden;
+    background-color: var(--opes-paper);
+  }
+  .dashboard-content {
+    padding: 32px 40px;
+    overflow-y: auto;
+    background-color: var(--opes-paper);
+  }
+}
+
+.cartao-perfil { box-shadow: 0 14px 36px rgba(0,0,0,.07); }
+.centro { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:290px; background: linear-gradient(155deg,var(--opes-forest-soft),var(--opes-paper) 70%); }
+.centro h2 { line-height:1.35; overflow-wrap:anywhere; }
+.avatar-circulo { border:4px solid var(--opes-paper); box-shadow:0 8px 30px rgba(0,0,0,.15); }
+.titulo-secao { padding-bottom:18px; border-bottom:1px solid var(--opes-border); }
+.campo input:disabled { opacity:1; background:var(--opes-cream); border-color:var(--opes-border); cursor:default; }
+.campo input:not(:disabled):focus { outline:2px solid var(--opes-caramel); outline-offset:1px; }
+.header-perfil { margin-bottom:28px; }
+@media(max-width:850px){ .centro { min-height:230px; } }
 </style>

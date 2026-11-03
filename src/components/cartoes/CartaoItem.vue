@@ -39,7 +39,7 @@ defineProps({
   height: 14rem;
   border-radius: 1rem;
   padding: 1.5rem;
-  color: #ffffff;
+  color: var(--opes-paper);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -101,7 +101,7 @@ defineProps({
 .chip-icon {
   width: 2.25rem;
   height: 1.5rem;
-  border: 2px solid #ffffff;
+  border: 2px solid var(--opes-paper);
   border-radius: 0.375rem;
   display: flex;
   align-items: center;
@@ -111,7 +111,7 @@ defineProps({
 .chip-line {
   width: 100%;
   height: 0.25rem;
-  background-color: #ffffff;
+  background-color: var(--opes-paper);
   opacity: 0.4;
 }
 </style>

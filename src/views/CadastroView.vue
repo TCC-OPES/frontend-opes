@@ -1,14 +1,15 @@
 <script setup>
+import { notify } from '@/services/toast'
 import { ref, computed } from 'vue'
-import axios from 'axios'
-import { useRouter } from 'vue-router' // <-- Importa o roteador
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/store/auth'
 
-import FormCard from '../components/cadastro/FormCard.vue'
-import FormInput from '../components/cadastro/FormInput.vue'
-import PasswordInput from '../components/cadastro/PasswordInput.vue'
+import FormCard from '@/components/cadastro/FormCard.vue'
+import FormInput from '@/components/cadastro/FormInput.vue'
+import PasswordInput from '@/components/cadastro/PasswordInput.vue'
 
-
-const router = useRouter() // <-- Inicializa o roteador
+const router = useRouter()
+const authStore = useAuthStore()
 
 const form = ref({
   cpf: '',
@@ -27,11 +28,9 @@ const cpfFormatado = computed({
   },
   set(valor) {
     let v = valor.replace(/\D/g, '').slice(0, 11)
-
     v = v.replace(/(\d{3})(\d)/, '$1.$2')
     v = v.replace(/(\d{3})(\d)/, '$1.$2')
     v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2')
-
     form.value.cpf = v
   }
 })
@@ -42,10 +41,8 @@ const telefoneFormatado = computed({
   },
   set(valor) {
     let v = valor.replace(/\D/g, '').slice(0, 11)
-
     v = v.replace(/^(\d{2})(\d)/g, '($1) $2')
     v = v.replace(/(\d)(\d{4})$/, '$1-$2')
-
     form.value.telefone = v
   }
 })
@@ -54,33 +51,23 @@ async function submitForm() {
   carregando.value = true
 
   try {
-    const apiUrl = import.meta.env.VITE_API_URL
-    await axios.post(`${apiUrl}api/cadastro/`, {
-      cpf: form.value.cpf.replace(/\D/g, ''),
-      nome: form.value.nome,
-      telefone: form.value.telefone.replace(/\D/g, ''),
+    const cpfLimpo = form.value.cpf.replace(/\D/g, '')
+    const telefoneLimpo = form.value.telefone.replace(/\D/g, '')
+
+    await authStore.cadastrar({
+      cpf: cpfLimpo,
+      name: form.value.nome,
+      telefone: telefoneLimpo,
       email: form.value.email,
       password: form.value.senha,
       password_confirm: form.value.confirmarSenha
     })
 
-    alert('Conta criada com sucesso!')
-
-    // Redireciona o usuário para a rota de login
-    router.push('/login')
-
-    form.value = {
-      cpf: '',
-      nome: '',
-      telefone: '',
-      email: '',
-      senha: '',
-      confirmarSenha: ''
-    }
+    router.push('/dashboard')
 
   } catch (error) {
     console.log(error)
-    alert('Erro ao cadastrar')
+    notify.error('Erro ao cadastrar. Verifique os dados inseridos.')
   } finally {
     carregando.value = false
   }
@@ -94,69 +81,71 @@ async function submitForm() {
     </div>
 
     <div class="container-form">
-      <FormCard>
-        <h1>Criar Conta</h1>
+      <FormCard class="card-interno">
+        <div class="scroll-content">
+          <h1>Criar Conta</h1>
 
-        <p class="subtitulo">
-          Preencha seus dados para começar
-        </p>
+          <p class="subtitulo">
+            Preencha seus dados para começar
+          </p>
 
-        <form class="formulario" @submit.prevent="submitForm">
-          <div class="all">
+          <form class="formulario" @submit.prevent="submitForm">
+            <div class="all">
 
-            <FormInput
-              label="CPF"
-              v-model="cpfFormatado"
-              icon="fa-solid fa-address-card"
-              placeholder="000.000.000-00"
-              maxlength="14"
-            />
+              <FormInput
+                label="CPF"
+                v-model="cpfFormatado"
+                icon="fa-solid fa-address-card"
+                placeholder="000.000.000-00"
+                maxlength="14"
+              />
 
-            <FormInput
-              label="Nome Completo"
-              v-model="form.nome"
-              icon="fa-solid fa-user"
-            />
+              <FormInput
+                label="Nome Completo"
+                v-model="form.nome"
+                icon="fa-solid fa-user"
+              />
 
-            <FormInput
-              label="Telefone"
-              v-model="telefoneFormatado"
-              icon="fa-regular fa-address-book"
-              placeholder="(00) 00000-0000"
-              maxlength="15"
-            />
+              <FormInput
+                label="Telefone"
+                v-model="telefoneFormatado"
+                icon="fa-regular fa-address-book"
+                placeholder="(00) 00000-0000"
+                maxlength="15"
+              />
 
-            <FormInput
-              label="Email"
-              v-model="form.email"
-              type="email"
-              icon="fa-solid fa-envelope"
-            />
+              <FormInput
+                label="Email"
+                v-model="form.email"
+                type="email"
+                icon="fa-solid fa-envelope"
+              />
 
-            <PasswordInput
-              label="Senha"
-              v-model="form.senha"
-            />
+              <PasswordInput
+                label="Senha"
+                v-model="form.senha"
+              />
 
-            <PasswordInput
-              label="Confirmar Senha"
-              v-model="form.confirmarSenha"
-            />
+              <PasswordInput
+                label="Confirmar Senha"
+                v-model="form.confirmarSenha"
+              />
 
+            </div>
+
+            <button class="enviar" :disabled="carregando">
+              {{ carregando ? 'Criando conta...' : 'Criar Conta' }}
+            </button>
+          </form>
+
+          <div class="divisor">
+            <span>Já tem uma conta?</span>
           </div>
 
-          <button class="enviar" :disabled="carregando">
-            {{ carregando ? 'Criando conta...' : 'Criar Conta' }}
-          </button>
-        </form>
-
-        <div class="divisor">
-          <span>Já tem uma conta?</span>
+          <router-link to="/login" class="btn-login">
+            Fazer Login
+          </router-link>
         </div>
-
-        <router-link to="/login" class="btn-login">
-          Fazer Login
-        </router-link>
       </FormCard>
     </div>
   </div>
@@ -169,22 +158,19 @@ async function submitForm() {
   height: 100vh;
   overflow: hidden !important;
 }
+
 .page {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
-
   box-sizing: border-box;
   height: 100vh;
   max-height: 100vh;
   width: 100vw;
-
   overflow: hidden !important;
-  padding: 20px;
-
-  background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
+  padding: 16px;
+  background: linear-gradient(135deg, var(--opes-cream) 0%, var(--opes-caramel) 100%);
   font-family: Arial, sans-serif;
 }
 
@@ -196,23 +182,48 @@ async function submitForm() {
   width: 100%;
   display: flex;
   justify-content: center;
+  align-items: center;
+}
+
+.card-interno {
+  width: 100%;
+  max-width: 450px;
+  box-sizing: border-box;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.scroll-content {
+  overflow-y: auto;
+  max-height: calc(90vh - 48px);
+  padding-right: 4px;
+  box-sizing: border-box;
+}
+
+.scroll-content::-webkit-scrollbar {
+  width: 6px;
+}
+.scroll-content::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
 }
 
 .formulario {
   display: flex;
   flex-direction: column;
-  gap: 12px; /* Reduzido de 16px para 12px para economizar altura */
+  gap: 12px;
   text-align: left;
 }
 
 .all {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px; /* Reduzido de 16px para 12px */
+  gap: 12px;
 }
 
 .enviar {
-  background-color: #006400;
+  background-color: var(--opes-forest);
   color: white;
   padding: 14px;
   border-radius: 10px;
@@ -222,13 +233,14 @@ async function submitForm() {
   width: 100%;
   max-width: 300px;
   margin: 10px auto 0;
+  display: block;
 }
 
 .btn-login {
   display: block;
   text-decoration: none;
-  border: 1px solid #a0a2a4;
-  color: #1f2937;
+  border: 1px solid var(--opes-muted);
+  color: var(--opes-ink);
   padding: 12px;
   border-radius: 12px;
   font-weight: bold;
@@ -236,59 +248,18 @@ async function submitForm() {
   max-width: 300px;
   margin: 0 auto;
   text-align: center;
+  box-sizing: border-box;
 }
 
-@media (min-width: 769px) {
-  .page {
-    display: grid;
-    /* Mudamos de 1fr 1fr para 1.4fr 1fr para dar mais espaço físico para a logo crescer */
-    grid-template-columns: 1.4fr 1fr;
-    /* Mantém o espaçamento perfeito e as bordas que você gostou */
-    padding: 0 40px;
-    gap: 30px;
-    align-items: center;
-  }
-
-  .lado-imagem {
-    display: flex;
-    justify-content: flex-end; /* Mantém a logo colada na mesma distância do card */
-    align-items: center;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  .lado-imagem img {
-    /* Faz a logo ocupar todo o espaço da nova coluna maior */
-    width: 100%;
-    /* Aumentamos consideravelmente a largura máxima permitida */
-    max-width: 800px;
-    /* Altura quase total da tela para permitir que ela expanda verticalmente */
-    max-height: 92vh;
-    object-fit: contain;
-    transform: none;
-  }
-
-  .container-form {
-    display: flex;
-    justify-content: flex-start; /* Mantém o card grudado ao centro */
-    align-items: center;
-    width: 100%;
-  }
-
-  .all {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
 h1 {
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 8px;
-  color: #1f2937;
+  color: var(--opes-ink);
 }
 
 .subtitulo {
-  color: #6b7280;
+  color: var(--opes-forest);
   margin-bottom: 24px;
 }
 
@@ -296,7 +267,7 @@ h1 {
   display: flex;
   align-items: center;
   margin: 15px 0;
-  color: #9ca3af;
+  color: var(--opes-muted);
   font-size: 14px;
 }
 
@@ -304,10 +275,56 @@ h1 {
 .divisor::after {
   content: '';
   flex: 1;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--opes-cream);
 }
 
 .divisor span {
   padding: 0 10px;
+}
+
+@media (min-width: 769px) {
+  .page {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    padding: 0 40px;
+    gap: 30px;
+    align-items: center;
+  }
+
+  .lado-imagem {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .lado-imagem img {
+    width: 100%;
+    max-width: 800px;
+    max-height: 92vh;
+    object-fit: contain;
+  }
+
+  .container-form {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+  }
+
+  .card-interno {
+    max-height: 95vh;
+  }
+
+  .scroll-content {
+    max-height: calc(95vh - 48px);
+    overflow-y: visible;
+  }
+
+  .all {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 </style>

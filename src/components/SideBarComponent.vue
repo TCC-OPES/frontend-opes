@@ -1,168 +1,213 @@
 <template>
-  <aside class="sidebar">
-    <div class="logo">
-      <span class="logo-icon">$</span> OPES
+  <aside class="sidebar-container">
+    <div class="desktop-sidebar">
+      <div class="logo" :class="{ 'tema-escuro': tema === 'dark' }">
+        <img src="/icons/logo.png" alt="Logo OPES" class="logo-img" />
+      </div>
+
+      <nav class="menu">
+        <router-link to="/dashboard" class="menu-item">
+          <i class="fas fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </router-link>
+        <router-link to="/transacoes" class="menu-item">
+          <i class="fas fa-exchange-alt"></i>
+          <span>Transações</span>
+        </router-link>
+        <router-link to="/cartoes" class="menu-item">
+          <i class="fas fa-credit-card"></i>
+          <span>Cartões</span>
+        </router-link>
+        <router-link to="/recorrencias" class="menu-item">
+          <i class="fas fa-repeat"></i>
+          <span>Contas recorrentes</span>
+        </router-link>
+        <router-link to="/calendario" class="menu-item"><i class="fas fa-calendar-alt"></i><span>Calendário</span></router-link>
+        <router-link to="/metas" class="menu-item">
+          <i class="fas fa-bullseye"></i>
+          <span>Metas</span>
+        </router-link>
+        <a
+          href="#"
+          class="menu-item"
+          :class="{ active: router.currentRoute.value.path === '/investimento' }"
+          @click.prevent="irParaInvestimentos"
+        >
+          <i class="fas fa-chart-line"></i>
+          <span>Investimentos</span>
+        </a>
+        <router-link to="/familia" class="menu-item">
+          <i class="fas fa-users"></i>
+          <span>Família</span>
+        </router-link>
+      </nav>
+
+      <button type="button" class="theme-toggle" @click="alternarTema" :aria-label="tema === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'">
+        <i :class="tema === 'dark' ? 'fas fa-sun' : 'fas fa-moon'"></i>
+        <span>{{ tema === 'dark' ? 'Modo claro' : 'Modo escuro' }}</span>
+      </button>
+      <button @click="irParaPerfil" class="user-profile-btn" aria-label="Acessar perfil">
+        <div class="avatar">
+          <img v-if="usuario.fotoUrl" :src="usuario.fotoUrl" alt="Foto de perfil" class="foto-sidebar" />
+          <span v-else>{{ obterIniciais(usuario.nome) }}</span>
+        </div>
+        <div class="user-info">
+          <h4>{{ usuario.nome }}</h4>
+          <p>Ver perfil</p>
+        </div>
+        <i class="fas fa-chevron-right arrow-icon"></i>
+      </button>
     </div>
 
-    <nav class="menu">
-      <a href="#" class="menu-item active">
-        <i class="fas fa-chart-pie"></i> Dashboard
+    <nav class="mobile-bottom-nav">
+      <router-link to="/dashboard" class="mobile-nav-item">
+        <i class="fas fa-chart-pie"></i>
+        <span>Home</span>
+      </router-link>
+      <router-link to="/transacoes" class="mobile-nav-item">
+        <i class="fas fa-exchange-alt"></i>
+        <span>Extrato</span>
+      </router-link>
+      <a
+        href="#"
+        class="mobile-nav-item"
+        :class="{ active: router.currentRoute.value.path === '/investimento' }"
+        @click.prevent="irParaInvestimentos"
+      >
+        <i class="fas fa-chart-line"></i>
+        <span>Investir</span>
       </a>
-
-      <a href="#" class="menu-item"><i class="fas fa-exchange-alt"></i> Transações</a>
-      <a href="#" class="menu-item"><i class="fas fa-wallet"></i> Carteiras</a>
-      <a href="#" class="menu-item"><i class="fas fa-credit-card"></i> Cartões</a>
-      <a href="#" class="menu-item"><i class="fas fa-target"></i> Metas</a>
-      <a href="#" class="menu-item"><i class="fas fa-chart-line"></i> Investimentos</a>
-      <a href="#" class="menu-item"><i class="fas fa-users"></i> Família</a>
+      <router-link to="/metas" class="mobile-nav-item">
+        <i class="fas fa-bullseye"></i>
+        <span>Metas</span>
+      </router-link>
+      <router-link to="/familia" class="mobile-nav-item">
+        <i class="fas fa-users"></i>
+        <span>Família</span>
+      </router-link>
+      <button type="button" class="mobile-nav-item" @click="alternarTema" :aria-label="tema === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'">
+        <i :class="tema === 'dark' ? 'fas fa-sun' : 'fas fa-moon'"></i>
+        <span>Tema</span>
+      </button>
+      <button @click="irParaPerfil" class="mobile-nav-item mobile-profile-btn">
+        <div class="avatar avatar-mobile">
+          <img v-if="usuario.fotoUrl" :src="usuario.fotoUrl" alt="Foto de perfil" class="foto-sidebar" />
+          <span v-else>{{ obterIniciais(usuario.nome) }}</span>
+        </div>
+        <span>Perfil</span>
+      </button>
     </nav>
-
-    <button @click="irParaPerfil" class="user-profile-btn" aria-label="Acessar perfil">
-      <div class="avatar">
-        {{ obterIniciais(usuario.nome) }}
-      </div>
-      <div class="user-info">
-        <h4>{{ usuario.nome || 'Carregando...' }}</h4>
-        <p>Ver perfil</p>
-      </div>
-      <i class="fas fa-chevron-right arrow-icon"></i>
-    </button>
   </aside>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { tema, alternarTema } from '@/services/tema'
 
+const router = useRouter()
+const usuario = ref({ nome: 'Usuário', fotoUrl: '' })
 
-const usuario = ref({
-  nome: '',
-  email: ''
-});
-
-const buscarDadosUsuario = async () => {
-  try {
-    
-    const resposta = await fetch('https://api.seu-sistema.com/usuario/perfil', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        // Geralmente rotas de perfil exigem autenticação:
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    });
-
-    if (!resposta.ok) throw new Error('Erro ao buscar dados do usuário');
-
-    const dados = await resposta.json();
-    usuario.value = dados; // Atualiza o estado com o nome/dados reais do cadastro
-  } catch (error) {
-    console.error('Erro na requisição:', error);
-    usuario.value = { nome: 'Usuário', email: '' };
-  }
-};
-
-// Executa a busca assim que o componente é renderizado na tela
 onMounted(() => {
-  buscarDadosUsuario();
-});
+  const userLocal = localStorage.getItem('user')
 
-// Função para gerar as iniciais do avatar dinamicamente (ex: "João Silva" -> "JS")
-const obterIniciais = (nome) => {
-  if (!nome) return '?';
-  const partes = nome.trim().split(' ');
-  if (partes.length > 1) {
-    return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
+  if (userLocal) {
+    try {
+      const parsedUser = JSON.parse(userLocal)
+      const dadosUsuario = parsedUser.data || parsedUser
+      const nomeCompleto = dadosUsuario.name || dadosUsuario.nome || 'Usuário'
+      const primeiroNome = nomeCompleto !== 'Usuário' ? nomeCompleto.trim().split(' ')[0] : 'Usuário'
+
+      usuario.value = {
+        nome: primeiroNome,
+        fotoUrl: dadosUsuario.foto || dadosUsuario.fotoUrl || dadosUsuario.avatar || ''
+      }
+    } catch (e) {
+      console.error('Erro ao ler usuário do localStorage', e)
+    }
   }
-  return partes[0][0].toUpperCase();
-};
+})
 
-// Ação do botão ao ser clicado
+const obterIniciais = (nome) => {
+  if (!nome || nome === 'Usuário') return '?'
+  return nome.charAt(0).toUpperCase()
+}
+
 const irParaPerfil = () => {
-  console.log('Navegando para o perfil do usuário...');
-  // Se estiver usando o Vue Router, você faria algo como:
-  // router.push('/perfil');
-};
+  router.push('/perfil')
+}
+
+const irParaInvestimentos = () => {
+  router.push('/investimento')
+}
 </script>
 
 <style scoped>
-.sidebar {
-  width: 260px;
-  background-color: #ffffff;
-  padding: 24px;
+.sidebar-container {
+  z-index: 1000;
+  width: 0;
+}
+
+.desktop-sidebar {
+  display: none;
+}
+
+.mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 65px;
+  background-color: var(--opes-paper);
+  border-top: 1px solid var(--opes-cream);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 4px;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+  z-index: 999;
+}
+
+.mobile-nav-item {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  border-right: 1px solid #e2e8f0;
-  height: 100vh;
-}
-
-.logo {
-  font-size: 1.25rem;
-  font-weight: bold;
-  display: flex;
   align-items: center;
-  gap: 8px;
-  color: #1e293b;
-}
-
-
-.menu {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 40px;
-  flex-grow: 1;
-}
-
-.menu-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  color: #64748b;
+  justify-content: center;
+  gap: 3px;
+  color: var(--opes-forest);
   text-decoration: none;
-  border-radius: 8px;
+  font-size: 0.65rem;
   font-weight: 500;
-  transition: all 0.2s;
-}
-
-.menu-item:hover {
-  background-color: #f1f5f9;
-  color: #1e293b;
-}
-
-.menu-item.active {
-  background-color: #0b5ed7;
-  color: white;
-}
-
-/* Transformado de div para button com resets de estilo CSS nativos */
-.user-profile-btn {
-  display: flex;
-  align-items: center;
-  text-align: left;
-  gap: 12px;
-  padding: 12px;
-  background-color: #f8fafc;
-  border: 1px solid transparent;
-  border-radius: 12px;
+  background: none;
+  border: none;
+  padding: 6px 0;
+  width: 14.285%;
   cursor: pointer;
-  width: 100%;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease;
 }
 
-.user-profile-btn:hover {
-  background-color: #f1f5f9;
-  border-color: #cbd5e1;
+.mobile-nav-item i {
+  font-size: 1.05rem;
 }
 
-.user-profile-btn:focus {
-  outline: 2px solid #0b5ed7;
-  outline-offset: 2px;
+.mobile-nav-item.router-link-active,
+.mobile-nav-item.active {
+  color: var(--opes-forest);
+  font-weight: 700;
+}
+
+.mobile-profile-btn {
+  padding: 0;
+}
+
+.avatar-mobile {
+  width: 24px;
+  height: 24px;
+  font-size: 0.7rem;
 }
 
 .avatar {
-  background-color: #004d40;
+  background-color: var(--opes-forest);
   color: white;
   width: 40px;
   height: 40px;
@@ -171,26 +216,184 @@ const irParaPerfil = () => {
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  flex-shrink: 0; /* Impede o avatar de amassar se o texto for grande */
+  flex-shrink: 0;
+  overflow: hidden;
 }
 
-.user-info {
-  flex-grow: 1;
+.foto-sidebar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.user-info h4 {
-  font-size: 0.9rem;
-  color: #1e293b;
-  margin: 0;
-}
+@media (min-width: 1024px) {
+  .sidebar-container {
+    width: 260px;
+    height: 100vh;
+    height: 100dvh;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+  }
 
-.user-info p {
-  font-size: 0.8rem;
-  color: #94a3b8;
-  margin: 2px 0 0 0;
-}
+  .mobile-bottom-nav {
+    display: none;
+  }
 
-.arrow-icon {
-  color: #64748b;
+  .desktop-sidebar {
+    width: 260px;
+    min-width: 260px;
+    max-width: 260px;
+    box-sizing: border-box;
+    background-color: var(--opes-paper);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-right: 1px solid var(--opes-cream);
+    height: 100%;
+    position: relative;
+    top: auto;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    height: 55px;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .logo.tema-escuro::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: #a3cdb4;
+    -webkit-mask: url("/icons/logo.png") left center / contain no-repeat;
+    mask: url("/icons/logo.png") left center / contain no-repeat;
+  }
+
+  .logo.tema-escuro .logo-img {
+    visibility: hidden;
+  }
+
+  .logo-img {
+    height: 55px;
+    width: auto;
+    display: block;
+  }
+
+  .menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 40px;
+    flex-grow: 1;
+    width: 100%;
+    min-height: 0;
+    flex-shrink: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+  }
+
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 44px;
+    padding: 0 16px;
+    color: var(--opes-forest);
+    text-decoration: none;
+    border-radius: 8px;
+    font-family: "Plus Jakarta Sans", Arial, sans-serif;
+    font-weight: 500;
+    font-size: 1rem;
+    letter-spacing: normal;
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid transparent;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .menu-item i {
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .menu-item span {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: inherit;
+    font-weight: inherit;
+    font-size: inherit;
+  }
+
+  .menu-item:hover {
+    background-color: var(--opes-paper);
+    color: var(--opes-ink);
+  }
+
+  .menu-item.router-link-active,
+  .menu-item.active {
+    background-color: var(--opes-forest);
+    color: var(--opes-paper);
+    font-weight: 500;
+  }
+
+  .user-profile-btn {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    gap: 12px;
+    padding: 12px;
+    background-color: var(--opes-paper);
+    border: 1px solid var(--opes-cream);
+    border-radius: 12px;
+    cursor: pointer;
+    width: 100%;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .user-profile-btn:hover {
+    background-color: var(--opes-paper);
+    border-color: var(--opes-sand);
+  }
+
+  .user-info {
+    flex-grow: 1;
+    min-width: 0;
+  }
+
+  .user-info h4 {
+    font-size: 0.9rem;
+    color: var(--opes-ink);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .user-info p {
+    font-size: 0.8rem;
+    color: var(--opes-muted);
+    margin: 2px 0 0 0;
+  }
+
+  .arrow-icon {
+    color: var(--opes-forest);
+    flex-shrink: 0;
+  }
 }
+.theme-toggle { display:flex;align-items:center;gap:12px;margin:8px 0 12px;width:100%;padding:12px 14px;border:1px solid var(--opes-border);border-radius:10px;background:var(--opes-cream);color:var(--opes-ink);font-size:14px;font-weight:650 }
+.theme-toggle i { width:20px;text-align:center }
+@media(max-width:1023px){.theme-toggle{display:none}}
 </style>

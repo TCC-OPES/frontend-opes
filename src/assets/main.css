@@ -1,43 +1,208 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+:root {
+  --opes-forest: #14372d;
+  --opes-forest-dark: #0f2e25;
+  --opes-forest-soft: #e1ebe3;
+  --opes-cream: #f2efea;
+  --opes-paper: #fbf9f5;
+  --opes-sand: #dbd5c9;
+  --opes-caramel: #b7835d;
+  --opes-caramel-dark: #956544;
+  --opes-ink: #19362c;
+  --opes-muted: #6c756d;
+  --opes-border: #dedbd3;
+  --opes-danger: #ad4c42;
+  --opes-danger-soft: #fae9e6;
+  --color-primary: var(--opes-forest);
+  --color-primary-hover: var(--opes-forest-dark);
+  --color-background: var(--opes-cream);
+  --color-surface: var(--opes-paper);
+  --color-text: var(--opes-ink);
+  --color-border: var(--opes-border);
+  font-family: 'DM Sans', Arial, sans-serif;
+  color: var(--opes-ink);
+  background: var(--opes-cream);
+  color-scheme: light;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body, #app { width: 100%; min-height: 100%; margin: 0; overflow-x: clip; }
+body { min-height: 100dvh; background: var(--opes-cream); color: var(--opes-ink); font-family: 'DM Sans', Arial, sans-serif; }
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .62; }
+a { text-decoration: none; }
+img { max-width: 100%; }
+:focus-visible { outline: 3px solid var(--opes-caramel); outline-offset: 2px; }
+#app-layout, .conteudo-principal { min-height: 100dvh; background: var(--opes-cream); }
+#app .layout, #app .layout-app, #app .dashboard-layout, #app .app-container, #app .main-container, #app .main-wrapper, #app .principal {
+  background-color: var(--opes-cream);
+}
+#app main, #app .conteudo, #app .dashboard-content, #app .transacoes-container, #app .main-content, #app .dashboard-main {
+  color: var(--opes-ink);
+}
+#app h1, #app h2, #app h3, #app h4, #app h5 { color: var(--opes-forest-dark); font-family: 'DM Sans', Arial, sans-serif; letter-spacing: -.025em; }
+#app p, #app label, #app dd, #app dt, #app small { font-family: 'DM Sans', Arial, sans-serif; }
+#app .sidebar-container .desktop-sidebar, #app .sidebar-container .mobile-bottom-nav { background: var(--opes-paper) !important; border-color: var(--opes-border) !important; }
+#app .sidebar-container .menu-item { color: var(--opes-forest) !important; }
+#app .sidebar-container .menu-item:hover, #app .sidebar-container .mobile-nav-item:hover { background: var(--opes-forest-soft) !important; color: var(--opes-forest-dark) !important; }
+#app .sidebar-container .menu-item.router-link-active, #app .sidebar-container .menu-item.active, #app .sidebar-container .mobile-nav-item.router-link-active, #app .sidebar-container .mobile-nav-item.active { background: var(--opes-forest) !important; color: var(--opes-paper) !important; }
+#app .sidebar-container .user-profile-btn { background: var(--opes-cream) !important; border-color: var(--opes-border) !important; }
+#app .sidebar-container .avatar { background: var(--opes-caramel) !important; color: white !important; }
+#app .painel, #app .resumo-card, #app .card, #app .modal, #app .modal-content, #app .card-resumo, #app .summary-card, #app .stat-card, #app .finance-card, #app .balance-card, #app .widget, #app .toast-item, #app .dialog-box, #app .form-card, #app .info-card {
+  background-color: var(--opes-paper);
+  border-color: var(--opes-border);
+  color: var(--opes-ink);
+}
+#app input:not([type='checkbox']):not([type='radio']), #app select, #app textarea {
+  background-color: #fffefa;
+  color: var(--opes-ink);
+  border-color: var(--opes-sand);
+  border-radius: 9px;
+}
+#app input:focus, #app select:focus, #app textarea:focus { border-color: var(--opes-caramel) !important; outline-color: var(--opes-caramel); }
+#app input::placeholder, #app textarea::placeholder { color: #8a8b80; }
+#app button:not(.secundario):not(.perigo):not(.cancel):not(.fechar-dia):not(.controles button):not(.evento-preview):not(.selecionar-dia):not(.mais):not(.toast-item button):not(.mobile-nav-item):not(.user-profile-btn):not(.menu-item):not(.modal-close):not(.close-btn), #app .btn-primary, #app .btn-submit, #app .confirmar, #app .ok {
+  background-color: var(--opes-forest);
+  border-color: var(--opes-forest);
+  color: var(--opes-paper);
+}
+#app button:hover:not(:disabled):not(.evento-preview):not(.selecionar-dia):not(.mais):not(.toast-item button):not(.mobile-nav-item):not(.user-profile-btn):not(.menu-item), #app .btn-primary:hover { filter: brightness(.93); }
+#app .secundario, #app .cancel, #app .controles button, #app .fechar-dia { background: var(--opes-sand); color: var(--opes-forest); border-color: var(--opes-border); }
+#app .perigo, #app .erro, #app .error-text { color: var(--opes-danger); }
+#app .ativo, #app .sucesso, #app .success { background: var(--opes-forest-soft); color: var(--opes-forest); }
+#app .inativo, #app .nota, #app .contagem { color: var(--opes-muted); }
+#app .resumo-card strong, #app .valor-detalhe, #app .balance-amount { color: var(--opes-forest); }
+#app .verde, #app .entrada, #app .icon-receita { color: var(--opes-forest); }
+#app .vermelho, #app .saida, #app .icon-despesa { color: var(--opes-caramel-dark); }
+#app .evento-preview.entrada { background: var(--opes-forest-soft); border-color: var(--opes-forest); }
+#app .evento-preview.saida { background: #f3e7dd; border-color: var(--opes-caramel); }
+#app .celula.hoje, #app .celula.ativa { background: var(--opes-forest-soft); }
+#app .celula, #app .linha, #app .item { border-color: var(--opes-border); }
+#app .sobretitulo { color: var(--opes-caramel-dark); }
+#app .dashboard-layout .balance-gradient-card, #app .balance-gradient-card { background: linear-gradient(125deg,var(--opes-forest-dark),var(--opes-forest) 64%,#396051) !important; color: var(--opes-paper) !important; }
+#app .balance-gradient-card h1, #app .balance-gradient-card h2, #app .balance-gradient-card h3, #app .balance-gradient-card p { color: var(--opes-paper) !important; }
+#app .btn-add-meta { background: var(--opes-forest) !important; color: white !important; }
+#app .toast-item.success { border-left-color: var(--opes-forest); }
+#app .toast-item.warning { border-left-color: var(--opes-caramel); }
+#app .toast-item.error { border-left-color: var(--opes-danger); }
+#app .dialog-actions .ok { background: var(--opes-forest); color: white; }
+#app .tag, #app .badge, #app .status { border-radius: 999px; }
+@media (max-width: 1023px) {
+  #app .conteudo-principal, #app .conteudo, #app .dashboard-content, #app .transacoes-container { padding-bottom: max(110px, calc(85px + env(safe-area-inset-bottom))) !important; }
+  #app .sidebar-container .mobile-bottom-nav { padding-bottom: env(safe-area-inset-bottom); height: calc(65px + env(safe-area-inset-bottom)); }
+  #app .resumo, #app .stats-grid, #app .balance-summary-boxes { min-width: 0; }
+}
+@media (max-width: 640px) {
+  #app h1 { font-size: clamp(1.45rem,5.2vw,2rem); }
+  #app .painel, #app .resumo-card { border-radius: 14px; }
+  #app .formulario { grid-template-columns: minmax(0,1fr); }
+  #app .acoes, #app .botoes { flex-wrap: wrap; }
+  #app .item, #app .linha { min-width: 0; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+
+:root[data-theme="dark"] {
+  --opes-forest: #a3cdb4;
+  --opes-forest-dark: #e2f1e7;
+  --opes-forest-soft: #29483b;
+  --opes-cream: #111e19;
+  --opes-paper: #1b2d25;
+  --opes-sand: #3b5143;
+  --opes-caramel: #dfab82;
+  --opes-caramel-dark: #efbe97;
+  --opes-ink: #edf5ee;
+  --opes-muted: #b7c6bd;
+  --opes-border: #3a5144;
+  --opes-danger: #f9a79e;
+  --opes-danger-soft: #532e30;
+  color-scheme: dark;
+}
+:root[data-theme="dark"] #app .painel,
+:root[data-theme="dark"] #app .card,
+:root[data-theme="dark"] #app .card-section,
+:root[data-theme="dark"] #app .chart-card,
+:root[data-theme="dark"] #app .resumo-card,
+:root[data-theme="dark"] #app .content-card,
+:root[data-theme="dark"] #app .modal,
+:root[data-theme="dark"] #app .dialog-box,
+:root[data-theme="dark"] #app .toast-item,
+:root[data-theme="dark"] #app .form-card,
+:root[data-theme="dark"] #app .summary-card,
+:root[data-theme="dark"] #app .stat-card,
+:root[data-theme="dark"] #app .card-resumo,
+:root[data-theme="dark"] #app .evento-preview,
+:root[data-theme="dark"] #app .linha,
+:root[data-theme="dark"] #app .item,
+:root[data-theme="dark"] #app .celula,
+:root[data-theme="dark"] #app .lista .linha {
+  background-color: var(--opes-paper);
+  border-color: var(--opes-border);
+  color: var(--opes-ink);
+}
+:root[data-theme="dark"] #app .evento-preview.entrada,
+:root[data-theme="dark"] #app .celula.hoje,
+:root[data-theme="dark"] #app .celula.selecionada,
+:root[data-theme="dark"] #app .ativo {
+  background-color: var(--opes-forest-soft);
+  color: var(--opes-ink);
+}
+:root[data-theme="dark"] #app .evento-preview.saida { background-color: #493629; }
+:root[data-theme="dark"] #app .celula.fora { background-color: var(--opes-cream); }
+:root[data-theme="dark"] #app input:not([type='checkbox']):not([type='radio']),
+:root[data-theme="dark"] #app select,
+:root[data-theme="dark"] #app textarea {
+  background-color: #263b30;
+  color: var(--opes-ink);
+  border-color: var(--opes-border);
+}
+:root[data-theme="dark"] #app button:not(.evento-preview):not(.menu-item):not(.mobile-nav-item):not(.secundario):not(.perigo) {
+  color: var(--opes-cream);
+}
+:root[data-theme="dark"] #app .secundario,
+:root[data-theme="dark"] #app .fechar-dia,
+:root[data-theme="dark"] #app .controles button,
+:root[data-theme="dark"] #app .cancel {
+  background-color: var(--opes-sand);
+  color: var(--opes-ink);
+}
+:root[data-theme="dark"] #app .balance-gradient-card,
+:root[data-theme="dark"] #app .dashboard-layout .balance-gradient-card {
+  background: linear-gradient(120deg,#102e27,#244f3c) !important;
+  color: #fff !important;
+}
+:root[data-theme="dark"] #app .balance-gradient-card h1,
+:root[data-theme="dark"] #app .balance-gradient-card h2,
+:root[data-theme="dark"] #app .balance-gradient-card h3,
+:root[data-theme="dark"] #app .balance-gradient-card p {
+  color: #fff !important;
+}
+:root[data-theme="dark"] #app .sidebar-container .theme-toggle {
+  background: var(--opes-sand);
+  color: var(--opes-ink);
 }
 
-html,
-body,
-#app {
-  width: 100%;
-  min-height: 100vh;
+:root[data-theme="dark"] #app .cartao-perfil,
+:root[data-theme="dark"] #app .transacoes-stats,
+:root[data-theme="dark"] #app .transacao-item,
+:root[data-theme="dark"] #app .stat-card,
+:root[data-theme="dark"] #app .resumo-card,
+:root[data-theme="dark"] #app .cartao,
+:root[data-theme="dark"] #app .card,
+:root[data-theme="dark"] #app .resumo > div:not(.resumo-principal) {
+  background: var(--opes-paper) !important;
+  color: var(--opes-ink) !important;
+  border-color: var(--opes-border) !important;
 }
-
-body {
-  overflow-x: hidden;
-  background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
-}
-
-a,
-.green {
-  text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
-  padding: 3px;
-}
-
-@media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
-  }
-}
-
-ul {
-  list-style: none;
-}
-html, body {
-  margin: 0;
-  padding: 0;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden !important;
-}
+:root[data-theme="dark"] #app .cartao-perfil h2,
+:root[data-theme="dark"] #app .titulo-secao,
+:root[data-theme="dark"] #app .transacao-item strong,
+:root[data-theme="dark"] #app .transacao-item span,
+:root[data-theme="dark"] #app .resumo strong { color: var(--opes-ink); }
+:root[data-theme="dark"] #app .resumo-principal,
+:root[data-theme="dark"] #app .dashboard-layout .resumo-principal { background:#244235 !important; color:#edf5ee !important; }
+:root[data-theme="dark"] #app .resumo-principal * { color:#edf5ee !important; }
+:root[data-theme="dark"] #app .campo input:disabled { background:#14251d !important; color:#e1eee4 !important; opacity:1; }
+:root[data-theme="dark"] #app .btn-foto { background:#2c493a; color:#edf5ee; }
+:root[data-theme="dark"] #app .sidebar-container .menu-item.router-link-active { color:#11251b !important; }
+:root[data-theme="dark"] #app .sidebar-container .theme-toggle { color:#edf5ee !important; }

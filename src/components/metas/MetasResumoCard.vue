@@ -57,10 +57,10 @@ function formatarK(valor) {
 }
 
 .summary-card {
-  background-color: #ffffff;
+  background-color: var(--opes-paper);
   padding: 20px;
   border-radius: 16px;
-  border: 1px solid #f1f5f9;
+  border: 1px solid var(--opes-paper);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   display: flex;
   justify-content: space-between;
@@ -76,7 +76,7 @@ function formatarK(valor) {
 .label {
   font-size: 12px;
   font-weight: 500;
-  color: #94a3b8;
+  color: var(--opes-muted);
 }
 
 .value {
@@ -85,16 +85,16 @@ function formatarK(valor) {
   margin: 0;
 }
 
-.text-black { color: #0f172a; }
-.text-blue { color: #2563eb; }
-.text-green { color: #16a34a; }
+.text-black { color: var(--opes-ink); }
+.text-blue { color: var(--opes-forest); }
+.text-green { color: var(--opes-forest); }
 
 .icon {
   width: 20px;
   height: 20px;
 }
 
-.text-gray { color: #94a3b8; }
+.text-gray { color: var(--opes-muted); }
 
 @media (max-width: 768px) {
   .summary-grid {

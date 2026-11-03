@@ -78,7 +78,7 @@ function handleInput(event) {
 label {
   font-size: 14px;
   font-weight: 600;
-  color: #374151;
+  color: var(--opes-ink);
 }
 
 .input-wrapper {
@@ -90,22 +90,22 @@ label {
 .input-wrapper span {
   position: absolute;
   left: 14px;
-  color: #9ca3af;
+  color: var(--opes-muted);
 }
 
 input {
   width: 100%;
   padding: 14px 10px 14px 40px;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  background-color: #f9fafb;
+  border: 1px solid var(--opes-cream);
+  background-color: var(--opes-paper);
   font-size: 16px;
   box-sizing: border-box;
 }
 
 input:focus {
   outline: none;
-  border-color: #2563eb;
-  background-color: #fff;
+  border-color: var(--opes-forest);
+  background-color: var(--opes-paper);
 }
 </style>

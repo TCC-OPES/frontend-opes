@@ -27,7 +27,7 @@ const formatCurrency = (value) => {
 
 <template>
   <div class="metrics-grid">
-    <!-- Limite Total -->
+    
     <div class="metric-card">
       <div class="metric-info">
         <span class="metric-label">Limite Total</span>
@@ -38,7 +38,7 @@ const formatCurrency = (value) => {
       <span class="metric-icon text-gray">$</span>
     </div>
 
-    <!-- Valor Utilizado -->
+    
     <div class="metric-card">
       <div class="metric-info">
         <span class="metric-label">Valor Utilizado</span>
@@ -49,7 +49,7 @@ const formatCurrency = (value) => {
       <span class="metric-icon text-blue">↗</span>
     </div>
 
-    <!-- Disponível -->
+    
     <div class="metric-card">
       <div class="metric-info">
         <span class="metric-label">Disponível</span>
@@ -77,10 +77,10 @@ const formatCurrency = (value) => {
 }
 
 .metric-card {
-  background-color: #ffffff;
+  background-color: var(--opes-paper);
   padding: 1.5rem;
   border-radius: 1rem;
-  border: 1px solid #f3f4f6;
+  border: 1px solid var(--opes-cream);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -89,7 +89,7 @@ const formatCurrency = (value) => {
 
 .metric-label {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--opes-forest);
   font-weight: 500;
 }
 
@@ -102,19 +102,19 @@ const formatCurrency = (value) => {
 }
 
 .text-dark {
-  color: #111827;
+  color: var(--opes-ink);
 }
 
 .text-blue {
-  color: #1e56fb;
+  color: var(--opes-caramel);
 }
 
 .text-green {
-  color: #00875a;
+  color: var(--opes-forest);
 }
 
 .text-gray {
-  color: #9ca3af;
+  color: var(--opes-muted);
 }
 
 .metric-icon {

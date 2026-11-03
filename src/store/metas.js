@@ -10,7 +10,7 @@ export const useMetasStore = defineStore('metas', () => {
     carregando.value = true
     try {
       const response = await api.get('api/metas/')
-      metas.value = response.data
+      metas.value = Array.isArray(response.data) ? response.data : (response.data.results || [])
     } catch (error) {
       console.error('Erro ao buscar metas:', error)
     } finally {

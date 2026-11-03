@@ -1,52 +1,83 @@
 <script setup>
 import FormLogin from '@/components/login/FormLogin.vue'
-import FeaturesLogin from '@/components/login/FeaturesLogin.vue'
 </script>
 
 <template>
-  <div class="main-wrapper">
+  <div class="page">
+    <div class="lado-imagem">
+      <img src="/icons/logo.png" alt="Ilustração" />
+    </div>
 
-    <section class="login-side">
+    <div class="container-form">
       <FormLogin />
-    </section>
-
-    <section class="side-illustration">
-      <FeaturesLogin />
-    </section>
-
+    </div>
   </div>
 </template>
 
 <style scoped>
-.main-wrapper {
-  display: flex;
-  min-height: 100vh;
-  width: 100vw;
-  background: linear-gradient(
-    135deg,
-    rgba(224, 242, 241, 1) 0%,
-    rgba(178, 223, 219, 1) 100%
-  );
+:deep(html), :deep(body) {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  overflow: hidden !important;
 }
 
-.login-side {
-  flex: 1;
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 100vh;
+  max-height: 100vh;
+  width: 100vw;
+  overflow: hidden !important;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--opes-cream) 0%, var(--opes-caramel) 100%);
+  font-family: Arial, sans-serif;
+}
+
+.lado-imagem {
+  display: none;
+}
+
+.container-form {
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
 }
 
-.side-illustration {
-  flex: 1;
-  padding: 40px 120px 40px 40px;
-  display: flex;
-  justify-content: center;
-}
+@media (min-width: 769px) {
+  .page {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    padding: 0 40px;
+    gap: 30px;
+    align-items: center;
+  }
 
-@media (max-width: 1024px) {
-  .side-illustration {
-    display: none;
+  .lado-imagem {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .lado-imagem img {
+    width: 100%;
+    max-width: 800px;
+    max-height: 92vh;
+    object-fit: contain;
+  }
+
+  .container-form {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
   }
 }
 </style>

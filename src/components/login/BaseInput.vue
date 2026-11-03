@@ -13,7 +13,6 @@ const props = defineProps({
   placeholder: String
 })
 
-// Estado interno para controlar a visibilidade caso seja um campo de senha
 const mostrarSenha = ref(false)
 </script>
 
@@ -22,7 +21,6 @@ const mostrarSenha = ref(false)
     <label v-if="label">{{ label }}</label>
 
     <div class="input-wrapper">
-      <!-- Se for um campo de senha, o ícone vira o alternador (olho) -->
       <template v-if="props.type === 'password'">
         <i
           class="fa-solid eye-toggle"
@@ -31,12 +29,10 @@ const mostrarSenha = ref(false)
         ></i>
       </template>
 
-      <!-- Se NÃO for senha, exibe o ícone normal passado por prop -->
       <template v-else>
         <i v-if="icon" :class="icon"></i>
       </template>
 
-      <!-- O :type muda dinamicamente se for um campo de senha -->
       <input
         :type="props.type === 'password' ? (mostrarSenha ? 'text' : 'password') : props.type"
         :placeholder="placeholder"
@@ -49,21 +45,24 @@ const mostrarSenha = ref(false)
 
 <style scoped>
 .input-group {
-  margin-bottom: 22px;
+  margin-bottom: 16px;
 }
 
 label {
   display: block;
   margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--opes-ink);
 }
 
 .input-wrapper {
   display: flex;
   align-items: center;
-  border: 1px solid #ddd;
+  border: 1px solid var(--opes-cream);
   border-radius: 14px;
-  padding: 16px;
+  padding: 14px 16px;
   gap: 12px;
+  background: var(--opes-paper);
 }
 
 input {
@@ -71,14 +70,14 @@ input {
   outline: none;
   flex: 1;
   background: transparent;
+  font-size: 15px;
 }
 
-/* Estilo para quando o ícone for o olho clicável */
 .eye-toggle {
   cursor: pointer;
   user-select: none;
-  color: #9ca3af;
-  width: 20px; /* Garante tamanho fixo para o ícone não tremer a tela ao mudar */
+  color: var(--opes-muted);
+  width: 20px;
   text-align: center;
 }
 </style>

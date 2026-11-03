@@ -13,7 +13,7 @@
 }
 
 .welcome p {
-  color: #6b7280;
-  margin-bottom: 40px;
+  color: var(--opes-forest);
+  margin-bottom: 30px;
 }
 </style>

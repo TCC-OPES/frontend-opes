@@ -102,10 +102,10 @@ function calcularPercentual(atual, total) {
 
 <style scoped>
 .goal-card {
-  background-color: #ffffff;
+  background-color: var(--opes-paper);
   padding: 24px;
   border-radius: 20px;
-  border: 1px solid #f1f5f9;
+  border: 1px solid var(--opes-paper);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
   display: flex;
   flex-direction: column;
@@ -128,8 +128,8 @@ function calcularPercentual(atual, total) {
 .icon-wrapper {
   padding: 12px;
   border-radius: 12px;
-  background-color: #ecfdf5;
-  color: #059669;
+  background-color: var(--opes-cream);
+  color: var(--opes-forest);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -143,13 +143,13 @@ function calcularPercentual(atual, total) {
 .goal-titles h3 {
   font-size: 16px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--opes-ink);
   margin: 0;
 }
 
 .goal-titles .category {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--opes-muted);
   font-weight: 500;
   text-transform: capitalize;
 }
@@ -165,18 +165,18 @@ function calcularPercentual(atual, total) {
   padding: 6px;
   border-radius: 8px;
   cursor: pointer;
-  color: #94a3b8;
+  color: var(--opes-muted);
   transition: all 0.2s;
 }
 
 .btn-action.edit:hover {
-  background-color: #f1f5f9;
-  color: #2563eb;
+  background-color: var(--opes-paper);
+  color: var(--opes-forest);
 }
 
 .btn-action.delete:hover {
-  background-color: #fef2f2;
-  color: #dc2626;
+  background-color: var(--opes-paper);
+  color: var(--opes-danger);
 }
 
 .action-icon {
@@ -186,7 +186,7 @@ function calcularPercentual(atual, total) {
 
 .goal-description {
   font-size: 12px;
-  color: #64748b;
+  color: var(--opes-forest);
   margin: 0;
 }
 
@@ -205,16 +205,16 @@ function calcularPercentual(atual, total) {
 }
 
 .progress-text .label {
-  color: #64748b;
+  color: var(--opes-forest);
 }
 
 .progress-text .percent {
-  color: #059669;
+  color: var(--opes-forest);
 }
 
 .progress-bar-bg {
   width: 100%;
-  background-color: #f1f5f9;
+  background-color: var(--opes-paper);
   height: 10px;
   border-radius: 999px;
   overflow: hidden;
@@ -223,7 +223,7 @@ function calcularPercentual(atual, total) {
 .progress-bar-fill {
   height: 100%;
   border-radius: 999px;
-  background-color: #059669;
+  background-color: var(--opes-forest);
   transition: width 0.3s ease;
 }
 
@@ -232,12 +232,12 @@ function calcularPercentual(atual, total) {
   justify-content: space-between;
   font-size: 12px;
   font-weight: 700;
-  color: #334155;
+  color: var(--opes-ink);
   padding-top: 4px;
 }
 
 .progress-values .total {
-  color: #94a3b8;
+  color: var(--opes-muted);
   font-weight: 400;
 }
 
@@ -245,18 +245,18 @@ function calcularPercentual(atual, total) {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   padding-top: 12px;
-  border-top: 1px solid #f8fafc;
+  border-top: 1px solid var(--opes-paper);
   font-size: 12px;
 }
 
 .metric .label {
   display: block;
-  color: #94a3b8;
+  color: var(--opes-muted);
 }
 
 .metric .val {
   font-weight: 700;
-  color: #1e293b;
+  color: var(--opes-ink);
 }
 
 .date-footer {
@@ -264,7 +264,7 @@ function calcularPercentual(atual, total) {
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--opes-muted);
   padding-top: 4px;
 }
 

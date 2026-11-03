@@ -1,26 +1,24 @@
+<script setup>
+defineProps({
+  icon: String,
+  title: String,
+  text: String
+})
+</script>
+
 <template>
-  <div class="left">
-    <img src="/icons/logo.png" alt="celular" class="phone-img" />
+  <div class="card">
+    <div class="icon">{{ icon }}</div>
+    <h3>{{ title }}</h3>
+    <p>{{ text }}</p>
   </div>
 </template>
 
-<script setup>
-</script>
-
 <style scoped>
-.left {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-}
-
-.phone-img {
-  width: 45vw;
-  height: 45vw;
-  object-fit: contain;
-  
+.card {
+  background: rgba(255,255,255,.45);
+  padding: 30px 20px;
+  border-radius: 24px;
+  text-align: center;
 }
 </style>
-
-

@@ -4,12 +4,20 @@ import PerfilView from '../views/PerfilView.vue'
 import HomeView from '../views/HomeView.vue'
 import CadastroView from '../views/CadastroView.vue'
 import LoginView from '../views/LoginView.vue'
+import InvestimentoView from '../views/InvestimentoView.vue'
 import CartoesView from '../views/CartoesView.vue'
 import MetasFinanceirasView from '@/views/MetasFinanceirasView.vue'
+import TransacoesView from '@/views/TransacoesView.vue'
+
+import RecorrenciasView from '@/views/RecorrenciasView.vue'
+
+import CalendarioFinanceiroView from '@/views/CalendarioFinanceiroView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    { path: '/calendario', component: CalendarioFinanceiroView, name: 'Calendário' },
+    { path: '/recorrencias', name: 'RecorrenciasView', component: RecorrenciasView },
     {
       path: '/',
       name: 'home',
@@ -28,32 +36,42 @@ const router = createRouter({
     {
       path: '/dashboard',
       name: 'dashboard',
-      meta: { requiresAuth: true },
       component: DashboardView,
+    },
+    {
+      path: '/investimento',
+      name: 'investimento',
+      component: InvestimentoView,
     },
     {
       path: '/perfil',
       name: 'perfil',
-      meta: { requiresAuth: true },
       component: PerfilView,
     },
     {
       path: '/cartoes',
       name: 'cartoes',
-      meta: { requiresAuth: true },
       component: CartoesView,
     },
     {
       path: '/metas',
       name: 'metas',
-      meta: { requiresAuth: true },
       component: MetasFinanceirasView
-    }
+    },
+    {
+      path: '/transacoes',
+      name: 'transacoes',
+      component: TransacoesView
+    },
   ],
 })
 
+const rotasProtegidas = new Set([
+  '/dashboard', '/investimento', '/perfil', '/cartoes',
+  '/metas', '/transacoes', '/recorrencias', '/calendario'
+])
 router.beforeEach((to) => {
-  if (to.meta.requiresAuth && !localStorage.getItem('access')) {
+  if (rotasProtegidas.has(to.path) && !localStorage.getItem('access')) {
     return { name: 'login' }
   }
 })
