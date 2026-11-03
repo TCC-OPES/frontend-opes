@@ -267,7 +267,9 @@ onMounted(async () => {
           <section class="painel painel-convites" aria-labelledby="meus-convites">
             <div class="painel-cabecalho">
               <div><h2 id="meus-convites">Convites recebidos</h2><p>Participe de famílias que convidaram você pelo e-mail da sua conta.</p></div>
-              <span class="indicador"><Mail :size="18" /></span>
+              <button class="botao-secundario" type="button" :disabled="carregandoConvites" @click="carregarMeusConvites">
+                <RefreshCw :size="16" /> Atualizar
+              </button>
             </div>
             <p v-if="carregandoConvites" class="texto-apoio">Consultando seus convites...</p>
             <div v-else-if="erroConvites" class="aviso-pequeno" role="alert">
