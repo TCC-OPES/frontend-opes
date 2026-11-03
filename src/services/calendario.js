@@ -12,10 +12,9 @@ export function eventosCartoes(cartoes, inicio, fim) {
   for (const cartao of cartoes) {
     // Aceita tanto o formato brasileiro quanto o formato ISO da API.
     const vencimento = String(cartao.vencimento || '')
-    const diaVencimento = /^\\d{2}\\/\\d{2}\\/\\d{4}$/.test(vencimento)
-      ? Number(vencimento.slice(0, 2))
-      : /^\\d{4}-\\d{2}-\\d{2}/.test(vencimento)
-        ? Number(vencimento.slice(8, 10)) : 0
+    const diaVencimento = vencimento.includes('/')
+      ? Number(vencimento.split('/')[0])
+      : Number(vencimento.slice(8, 10))
     const nome = cartao.nome || 'Cartão'
     const criar = (tipo, dia, titulo) => {
       const data = dataMensal(ano, mes, dia)
