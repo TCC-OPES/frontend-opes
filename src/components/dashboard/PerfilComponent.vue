@@ -441,8 +441,8 @@ h1 {
   color: inherit;
 }
 /* Garante contraste e prioridade sobre o estilo global de botões no tema escuro. */
-:global(html[data-theme="dark"] #app) .botao-sair,
-:global(html[data-theme="dark"] #app) .botao-sair i {
+:global(html[data-theme="dark"] #app .botao-sair),
+:global(html[data-theme="dark"] #app .botao-sair i) {
   color: #ff3b4f !important;
 }
 .acoes-edicao {
