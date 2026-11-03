@@ -28,24 +28,34 @@ const router = createRouter({
     {
       path: '/dashboard',
       name: 'dashboard',
+      meta: { requiresAuth: true },
       component: DashboardView,
     },
     {
       path: '/perfil',
       name: 'perfil',
+      meta: { requiresAuth: true },
       component: PerfilView,
     },
     {
       path: '/cartoes',
       name: 'cartoes',
+      meta: { requiresAuth: true },
       component: CartoesView,
     },
     {
       path: '/metas',
       name: 'metas',
+      meta: { requiresAuth: true },
       component: MetasFinanceirasView
     }
   ],
+})
+
+router.beforeEach((to) => {
+  if (to.meta.requiresAuth && !localStorage.getItem('access')) {
+    return { name: 'login' }
+  }
 })
 
 export default router
