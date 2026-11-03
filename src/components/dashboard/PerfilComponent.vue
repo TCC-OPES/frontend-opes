@@ -425,16 +425,23 @@ h1 {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  border: 1px solid var(--opes-danger);
+  border: none;
   border-radius: 12px;
-  background: transparent !important;
-  color: var(--opes-danger) !important;
-  padding: 12px 20px;
+  background: var(--opes-forest) !important;
+  color: #ffaaa1 !important;
+  padding: 12px 24px;
   font-weight: 700;
   cursor: pointer;
+  transition: opacity 0.2s ease;
 }
 .botao-sair:hover {
-  background: var(--opes-danger-soft) !important;
+  opacity: 0.88;
+}
+.botao-sair i {
+  color: inherit;
+}
+:global(:root[data-theme="dark"]) .botao-sair {
+  color: #a82d2b !important;
 }
 .acoes-edicao {
   display: flex;
