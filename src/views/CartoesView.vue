@@ -76,6 +76,12 @@ function fecharModal() {
   cartaoEditando.value = null
 }
 function erroDaApi(e, mensagem) {
+  if (e.response?.status === 405) {
+    return 'O backend conectado não permite editar cartões (PATCH). Inicie o Django atualizado e configure OPES_API_PROXY_TARGET no frontend.'
+  }
+  if (e.response?.status === 400 && e.response?.data?.dia_fechamento) {
+    return 'O backend conectado ainda não reconhece o fechamento mensal. Verifique se a migration e a branch do backend estão atualizadas.'
+  }
   const dados = e.response?.data
   if (typeof dados?.detail === 'string') return dados.detail
   if (typeof dados?.erro === 'string') return dados.erro
