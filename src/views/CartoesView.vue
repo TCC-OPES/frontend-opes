@@ -1,12 +1,10 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import api from '@/services/api'
 import { notify } from '@/services/toast'
-import { tema, alternarTema } from '@/services/tema'
 import { useTransacoesStore } from '@/store/transacoes'
+import SideBarComponent from '@/components/SideBarComponent.vue'
 
-const router = useRouter()
 const transacoesStore = useTransacoesStore()
 const cartoes = ref([])
 const carregando = ref(true)
@@ -20,18 +18,6 @@ const erroFormulario = ref('')
 const mostrarValores = ref(true)
 const coresSugeridas = ['#14372D', '#295B83', '#6C4A73', '#935A39', '#374151', '#7D4655', '#006B63', '#A75530']
 const formulario = reactive({ nome: '', banco: '', limite_total: '', valor_utilizado: '', vencimento: '', cor: '#14372D' })
-const itensMenu = [
-  { rotulo: 'Dashboard', icone: 'fa-chart-pie', rota: '/dashboard' },
-  { rotulo: 'Transações', icone: 'fa-exchange-alt', rota: '/transacoes' },
-  { rotulo: 'Cartões', icone: 'fa-credit-card', rota: '/cartoes' },
-  { rotulo: 'Contas recorrentes', icone: 'fa-sync-alt', rota: '/recorrencias' },
-  { rotulo: 'Calendário', icone: 'fa-calendar-alt', rota: '/calendario' },
-  { rotulo: 'Metas', icone: 'fa-bullseye', rota: '/metas' },
-  { rotulo: 'Investimentos', icone: 'fa-chart-line', rota: '/investimento' },
-  { rotulo: 'Família', icone: 'fa-users', rota: '/familia' },
-]
-const nomeUsuario = ref('Usuário')
-const fotoUsuario = ref('')
 const moeda = valor => Number(valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 const valorExibido = valor => mostrarValores.value ? moeda(valor) : 'R$ •••••'
 const totalLimite = computed(() => cartoes.value.reduce((acc, item) => acc + (Number(item.limite_total) || 0), 0))
@@ -162,12 +148,6 @@ async function salvarCartao() {
 }
 
 onMounted(() => {
-  try {
-    const salvo = JSON.parse(localStorage.getItem('user') || '{}')
-    const usuario = salvo.data || salvo
-    nomeUsuario.value = (usuario.name || usuario.nome || 'Usuário').trim().split(' ')[0]
-    fotoUsuario.value = usuario.foto || usuario.fotoUrl || usuario.avatar || ''
-  } catch { /* Exibe nome padrão */ }
   buscarCartoes()
   transacoesStore.buscarTransacoes('todas')
 })
@@ -175,34 +155,7 @@ onMounted(() => {
 
 <template>
   <div class="opes-cards-page">
-    <aside class="opes-cards-sidebar">
-      <div class="opes-cards-sidebar-top">
-        <RouterLink to="/dashboard" class="opes-cards-brand" aria-label="Ir ao dashboard OPES">
-          <img src="/icons/logo.png" alt="OPES" />
-        </RouterLink>
-        <nav class="opes-cards-menu" aria-label="Navegação principal">
-          <RouterLink v-for="item in itensMenu" :key="item.rota" :to="item.rota"
-            class="opes-cards-menu-item" :class="{ selected: $route.path === item.rota }">
-            <i class="fas" :class="item.icone" aria-hidden="true"></i>
-            <span>{{ item.rotulo }}</span>
-          </RouterLink>
-        </nav>
-      </div>
-      <div class="opes-cards-sidebar-bottom">
-        <button class="opes-cards-theme" type="button" @click="alternarTema">
-          <i class="fas" :class="tema === 'dark' ? 'fa-sun' : 'fa-moon'" aria-hidden="true"></i>
-          {{ tema === 'dark' ? 'Modo claro' : 'Modo escuro' }}
-        </button>
-        <button class="opes-cards-profile" type="button" @click="router.push('/perfil')">
-          <span class="opes-cards-avatar">
-            <img v-if="fotoUsuario" :src="fotoUsuario" alt="" />
-            <span v-else>{{ nomeUsuario[0] || 'U' }}</span>
-          </span>
-          <span class="opes-cards-profile-label"><strong>{{ nomeUsuario }}</strong><small>Ver perfil</small></span>
-          <i class="fas fa-chevron-right" aria-hidden="true"></i>
-        </button>
-      </div>
-    </aside>
+    <SideBarComponent />
 
     <div class="opes-cards-main">
       <main class="opes-cards-content">
@@ -308,13 +261,6 @@ onMounted(() => {
       </main>
     </div>
 
-    <nav class="opes-cards-mobile-nav" aria-label="Navegação no celular">
-      <RouterLink v-for="item in [itensMenu[0], itensMenu[1], itensMenu[2], itensMenu[5], itensMenu[6]]"
-        :key="item.rota" :to="item.rota" :class="{ selected: $route.path === item.rota }">
-        <i class="fas" :class="item.icone"></i><span>{{ item.rotulo }}</span>
-      </RouterLink>
-    </nav>
-
     <Teleport to="body">
       <div v-if="modalAberto" class="opes-cards-overlay" @click.self="fecharModal">
         <section class="opes-cards-modal" role="dialog" aria-modal="true" aria-labelledby="opes-cards-modal-title">
@@ -379,23 +325,6 @@ onMounted(() => {
 
 <style scoped>
 .opes-cards-page{--cp-bg:var(--opes-cream);--cp-surface:var(--opes-paper);--cp-forest:var(--opes-forest);--cp-text:var(--opes-ink);--cp-muted:var(--opes-muted);--cp-line:var(--opes-border);display:flex;min-height:100dvh;background:var(--cp-bg);color:var(--cp-text);font-family:'DM Sans',sans-serif}
-.opes-cards-sidebar{width:234px;flex:0 0 234px;min-height:100dvh;background:var(--cp-surface);border-right:1px solid var(--cp-line);display:flex;flex-direction:column;justify-content:space-between;padding:20px 14px 14px;position:sticky;top:0;height:100dvh}
-.opes-cards-brand{display:flex;align-items:center;padding:5px 16px 24px;height:80px}
-.opes-cards-brand img{max-height:48px;max-width:100px;object-fit:contain}
-.opes-cards-menu{display:flex;flex-direction:column;gap:4px;margin-top:8px}
-.opes-cards-menu-item{display:flex;align-items:center;gap:13px;min-height:44px;padding:11px 15px;border-radius:9px;color:var(--cp-text);font-size:14px;font-weight:500;transition:background .15s}
-.opes-cards-menu-item i{width:18px;text-align:center;font-size:15px}
-.opes-cards-menu-item:hover{background:var(--opes-forest-soft)}
-.opes-cards-menu-item.selected{background:#14372d;color:#fff}
-.opes-cards-sidebar-bottom{display:flex;flex-direction:column;gap:10px}
-.opes-cards-theme{width:100%;display:flex;align-items:center;gap:12px;padding:12px 16px;background:#14372d!important;color:white!important;border:0;border-radius:9px;font-size:13px;font-weight:700;text-align:left}
-.opes-cards-profile{display:flex;align-items:center;gap:10px;border:1px solid var(--cp-line);background:var(--cp-bg)!important;color:var(--cp-text)!important;border-radius:11px;padding:10px;width:100%;text-align:left}
-.opes-cards-avatar{display:grid;place-items:center;flex-shrink:0;width:36px;height:36px;border-radius:50%;background:#14372d;color:white;overflow:hidden;font-weight:700}
-.opes-cards-avatar img{height:100%;width:100%;object-fit:cover}
-.opes-cards-profile-label{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
-.opes-cards-profile-label strong{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.opes-cards-profile-label small{font-size:11px;color:var(--cp-muted)}
-.opes-cards-profile>i{font-size:12px}
 .opes-cards-main{flex:1;min-width:0}
 .opes-cards-content{max-width:1480px;margin:0 auto;padding:44px 32px 110px}
 .opes-cards-heading{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:26px}
@@ -446,7 +375,6 @@ onMounted(() => {
 .opes-cards-empty{min-height:230px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px;padding:24px;text-align:center;border:1px solid var(--cp-line);border-radius:15px;background:var(--cp-surface);color:var(--cp-muted)}
 .opes-cards-empty h2,.opes-cards-empty p{margin:0}
 .opes-cards-empty>i{font-size:27px;color:var(--cp-forest)}
-.opes-cards-mobile-nav{display:none}
 .opes-cards-overlay{position:fixed;inset:0;z-index:3500;display:flex;align-items:center;justify-content:center;padding:16px;background:#07181191;backdrop-filter:blur(3px)}
 .opes-cards-modal{width:100%;max-width:460px;max-height:90dvh;overflow-y:auto;border-radius:18px;background:var(--opes-paper);color:var(--opes-ink);border:1px solid var(--opes-border);padding:24px;box-shadow:0 20px 55px #06150d30}
 .opes-cards-modal header{display:flex;align-items:center;justify-content:space-between}
@@ -463,7 +391,6 @@ onMounted(() => {
 .opes-cards-modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:8px}
 .opes-cards-secondary{padding:12px 17px;border:1px solid var(--opes-border)!important;border-radius:10px;background:var(--opes-cream)!important;color:var(--opes-ink)!important;font-weight:700}
 @media(max-width:1160px){.opes-cards-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:1023px){.opes-cards-sidebar{display:none}.opes-cards-mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;height:calc(70px + env(safe-area-inset-bottom));padding:6px 4px env(safe-area-inset-bottom);border-top:1px solid var(--cp-line);background:var(--cp-surface);z-index:1100;justify-content:space-around}.opes-cards-mobile-nav a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--cp-forest);font-size:10px}.opes-cards-mobile-nav a i{font-size:18px}.opes-cards-mobile-nav a.selected{font-weight:800}}
 @media(max-width:650px){.opes-cards-content{padding:25px 14px 115px}.opes-cards-heading{align-items:flex-start;flex-wrap:wrap}.opes-cards-heading h1{font-size:24px}.opes-cards-summary{grid-template-columns:1fr;gap:12px}.opes-cards-summary-item{min-height:104px;padding:18px}.opes-cards-grid{grid-template-columns:1fr;gap:15px}.opes-cards-face{min-height:218px}.opes-cards-recent{padding:17px}.opes-cards-transaction-value{font-size:11px}.opes-cards-recent-head{align-items:flex-start}.opes-cards-form-row{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.opes-cards-page *{transition:none!important}}
 .opes-cards-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
