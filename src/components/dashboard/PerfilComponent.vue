@@ -10,15 +10,21 @@
               <h1>Meu <span class="texto-gradiente">Perfil</span></h1>
               <p>Gerencie suas informações e preferências de conta.</p>
             </div>
-            <button v-if="!editando" class="botao-principal" @click="iniciarEdicao">
-              Editar Perfil
-            </button>
-            <div v-else class="acoes-edicao">
+            <div class="acoes-cabecalho">
+              <button v-if="!editando" class="botao-principal" @click="iniciarEdicao">
+                Editar Perfil
+              </button>
+              <div v-else class="acoes-edicao">
               <button class="botao-secundario" @click="cancelarEdicao" :disabled="salvando">
                 Cancelar
               </button>
               <button class="botao-principal" @click="salvarPerfil" :disabled="salvando">
                 {{ salvando ? 'Salvando...' : 'Salvar' }}
+              </button>
+              </div>
+              <button type="button" class="botao-sair" aria-label="Sair da conta" @click="sairDaConta">
+                <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                Sair da conta
               </button>
             </div>
           </header>
@@ -112,6 +118,10 @@ import { notify } from '@/services/toast'
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import SideBarComponent from '@/components/SideBarComponent.vue'
 import api from '@/services/api.js'
+import { useAuthStore } from '@/store/auth'
+
+const authStore = useAuthStore()
+const sairDaConta = () => authStore.logout()
 
 const dadosUsuario = ref(null)
 const fileInput = ref(null)
@@ -404,6 +414,37 @@ h1 {
   cursor: pointer;
 }
 
+.acoes-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.botao-sair {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: none;
+  border-radius: 12px;
+  background: var(--opes-forest) !important;
+  color: #ffaaa1 !important;
+  padding: 12px 24px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+.botao-sair:hover {
+  opacity: 0.88;
+}
+.botao-sair i {
+  color: inherit;
+}
+/* Garante contraste e prioridade sobre o estilo global de botões no tema escuro. */
+:global(html[data-theme="dark"] #app .botao-sair),
+:global(html[data-theme="dark"] #app .botao-sair i) {
+  color: #ff3b4f !important;
+}
 .acoes-edicao {
   display: flex;
   gap: 12px;
