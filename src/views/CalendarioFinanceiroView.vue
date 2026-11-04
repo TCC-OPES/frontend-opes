@@ -30,6 +30,7 @@ const porDia = computed(() => eventos.value.reduce((acc, e) => {
   return acc
 }, {}))
 const total = computed(() => eventos.value.reduce((s, e) => {
+  if (e.evento_cartao) return s
   if (e.recorrencia && !e.confirmada_em) {
     s[e.tipo === 'receita' ? 'receitasPrevistas' : 'despesasPrevistas'] += Number(e.valor) || 0
   } else {
@@ -37,8 +38,8 @@ const total = computed(() => eventos.value.reduce((s, e) => {
   }
   return s
 }, { receitasPrevistas: 0, despesasPrevistas: 0, registrados: 0 }))
-const status = e => e.status || (e.confirmada_em ? 'confirmada' : 'realizada')
-const classe = e => e.tipo === 'receita' ? 'entrada' : 'saida'
+const status = e => e.evento_cartao ? 'Programado' : e.status || (e.confirmada_em ? 'confirmada' : 'realizada')
+const classe = e => e.evento_cartao ? 'aviso-cartao' : (e.tipo === 'receita' ? 'entrada' : 'saida')
 async function carregar() {
   const inicio = dataISO(1)
   const fim = dataISO(new Date(ano.value,mes.value+1,0).getDate())
@@ -84,8 +85,8 @@ watch([ano,mes], carregar, { immediate:true })
       <template v-if="dia">
         <button v-if="(porDia[dataISO(dia)]||[]).length" type="button" class="numero dia-ativo" :aria-label="'Abrir eventos de '+formatarData(dataISO(dia))" @click="abrirDia(dataISO(dia))">{{ dia }}</button>
         <span v-else class="numero">{{ dia }}</span>
-        <button v-for="e in (porDia[dataISO(dia)]||[]).slice(0,2)" :key="(e.recorrencia?'r':'t')+e.id" type="button" :class="['evento-preview',classe(e)]" :title="e.titulo+' — '+moeda(e.valor)" @click="abrir(e)">
-          <span class="evento-nome">{{ e.titulo }}</span><span class="evento-valor">{{ moeda(e.valor) }}</span>
+        <button v-for="e in (porDia[dataISO(dia)]||[]).slice(0,2)" :key="e.id" type="button" :class="['evento-preview',classe(e)]" :title="e.evento_cartao ? e.titulo : e.titulo+' — '+moeda(e.valor)" @click="abrir(e)">
+          <span class="evento-nome">{{ e.titulo }}</span><span v-if="!e.evento_cartao" class="evento-valor">{{ moeda(e.valor) }}</span>
         </button>
         <button v-if="(porDia[dataISO(dia)]||[]).length>2" type="button" class="mais" @click="abrirDia(dataISO(dia))">+{{ porDia[dataISO(dia)].length-2 }} eventos</button>
         <button v-if="(porDia[dataISO(dia)]||[]).length" type="button" class="selecionar-dia" :aria-label="'Ver eventos de '+formatarData(dataISO(dia))" @click="abrirDia(dataISO(dia))">Ver eventos</button>
@@ -101,7 +102,7 @@ watch([ano,mes], carregar, { immediate:true })
       <div class="lista-eventos">
         <button v-for="(e, i) in porDia[selecionado] || []" :key="(e.recorrencia?'r':'t')+e.id+'-'+i" type="button" class="linha-evento" @click="abrir(e)">
           <span class="evento-info"><strong>{{ e.titulo }}</strong><small>{{ e.categoria || e.tipo }} · {{ status(e) }}</small></span>
-          <strong :class="['evento-montante',classe(e)]">{{ moeda(e.valor) }}</strong>
+          <strong :class="['evento-montante',classe(e)]">{{ e.evento_cartao ? 'Aviso' : moeda(e.valor) }}</strong>
         </button>
       </div>
       <p class="rodape-dia">Selecione um evento para consultar seus detalhes.</p>
@@ -110,9 +111,9 @@ watch([ano,mes], carregar, { immediate:true })
   <div v-if="detalhe" class="overlay overlay-detalhe" @click.self="fechar">
     <section class="modal" role="dialog" aria-modal="true" aria-label="Detalhes do lançamento" @keydown.esc="fechar">
       <div class="cabecalho"><span class="sobretitulo">DETALHES DO EVENTO</span><button class="fechar-dia fechar-detalhe" @click="fechar" aria-label="Fechar detalhes">✕</button></div>
-      <h2>{{ detalhe.titulo }}</h2><strong :class="['valor-detalhe',classe(detalhe)]">{{ moeda(detalhe.valor) }}</strong>
+      <h2>{{ detalhe.titulo }}</h2><strong v-if="!detalhe.evento_cartao" :class="['valor-detalhe',classe(detalhe)]">{{ moeda(detalhe.valor) }}</strong><p v-else class="aviso-explicacao">{{ detalhe.evento_cartao === 'fechamento' ? 'Data em que a fatura do cartão fecha mensalmente.' : 'Data de vencimento mensal da fatura do cartão.' }} Este aviso não cria uma despesa automaticamente.</p>
       <dl><div><dt>Data</dt><dd>{{ formatarData(detalhe.vencimento || detalhe.data?.slice(0,10)) }}</dd></div>
-        <div><dt>Tipo</dt><dd>{{ detalhe.tipo==='receita'?'Receita':'Despesa' }}</dd></div>
+        <div><dt>Tipo</dt><dd>{{ detalhe.evento_cartao ? 'Aviso de cartão' : (detalhe.tipo==='receita'?'Receita':'Despesa') }}</dd></div>
         <div><dt>Categoria</dt><dd>{{ detalhe.categoria || 'Não informada' }}</dd></div>
         <div><dt>Situação</dt><dd>{{ status(detalhe) }}</dd></div></dl>
       <button v-if="detalhe.recorrencia" class="confirmar" type="button" @click="editarRecorrencia">Editar recorrência</button>
@@ -154,4 +155,7 @@ watch([ano,mes], carregar, { immediate:true })
 
 .entrada-pagina { animation: entrada-pagina 0.6s ease-out both; }
 @keyframes entrada-pagina { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.evento-preview.aviso-cartao{background:var(--opes-forest-soft)!important;border-color:var(--opes-caramel)!important;color:var(--opes-ink)!important}
+.evento-montante.aviso-cartao{color:var(--opes-muted)}
+.aviso-explicacao{margin:12px 0 18px;line-height:1.55;color:var(--opes-muted);font-size:13px}
 </style>

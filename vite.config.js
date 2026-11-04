@@ -1,11 +1,14 @@
 import { fileURLToPath, URL } from 'node:url';
 
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import vueDevTools from 'vite-plugin-vue-devtools';
 import { VitePWA } from 'vite-plugin-pwa';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), 'OPES_');
+  const apiTarget = env.OPES_API_PROXY_TARGET || 'https://opes.class.fabricadesoftware.ifc.edu.br';
+  return {
   plugins: [
     vue(),
     VitePWA({
@@ -52,7 +55,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://opes.class.fabricadesoftware.ifc.edu.br',
+        target: apiTarget,
         changeOrigin: true,
         secure: true,
       },
@@ -63,4 +66,5 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  };
 });
