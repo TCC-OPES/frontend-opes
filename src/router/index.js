@@ -73,7 +73,10 @@ const rotasProtegidas = new Set([
   '/metas', '/transacoes', '/recorrencias', '/calendario', '/familia'
 ])
 router.beforeEach((to) => {
-  if (rotasProtegidas.has(to.path) && !localStorage.getItem('access')) {
+  const semToken = !localStorage.getItem('access')
+  const deveProteger = rotasProtegidas.has(to.path) && semToken && !import.meta.env.DEV
+
+  if (deveProteger) {
     return { name: 'login' }
   }
 })
