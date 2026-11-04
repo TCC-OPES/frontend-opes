@@ -4,7 +4,7 @@ const DEFAULT_API = 'https://opes.class.fabricadesoftware.ifc.edu.br'
 const configuredApi = (import.meta.env.VITE_API_URL || '').trim()
 const API_ORIGIN = /^https?:\/\//i.test(configuredApi)
   ? configuredApi.replace(/\/+$/, '').replace(/\/api$/, '')
-  : DEFAULT_API
+  : (import.meta.env.DEV ? '' : DEFAULT_API)
 
 const api = axios.create({
   baseURL: API_ORIGIN,
